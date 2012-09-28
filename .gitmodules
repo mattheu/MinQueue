@@ -1,0 +1,3 @@
+[submodule "php-minify"]
+	path = php-minify
+	url = https://github.com/mrclay/minify.git
