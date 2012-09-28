@@ -99,7 +99,7 @@ class MPH_Minify {
 		// Enqueue the assets
 		$this->$class->add( 'mph-minify-' . $class . '-' . $group, $file );
 		$this->$class->add_data( 'mph-minify-' . $class . '-' . $group, 'group', $file );		
-		$this->$class->enqueue( 'mph-minify-' . $class . '-' . $file );
+		$this->$class->enqueue( 'mph-minify-' . $class . '-' . $group );
 
 	}
 
