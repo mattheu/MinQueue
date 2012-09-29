@@ -12,8 +12,13 @@ Author URI: http://www.matth.eu
 
 add_action( 'wp_enqueue_scripts', function() {
 
-	$minify = new MPH_Minify(); 
-	$minify->minify();
+	$minify_scripts = new MPH_Minify( 'WP_Scripts' ); 
+	$minify_scripts->ignore_list = array( 'admin-bar', 'wc-single-product' );
+	$minify_scripts->minify();
+	
+	$minify_styles = new MPH_Minify( 'WP_Styles' ); 
+	$minify_styles->ignore_list = array( 'admin-bar' );
+	$minify_styles->minify();
 
 }, 100 );
 
@@ -31,17 +36,33 @@ class MPH_Minify {
 	private $asset_queue = array();
 	
 	// Do not minify these assets - array of handles.
-	private $ignore_list = array();
+	public $ignore_list = array();
 
 	// Array of script Localization data. 
 	private $script_localization = array();
 	
-	function __construct() {
+	/**
+	 * Set up class.
+	 * @param string $class Minify assets for this class.
+	 */
+	function __construct( $class ) {
 
-		global $wp_scripts, $wp_styles;
+		// Set up which WP_Dependencies sub-class to use. 
+		if ( 'WP_Scripts' ==  $class ) {
+			
+			global $wp_scripts;
+			$this->class = $wp_scripts;
+		
+		} elseif ( 'WP_Styles' ==  $class ) {
+		
+			global $wp_styles;
+			$this->class = $wp_styles;
+		
+		}
 
-		$this->wp_scripts    = $wp_scripts;
-		$this->wp_styles     = $wp_styles;
+		// Error handling.
+		if ( ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
+			die( get_class( $this->class ) . ' does not extend WP_Dependencies' );
 
 		//$this->site_root();
 		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
@@ -50,11 +71,6 @@ class MPH_Minify {
 		$this->cache_dirname = trailingslashit( 'mph_minify_cache' );
 		$this->cache_url     = trailingslashit( WP_CONTENT_URL ) . $this->cache_dirname;
 		$this->cache_dir     = trailingslashit( WP_CONTENT_DIR ) . $this->cache_dirname;
-
-		$this->ignore_list = array(
-			'wp_scripts' => array( 'admin-bar', 'wc-single-product' ),
-			'wp_styles' => array( 'admin-bar' )
-		);
 
 	}
 
@@ -66,28 +82,17 @@ class MPH_Minify {
 	 */
 	function minify() {
 
-		$classes = array( 'wp_scripts', 'wp_styles' );
+		foreach ( (array) $this->get_asset_queue() as $group => $assets  )
+			$this->enqueue_minified_assets( $group );	
 
-		// Set up the queue of assets.
-		foreach( $classes as $class )
-			$this->get_asset_queue( $class );
-
-		// Process the queue.
-		foreach( $classes as $class )
-			foreach ( (array) $this->asset_queue[ $class ] as $group => $assets  )
-				$this->enqueue_minified_assets( $class, $group );	
-		
 		// Foreach classes, if there is localization data, then we hook in and add a script tag to the head.
 		// @todo - look into properly adding this using the wp_scripts class. Can we actually localize the minified script? or use print_inline_style.
 		// @todo - can we do this without a closure for php 5.2 support.
-		foreach ( $classes as $class ) {
-			if ( ! empty( $this->script_localization[$class] ) )
-				foreach( $this->script_localization[$class] as $group => $data ) {
-					if ( $data = implode( ' ', $data ) )
-						add_action( 'wp_head', function() use ( $data ) {
-							echo '<script>' . $data . '</script>';
-						} );
-				}
+		foreach( $this->script_localization as $group => $data ) {
+			if ( $data = implode( ' ', (array) $data ) )
+				add_action( 'wp_head', function() use ( $data ) {
+					echo '<script>' . $data . '</script>';
+				} );
 		}
 		
 
@@ -100,25 +105,25 @@ class MPH_Minify {
 	 * @param  class $class  type of asset (wp_scripts of wp_styles)
 	 * @return array asset queue. An array of classes. Contains array of groups. contains array of asset handles.
 	 */
-	function get_asset_queue( $class ) {
+	function get_asset_queue() {
 
 		// Do this to set up the todos - in the correct order.	
-		$this->$class->all_deps( $this->$class->queue );
+		$this->class->all_deps( $this->class->queue );
 		
-  		foreach ( $this->$class->to_do as $key => $handle ) {
+  		foreach ( $this->class->to_do as $key => $handle ) {
 
 			// If this script is ignored, skip it.
-			if ( in_array( $handle, $this->ignore_list[$class] ) )
+			if ( in_array( $handle, $this->ignore_list ) )
 				continue;
 
 			// Add this asset to the queue.
-			$this->asset_queue[$class][ $this->$class->groups[$handle] ][] = array( 
+			$this->asset_queue[ $this->class->groups[$handle] ][] = array( 
 				'handle' => $handle,
-				'version' => $this->$class->registered[$handle]->ver
+				'version' => $this->class->registered[$handle]->ver
 			);
 
-			if ( ! empty( $this->$class->registered[$handle]->extra['data'] ) )
-				$this->script_localization[$class][ $this->$class->groups[$handle] ][] = $this->$class->registered[$handle]->extra['data'];
+			if ( ! empty( $this->class->registered[$handle]->extra['data'] ) )
+				$this->script_localization[ $this->class->groups[$handle] ] = $this->class->registered[$handle]->extra['data'];
 
 		}
 
@@ -131,22 +136,21 @@ class MPH_Minify {
 	 *
 	 * Enqueue cached minified file or create one and enqueue that.
 	 * 
-	 * @param  $class [description]
-	 * @param  [type] $group [description]
-	 * @return [type]        [description]
+	 * @param  int $group Group identifier
+	 * @return null
 	 */
-	function enqueue_minified_assets( $class, $group ) {
+	function enqueue_minified_assets( $group ) {
 
 		// Filename is a crc32 hash of the current group asset queue (contains version numbers)
-		$filename = crc32( serialize( $this->asset_queue[$class][$group] ) ) . ( ( 'wp_styles' === $class ) ? '.css' : '.js' );		
+		$filename = crc32( serialize( $this->asset_queue[$group] ) ) . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );		
 		$src = trailingslashit( $this->cache_url ) . $filename;
 
 		// If no cached file - generate minified asset src.
 		if ( ! file_exists( $this->cache_dir . $filename ) ) {
 
 			$_srcs = array();
-			foreach ( $this->asset_queue[$class][$group] as $asset )
-				$_srcs[] = $this->get_asset_path( $class, $asset['handle'] );
+			foreach ( $this->asset_queue[$group] as $asset )
+				$_srcs[] = $this->get_asset_path( $asset['handle'] );
 
 			// On the fly minify url - used to generate the cache.
 			$src = $this->minify_url . '/?f=' . implode( ',', array_filter( $_srcs ) );
@@ -157,36 +161,35 @@ class MPH_Minify {
 		}
 
 		// Remove & Dequeue original files.
-		foreach ( $this->asset_queue[$class][$group] as $asset ) {
+		foreach ( $this->asset_queue[$group] as $asset ) {
 			
-			$this->$class->dequeue( $asset['handle'] );
-			$this->$class->remove( $asset['handle'] );
+			$this->class->dequeue( $asset['handle'] );
+			$this->class->remove( $asset['handle'] );
 		
 		}
 
 		// Enqueue the minified file
-		$this->$class->add( 'mph-minify-' . $class . '-' . $group, $src, null, null );
-		$this->$class->add_data( 'mph-minify-' . $class . '-' . $group, 'group', $group );
-		$this->$class->enqueue( 'mph-minify-' . $class . '-' . $group );
+		$this->class->add( 'mph-minify-' . get_class( $this->class ) . '-' . $group, $src, null, null );
+		$this->class->add_data( 'mph-minify-' . get_class( $this->class ) . '-' . $group, 'group', $group );
+		$this->class->enqueue( 'mph-minify-' . get_class( $this->class ) . '-' . $group );
 
 	}
 
 	/**
 	 * Return the path to an asset relative to the site root, Uses $wp_scripts->registered.
 	 * 
-	 * @param  string $class  The Class to be used. wp_scripts or wp_styles.
 	 * @param  string $handle handle of the asset
 	 * @return string         string, path of the asset, relative to site root.
 	 */
-	function get_asset_path( $class, $handle ) {
+	function get_asset_path( $handle ) {
 
-		if ( empty( $this->$class->registered[$handle] ) )
+		if ( empty( $this->class->registered[$handle] ) )
 			return;
 
-		$src = $this->$class->registered[$handle]->src;
+		$src = $this->class->registered[$handle]->src;
 
-		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->$class->content_url && 0 === strpos( $src, $this->$class->content_url ) ) )
-			$src = $this->$class->base_url . $src;
+		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
+			$src = $this->class->base_url . $src;
 
 		// Don't handle remote urls. For now...
 		if ( 0 !== strpos( $src, home_url() ) )
@@ -210,7 +213,7 @@ class MPH_Minify {
 			mkdir( $this->cache_dir );
 
 		$data = file_get_contents( $minify_src );
-		
+
 		if ( $data ) {
 			
 			file_put_contents( $this->cache_dir . $filename, $data );	
