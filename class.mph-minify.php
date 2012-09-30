@@ -143,13 +143,14 @@ class MPH_Minify {
 
 			// Generate cached file, if we want to.
 			if ( $this->cache )
-				$src = $this->cache_file( $filename, $src );
+				$src = $this->cache_file( $filename, $src, array_keys( $this->asset_queue[$group] ) );
 
 		}
 
 		// Mark the minified assets as done.
 		foreach ( $this->asset_queue[$group] as $asset )
 			$this->class->done[] = $asset['handle'];
+		
 
 		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
 		// Array keys = asset handles in this file.
@@ -209,7 +210,7 @@ class MPH_Minify {
 	 * @param  array  $srcs     srcs of assets.
 	 * @return string           src of cache file.
 	 */
-	function cache_file( $filename, $minify_src ) {
+	function cache_file( $filename, $minify_src, $handles ) {
 
 		// Create Directory.
 		if ( ! is_dir( $this->cache_dir ) )
@@ -218,6 +219,8 @@ class MPH_Minify {
 		$data = file_get_contents( $minify_src );
 
 		if ( $data ) {
+
+			$data = '/*' . implode( ',', $handles ) . '*/' . $data; 
 			
 			file_put_contents( $this->cache_dir . $filename, $data );	
 		
