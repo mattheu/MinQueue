@@ -13,23 +13,31 @@ class MPH_Minify {
 	// Always minify these assets.
 	public $force_list = array();
 
-	// The class. Must be a sub class of WP_Dependencies. Either WP_Scripts or WP_Styles.
+	// Either WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies. 
 	private $class;
 
-	// If true, minified files are cached. Else minify done on the fly. 
+	// Cache minified files or do it on the fly. 
 	private $cache = true;
 
-	// Internal queue of assets to be minified. By group. Stores handle & version - used for creating filename.
+	// Internal queue of assets to be minified. By group.
 	private $asset_queue = array();
 	
 	// Array of script Localization data.
 	private $script_localization = array();
 
 	/**
-	 * Set up class.
+	 * Set things up.
+	 * 
 	 * @param string $class Minify assets for this class.
 	 */
 	function __construct( $class ) {
+
+		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
+		$this->minify_url    = trailingslashit( $this->plugin_url ) . 'php-minify/min/';
+		
+		$this->cache_dirname = trailingslashit( 'mph_minify_cache' );
+		$this->cache_url     = trailingslashit( WP_CONTENT_URL ) . $this->cache_dirname;
+		$this->cache_dir     = trailingslashit( WP_CONTENT_DIR ) . $this->cache_dirname;
 
 		// Set up which WP_Dependencies sub-class to use. 
 		if ( 'WP_Scripts' ==  $class ) {
@@ -44,19 +52,8 @@ class MPH_Minify {
 		
 		}
 
-		if ( empty( $this->class ) )
-			return;
-
-		// Error?
-		if ( ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
+		if ( ! empty( $this->class ) && ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
 			die( get_class( $this->class ) . ' does not extend WP_Dependencies' );
-
-		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
-		$this->minify_url    = trailingslashit( $this->plugin_url ) . 'php-minify/min/';
-		
-		$this->cache_dirname = trailingslashit( 'mph_minify_cache' );
-		$this->cache_url     = trailingslashit( WP_CONTENT_URL ) . $this->cache_dirname;
-		$this->cache_dir     = trailingslashit( WP_CONTENT_DIR ) . $this->cache_dirname;
 
 	}
 
@@ -70,7 +67,8 @@ class MPH_Minify {
 
 		if ( empty( $this->class ) )
 			return;
-		
+
+		// Get the queue of assets & Enqueue each group.
 		foreach ( (array) $this->get_asset_queue() as $group => $assets  )
 			$this->enqueue_minified_assets( $group );	
 
@@ -88,15 +86,15 @@ class MPH_Minify {
 	 */
 	function get_asset_queue() {
 
-		// Do this to set up the todos - in the correct order.	
+		// Set up the todos - in correct order considering dependencies.
+		// Merge the queue and the force_list (assets to minify even if not enqueued)
 		$this->class->all_deps( array_merge( $this->class->queue, $this->force_list ) );
 		
   		foreach ( $this->class->to_do as $key => $handle ) {
 
 			// If this script is ignored, skip it.
-			if ( in_array( $handle, $this->ignore_list ) ) {
+			if ( in_array( $handle, $this->ignore_list ) )
 				continue;
-			}
 
 			// Add this asset to the queue.
 			$this->asset_queue[ $this->class->groups[$handle] ][$handle] = array( 
@@ -196,7 +194,7 @@ class MPH_Minify {
 		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
 			$src = $this->class->base_url . $src;
 
-		// Don't handle remote urls. For now...
+		// Don't handle remote urls.
 		if ( 0 !== strpos( $src, home_url() ) )
 			return;
 
@@ -221,7 +219,7 @@ class MPH_Minify {
 
 		if ( $data ) {
 			
-			file_put_contents( $this->cache_dir . $filename, $minify_src . "/n" . $data );	
+			file_put_contents( $this->cache_dir . $filename, $data );	
 		
 			return $this->cache_url . $filename;
 
