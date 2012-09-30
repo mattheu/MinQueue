@@ -7,8 +7,10 @@ class MPH_Minify {
 	public $minify_url;
 	public $cache_url;
 
-	// Do not minify these assets - array of handles.
+	// Never minify these assets
 	public $ignore_list = array();
+
+	// Always minify these assets.
 	public $force_list = array();
 
 	// The class. Must be a sub class of WP_Dependencies. Either WP_Scripts or WP_Styles.
@@ -131,11 +133,17 @@ class MPH_Minify {
 
 			$_srcs = array();
 			foreach ( $this->asset_queue[$group] as $asset )
-				$_srcs[] = $this->get_asset_path( $asset['handle'] );
+				if ( $_src = $this->get_asset_path( $asset['handle'] ) )
+					$_srcs[] = $_src;
+
+			// If no srcs to be minified, just stop all this right now.
+			if ( empty( $_srcs ) )
+				return;
 
 			// On the fly minify url - used to generate the cache.
 			$src = $this->minify_url . '/?f=' . implode( ',', array_filter( $_srcs ) );
 
+			// Generate cached file, if we want to.
 			if ( $this->cache )
 				$src = $this->cache_file( $filename, $src );
 
