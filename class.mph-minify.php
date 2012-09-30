@@ -235,9 +235,17 @@ class MPH_Minify {
 	 * @return null
 	 */
 	function delete_cache() { 
+		
+		$files = new RecursiveIteratorIterator(
+    		new RecursiveDirectoryIterator( $this->cache_dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+    			RecursiveIteratorIterator::CHILD_FIRST
+		);
 
-		// @todo
-
+		foreach ($files as $fileinfo) {
+    		$todo = ( $fileinfo->isDir() ? 'rmdir' : 'unlink' );
+    		$todo( $fileinfo->getRealPath() );
+		}
+		
 	}
 
 }
