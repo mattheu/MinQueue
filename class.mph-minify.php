@@ -7,19 +7,21 @@ class MPH_Minify {
 	public $minify_url;
 	public $cache_url;
 
-	public $cache = true;
-
-	// Store all assets (handles, and versions), in correct order of processing.
-	private $asset_queue = array();
-	
 	// Do not minify these assets - array of handles.
 	public $ignore_list = array();
 	public $force_list = array();
 
-	// Array of script Localization data. 
-	private $script_localization = array();
+	// The class. Must be a sub class of WP_Dependencies. Either WP_Scripts or WP_Styles.
+	private $class;
+
+	// If true, minified files are cached. Else minify done on the fly. 
+	private $cache = true;
+
+	// Internal queue of assets to be minified. By group. Stores handle & version - used for creating filename.
+	private $asset_queue = array();
 	
-	public $class;
+	// Array of script Localization data.
+	private $script_localization = array();
 
 	/**
 	 * Set up class.
@@ -40,11 +42,13 @@ class MPH_Minify {
 		
 		}
 
-		// Error handling.
+		if ( empty( $this->class ) )
+			return;
+
+		// Error?
 		if ( ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
 			die( get_class( $this->class ) . ' does not extend WP_Dependencies' );
 
-		//$this->site_root();
 		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
 		$this->minify_url    = trailingslashit( $this->plugin_url ) . 'php-minify/min/';
 		
@@ -62,22 +66,17 @@ class MPH_Minify {
 	 */
 	function minify() {
 
+		if ( empty( $this->class ) )
+			return;
+		
 		foreach ( (array) $this->get_asset_queue() as $group => $assets  )
 			$this->enqueue_minified_assets( $group );	
 
-		// Foreach classes, if there is localization data, then we hook in and add a script tag to the head.
-		// @todo - look into properly adding this using the wp_scripts class. Can we actually localize the minified script? or use print_inline_style.
-		// @todo - can we do this without a closure for php 5.2 support.
-		foreach( $this->script_localization as $group => $data ) {
-			if ( $data = implode( ' ', (array) $data ) )
-				add_action( 'wp_head', function() use ( $data ) {
-					echo '<script>' . $data . '</script>';
-				} );
-		}
-		
+		// Add the localization data to the head. Do it as early as possible.
+		if ( ! empty( $this->script_localization ) )
+			add_action( 'wp_head', array( $this, 'script_localization' ), 2 );
 
 	}
-
 
 	/**
 	 * Get the queue of assets for a given class.
@@ -104,7 +103,7 @@ class MPH_Minify {
 			);
 
 			if ( ! empty( $this->class->registered[$handle]->extra['data'] ) )
-				$this->script_localization[ $this->class->groups[$handle] ] = $this->class->registered[$handle]->extra['data'];
+				$this->script_localization[ $handle ] = $this->class->registered[$handle]->extra['data'];
 
 		}
 
@@ -161,6 +160,19 @@ class MPH_Minify {
 	}
 
 	/**
+	 * Localize the minified scripts. Echo script tags in the head.
+	 *
+	 * @return null
+	 * @todo - look into properly adding this using the wp_scripts class. Can we actually localize the minified script? or use print_inline_style.
+	 */
+	function script_localization () {
+
+		foreach ( $this->script_localization as $handle => $data )
+			echo '<script>' . $data . '</script>';
+
+	}
+
+	/**
 	 * Return the path to an asset relative to the site root, Uses $wp_scripts->registered.
 	 * 
 	 * @param  string $handle handle of the asset
@@ -201,7 +213,7 @@ class MPH_Minify {
 
 		if ( $data ) {
 			
-			file_put_contents( $this->cache_dir . $filename, $data );	
+			file_put_contents( $this->cache_dir . $filename, $minify_src . "/n" . $data );	
 		
 			return $this->cache_url . $filename;
 
