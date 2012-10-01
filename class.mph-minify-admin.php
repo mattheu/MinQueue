@@ -9,15 +9,15 @@ class MPH_Minify_Admin {
 
 		add_action( 'admin_menu', array( $this, 'admin_add_page' ) );
 
-		$this->options = get_option( 'mph_minify_options', array( 'ignore-scripts' => 'admin-bar', 'ignore-styles' => 'admin-bar' ) );
-
+		$this->options = get_option( 'mph_minify_options', array( 'ignore_scripts' => array( 'admin-bar' ), 'ignore_styles' => array( 'admin-bar' ) ) );
+		
 		// Delete the cache if requested.
 		// @todo nonce verification.
 		if ( isset( $_GET['mph_minify_action'] ) && 'clear_cache' == $_GET['mph_minify_action'] ) {
 
 			$minify = new MPH_Minify( 'WP_Scripts' );
 			$minify->delete_cache();
-		
+			
 			$this->notices[] = 'Cache deleted.';
 
 		}
@@ -98,7 +98,7 @@ class MPH_Minify_Admin {
 	function field_ignore_scripts() {
 
 		$value = ( ! empty( $this->options['ignore_scripts'] ) ) ? implode( ',', $this->options['ignore_scripts'] ) : '';
-		echo '<input id="mph_minify_field_ignore_scripts" name="mph_minify_options[ignore_scripts]" type="text" value="' . $value . '" />';
+		echo '<textarea id="mph_minify_field_ignore_scripts" name="mph_minify_options[ignore_scripts]" class="code">' . $value . '</textarea>';
 		echo '<p class="description">Comma separated list of script handles to ignore.</p>';
 	
 	}
@@ -106,7 +106,7 @@ class MPH_Minify_Admin {
 	function field_force_scripts() {
 
 		$value = ( ! empty( $this->options['force_scripts'] ) ) ? implode( ',', $this->options['force_scripts'] ) : '';
-		echo '<input id="mph_minify_field_force_scripts" name="mph_minify_options[force_scripts]"  type="text" value="' . $value . '" />';
+		echo '<textarea id="mph_minify_field_force_scripts" name="mph_minify_options[force_scripts]" class="code">' . $value . '</textarea>';
 		echo '<p class="description">Comma separated list of script handles that should always be minified.</p>';
 	
 	}
@@ -114,7 +114,7 @@ class MPH_Minify_Admin {
 	function field_ignore_styles() {
 
 		$value = ( ! empty( $this->options['ignore_styles'] ) ) ? implode( ',', $this->options['ignore_styles'] ) : '';
-			echo '<input id="mph_minify_field_force_styles" name="mph_minify_options[ignore_styles]" type="text" value="' . $value . '" />';
+			echo '<textarea id="mph_minify_field_force_styles" name="mph_minify_options[ignore_styles]" class="code">' . $value . '</textarea>';
 			echo '<p class="description">Comma separated list of style handles to ignore.</p>';
 	
 	}
@@ -122,7 +122,7 @@ class MPH_Minify_Admin {
 	function field_force_styles() {
 
 		$value = ( ! empty( $this->options['force_styles'] ) ) ? implode( ',', $this->options['force_styles'] ) : '';
-			echo '<input id="mph_minify_field_force_styles" name="mph_minify_options[force_styles]" type="text" value="' . $value . '" />';
+			echo '<textarea id="mph_minify_field_force_styles" name="mph_minify_options[force_styles]" class="code" >' . $value . '</textarea>';
 			echo '<p class="description">Comma separated list of style handles that should always be minified.</p>';
 	
 	}
