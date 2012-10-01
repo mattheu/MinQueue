@@ -66,7 +66,7 @@ add_action( 'wp_enqueue_scripts', function() {
 
 	$minify_styles->minify();
 
-	if ( true === $options['debugger'] ) {
+	if ( true === $options['debugger'] && current_user_can( 'manage_options' ) ) {
 
 		add_action( 'wp_head', 'mph_minify_debugger_style' );
 		add_action( 'wp_footer', function() use ( $minify_scripts, $minify_styles ) {
