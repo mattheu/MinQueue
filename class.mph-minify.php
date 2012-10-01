@@ -122,7 +122,7 @@ class MPH_Minify {
 	function enqueue_minified_assets( $group ) {
 
 		// Filename is a crc32 hash of the current group asset queue (contains version numbers)
-		$filename = crc32( serialize( $this->asset_queue[$group] ) ) . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );		
+		$filename = 'mph-minify-' . crc32( serialize( $this->asset_queue[$group] ) ) . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );		
 		$src = trailingslashit( $this->cache_url ) . $filename;
 		$minify_handle = 'mph-minify-' . get_class( $this->class ) . '-' . $group;
 
