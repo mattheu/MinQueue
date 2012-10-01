@@ -16,7 +16,7 @@ $admin = new MPH_Minify_Admin();
 
 add_action( 'wp_enqueue_scripts', function() {
 	
-	$options = get_option( 'mph_minify_options', array( 'ignore-scripts' => array('admin-bar'), 'ignore-styles' => array('admin-bar') ) );
+	$options = get_option( 'mph_minify_options', array( 'ignore_scripts' => array('admin-bar'), 'ignore_styles' => array('admin-bar') ) );
 
 	// Scripts
 	$minify_scripts = new MPH_Minify( 'WP_Scripts' ); 
