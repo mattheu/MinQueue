@@ -7,6 +7,10 @@ class MPH_Minify {
 	public $minify_url;
 	public $cache_url;
 
+	// Array of handles to process.
+	// If empty, all enqueued assets are used.
+	public $queue = array();
+
 	// Never minify these assets
 	public $ignore_list = array();
 
@@ -86,24 +90,31 @@ class MPH_Minify {
 	 */
 	function get_asset_queue() {
 
-		// Set up the todos - in correct order considering dependencies.
-		// Merge the queue and the force_list (assets to minify even if not enqueued)
-		$this->class->all_deps( array_merge( $this->class->queue, $this->force_list ) );
-		
-  		foreach ( $this->class->to_do as $key => $handle ) {
+		if ( empty( $this->asset_queue ) ) {
 
-			// If this script is ignored, skip it.
-			if ( in_array( $handle, $this->ignore_list ) )
-				continue;
+			if ( empty( $this->queue ) )
+				$this->queue = array_merge( $this->class->queue, $this->force_list );
 
-			// Add this asset to the queue.
-			$this->asset_queue[ $this->class->groups[$handle] ][$handle] = array( 
-				'handle' => $handle,
-				'version' => $this->class->registered[$handle]->ver
-			);
+			// Set up the todos - in correct order considering dependencies.
+			// Merge the queue and the force_list (assets to minify even if not enqueued)
+			$this->class->all_deps( $this->queue );
+			
+	  		foreach ( $this->class->to_do as $key => $handle ) {
 
-			if ( ! empty( $this->class->registered[$handle]->extra['data'] ) )
-				$this->script_localization[ $handle ] = $this->class->registered[$handle]->extra['data'];
+				// If this script is ignored, skip it.
+				if ( in_array( $handle, $this->ignore_list ) )
+					continue;
+
+				// Add this asset to the queue.
+				$this->asset_queue[ $this->class->groups[$handle] ][$handle] = array( 
+					'handle' => $handle,
+					'version' => $this->class->registered[$handle]->ver
+				);
+
+				if ( ! empty( $this->class->registered[$handle]->extra['data'] ) )
+					$this->script_localization[ $handle ] = $this->class->registered[$handle]->extra['data'];
+
+			}
 
 		}
 
