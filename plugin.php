@@ -30,45 +30,76 @@ function mph_minify_get_plugin_options() {
 		$options = unserialize( MPH_MINIFY_OPTIONS );
 	else
 		$options = get_option( 'mph_minify_options', $defaults );
-	
-	// Scripts
-	$minify_scripts = new MPH_Minify( 'WP_Scripts' ); 
 
-	if ( 'manual' == $options['scripts_method'] ) {
+	$options = wp_parse_args( $options, $defaults );
 
-		$minify_scripts->queue = $options['scripts_manual'];
+	return $options;
 
-	} else {
+}
 
-		$minify_scripts->ignore_list = $options['scripts_ignore'];
-		$minify_scripts->force_list = $options['scripts_force'];
+add_action( 'wp_enqueue_scripts', function() {
 
-	}
+	$options = mph_minify_get_plugin_options();
 
-	$minify_scripts->minify();
+	// Scripts	
+	if ( 'auto' == $options['scripts_method'] ) {
+
+		$minify_scripts = new MPH_Minify( 'WP_Scripts' ); 
+
+		if ( isset( $options['scripts_ignore'] ) )
+			$minify_scripts->ignore_list = $options['scripts_ignore'];
+		if ( isset( $options['scripts_force'] ) )
+			$minify_scripts->force_list = $options['scripts_force'];
+
+		$minify_scripts->minify();
+
+	} elseif ( 'manual' == $options['scripts_method'] ) {
+
+		$minify_scripts = new MPH_Minify( 'WP_Scripts' ); 
+
+		if ( isset( $options['scripts_manual'] ) )
+			$minify_scripts->queue = (array) $options['scripts_manual'];
+
+		$minify_scripts->minify();
+
+	}	
 
 	// Styles
-	$minify_styles = new MPH_Minify( 'WP_Styles' ); 
+	if ( 'auto' == $options['styles_method'] ) {
 
-	if ( 'manual' == $options['styles_method'] ) {
+		$minify_styles = new MPH_Minify( 'WP_Styles' ); 
 
-		$minify_styles->queue = $options['styles_manual'];
-
-	} else {
-
-		$minify_styles->ignore_list = $options['styles_ignore'];
+		if ( isset( $options['styles_ignore'] ) )
+			$minify_styles->ignore_list = $options['styles_ignore'];
+		if ( isset( $options['styles_force'] ) )
 		$minify_styles->force_list = $options['styles_force'];
+
+	} elseif ( 'manual' == $options['styles_method'] ) {
+
+		$minify_styles = new MPH_Minify( 'WP_Styles' ); 
+
+		if ( isset( $options['styles_manual'] ) )
+			$minify_styles->queue = (array) $options['styles_manual'];
+
+		$minify_styles->minify();
 
 	}
 
-	$minify_styles->minify();
+	// Debugger...
+	if ( isset( $options['debugger'] ) && true === $options['debugger'] && current_user_can( 'manage_options' ) ) {
 
-	if ( true === $options['debugger'] && current_user_can( 'manage_options' ) ) {
+		$minifiers = array();
+
+		if ( isset( $minify_scripts ) ) 
+			$minifiers['minify_scripts'] = $minify_scripts;
+
+		if ( isset( $minify_styles ) ) 
+			$minifiers['minify_styles'] = $minify_styles;
 
 		add_action( 'wp_head', 'mph_minify_debugger_style' );
-		add_action( 'wp_footer', function() use ( $minify_scripts, $minify_styles ) {
+		add_action( 'wp_footer', function() use ( $minifiers ) {
 
-			mph_minify_debugger( $minify_scripts, $minify_styles );			
+			mph_minify_debugger( $minifiers );			
 
 		} );
 	
