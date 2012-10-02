@@ -95,6 +95,11 @@ class MPH_Minify {
 			if ( empty( $this->queue ) )
 				$this->queue = array_merge( $this->class->queue, $this->force_list );
 
+			// Remove assets from queue if not registered.
+			foreach( $this->queue as $key => $handle )
+				if ( ! array_key_exists( $handle, $this->class->registered ) )
+					unset( $this->queue[$key] );
+
 			// Set up the todos - in correct order considering dependencies.
 			// Merge the queue and the force_list (assets to minify even if not enqueued)
 			$this->class->all_deps( $this->queue );
