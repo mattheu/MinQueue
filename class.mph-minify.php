@@ -225,7 +225,7 @@ class MPH_Minify {
 
 		// Create Directory.
 		if ( ! is_dir( $this->cache_dir ) )
-			mkdir( $this->cache_dir );
+			wp_mkdir_p( $this->cache_dir );
 
 		$data = file_get_contents( $minify_src );
 
