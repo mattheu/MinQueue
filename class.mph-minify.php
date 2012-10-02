@@ -89,7 +89,7 @@ class MPH_Minify {
 	 * @return array asset queue. An array of classes. Contains array of groups. contains array of asset handles.
 	 */
 	function get_asset_queue() {
-
+		
 		if ( empty( $this->asset_queue ) ) {
 
 			if ( empty( $this->queue ) )
@@ -162,7 +162,6 @@ class MPH_Minify {
 		foreach ( $this->asset_queue[$group] as $asset )
 			$this->class->done[] = $asset['handle'];
 		
-
 		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
 		// Array keys = asset handles in this file.
 		foreach ( $this->class->registered as $asset )
@@ -232,9 +231,7 @@ class MPH_Minify {
 		if ( $data ) {
 
 			$data = '/*' . implode( ',', $handles ) . '*/' . $data; 
-			
 			file_put_contents( $this->cache_dir . $filename, $data );	
-		
 			return $this->cache_url . $filename;
 
 		}
@@ -245,6 +242,8 @@ class MPH_Minify {
 	 * Delete all cached files.
 	 * 
 	 * @return null
+	 * @todo This recursive iterator thing is PHP 5.3 only
+	 * @todo Also delete cache dir.
 	 */
 	function delete_cache() { 
 		
