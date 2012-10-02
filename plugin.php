@@ -13,6 +13,8 @@ require_once( 'class.mph-minify.php' );
 require_once( 'class.mph-minify-admin.php' );
 require_once( 'debugger.php' );
 
+define( 'MPH_MINIFY_VERSION', '0.0.1' );
+
 $admin = new MPH_Minify_Admin();
 
 function mph_minify_get_plugin_options() {
