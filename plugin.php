@@ -15,18 +15,13 @@ require_once( 'debugger.php' );
 
 $admin = new MPH_Minify_Admin();
 
-add_action( 'wp_enqueue_scripts', function() {
+function mph_minify_get_plugin_options() {
 
 	$defaults = array( 
-		'scripts_method' => 'auto', 
-		'scripts_manual' => array(),
-		'scripts_ignore' => array('admin-bar'),
-		'scripts_force' => array(),
-		'styles_method' => 'auto', 
-		'styles_manual' => array(),
-		'styles_ignore' => array('admin-bar'),
-		'styles_force' => array(),
-		'debugger' => true
+		'debugger' => false,
+		'cache_dir' => 'mph_minify_cache',
+		'scripts_method' => 'disabled',
+		'styles_method' => 'disabled'
 	);
 
 	if ( defined( 'MPH_MINIFY_OPTIONS' ) )
