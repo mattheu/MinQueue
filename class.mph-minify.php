@@ -257,6 +257,8 @@ class MPH_Minify {
     		$todo = ( $fileinfo->isDir() ? 'rmdir' : 'unlink' );
     		$todo( $fileinfo->getRealPath() );
 		}
+
+		rmdir( $this->cache_dir );
 		
 	}
 
