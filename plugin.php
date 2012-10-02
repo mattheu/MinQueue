@@ -17,13 +17,20 @@ define( 'MPH_MINIFY_VERSION', '0.0.1' );
 
 $admin = new MPH_Minify_Admin();
 
+/** 
+ * Return the function options.
+ *
+ * Handles defaults & overriding with define.
+ */
 function mph_minify_get_plugin_options() {
 
 	$defaults = array( 
 		'debugger' => false,
 		'cache_dir' => 'mph_minify_cache',
 		'scripts_method' => 'disabled',
-		'styles_method' => 'disabled'
+		'styles_method' => 'disabled',
+		'scripts_ignore' => array( 'admin-bar'),
+		'styles_ignore' => array( 'admin-bar')
 	);
 
 	if ( defined( 'MPH_MINIFY_OPTIONS' ) )
@@ -31,7 +38,7 @@ function mph_minify_get_plugin_options() {
 	else
 		$options = get_option( 'mph_minify_options', $defaults );
 
-	$options = wp_parse_args( $options, $defaults );
+	//$options = wp_parse_args( $options, $defaults );
 
 	return $options;
 
