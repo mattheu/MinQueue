@@ -10,7 +10,7 @@ class MPH_Minify_Admin {
 		add_action( 'admin_menu', array( $this, 'admin_add_page' ) );
 
 		$this->options = mph_minify_get_plugin_options();
-		
+
 		if ( isset( $_GET['mph_minify_action'] ) && 'clear_cache' == $_GET['mph_minify_action'] )
 			add_action( 'admin_init', array( $this, 'clear_cache' ) );
 
@@ -66,7 +66,7 @@ class MPH_Minify_Admin {
 		<div class="wrap">
 
 			<h2>MPH Minify Plugin Settings</h2>
-			
+				
 			<form action="options.php" method="post">
 
 				<?php 
@@ -92,12 +92,12 @@ class MPH_Minify_Admin {
 
 	function general_options_text() {}
 
-	function auto_options_text() {
+	function auto_options_text() { ?>
 	
-		echo '<p>Automatically minify & concatenate all assets on a page.</p>';
-		echo '<p>If different scripts and styles are enqueued on different pages, it can lead to multiple large minified files being created that are loaded on different pages, negating many of the benefits of minification and concatenation. To avoid this, you can ignore certain scripts, and force others to always be minified. Alternatively you can manually define a list of assets to be minified and concatenated.</p>';
+		<p>Automatically minify & concatenate all assets on a page.</p>
+		<p>If different scripts and styles are enqueued on different pages, it can lead to multiple large minified files being created that are loaded on different pages, negating many of the benefits of minification and concatenation. To avoid this, you can ignore certain scripts, and force others to always be minified. Alternatively you can manually define a list of assets to be minified and concatenated.</p>
 	
-	}
+	<?php }
 
 	function field_clear_cache() { ?>
 
@@ -111,19 +111,25 @@ class MPH_Minify_Admin {
 
 	<?php }
 
-	function field_debugger() { ?>
+	function field_debugger() {	?>
 
-		<input type="checkbox" id="mph_minify_options_debugger" name="mph_minify_options[debugger]" <?php checked( true, isset( $this->options['debugger'] ) ); ?>/>
+		<input type="checkbox" id="mph_minify_options_debugger" name="mph_minify_options[debugger]" <?php checked( true, ( ! ( ! isset( $this->options['debugger'] ) || isset( $this->options['debugger'] ) && $this->options['debugger']  === false ) ) ); ?>/>
 		<label for="mph_minify_options_debugger">Enable the debugger in the front end of the site. Helpful in working out which assets to minify and which to ignore.</label>
 
 	<?php }
 
-	function field_method_scripts() {
+	function field_method_scripts() { 
 
-		echo '<input type="radio" id="mph_minify_options_scripts_method_manual" name="mph_minify_options[scripts_method]" value="manual" ' . checked( 'manual', $this->options['scripts_method'], false ) . '/> <label for="mph_minify_options_scripts_method_manual">Manual minification</label><br/>';
-		echo '<input type="radio" id="mph_minify_options_scripts_method_auto" name="mph_minify_options[scripts_method]" value="auto" ' . checked( 'auto', $this->options['scripts_method'], false ) . '/> <label for="mph_minify_options_scripts_method_auto">Semi-automatic minification</label><br/>';
-		echo '<input type="radio" id="mph_minify_options_scripts_method_disabled" name="mph_minify_options[scripts_method]" value="disabled" ' . checked( 'disabled', $this->options['scripts_method'], false ) . '/> <label for="mph_minify_options_scripts_method_disabled">Disable minification</label>';
-	}
+		if ( empty( $this->options['scripts_method'] ) )
+			$this->options['scripts_method'] = 'disabled';
+
+		?>
+
+		<input type="radio" id="mph_minify_options_scripts_method_manual" name="mph_minify_options[scripts_method]" value="manual" <?php checked( 'manual', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_manual">Manual minification</label><br/>
+		<input type="radio" id="mph_minify_options_scripts_method_auto" name="mph_minify_options[scripts_method]" value="auto" <?php checked( 'auto', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_auto">Semi-automatic minification</label><br/>
+		<input type="radio" id="mph_minify_options_scripts_method_disabled" name="mph_minify_options[scripts_method]" value="disabled" <?php checked( 'disabled', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_disabled">Disable minification</label>
+	
+	<?php }
 
 	function field_scripts() {
 
@@ -200,12 +206,18 @@ class MPH_Minify_Admin {
 
 	}
 
-	function field_method_styles() {
+	function field_method_styles() { 
 
-		echo '<input type="radio" id="mph_minify_options_styles_method_manual" name="mph_minify_options[styles_method]" value="manual" ' . checked( 'manual', $this->options['styles_method'], false ) . '/><label for="mph_minify_options_styles_method_manual"> Manual minification</label><br/>';
-		echo '<input type="radio" id="mph_minify_options_styles_method_auto" name="mph_minify_options[styles_method]" value="auto" ' . checked( 'auto', $this->options['styles_method'], false ) . '/><label for="mph_minify_options_styles_method_auto"> Semi-automatic minification</label><br/>';
-		echo '<input type="radio" id="mph_minify_options_styles_method_disabled" name="mph_minify_options[styles_method]" value="disabled" ' . checked( 'disabled', $this->options['styles_method'], false ) . '/> <label for="mph_minify_options_styles_method_disabled">Disable minification</label>';
-	}
+		if ( empty( $this->options['styles_method'] ) )
+			$this->options['styles_method'] = 'disabled';
+
+		?>
+
+		<input type="radio" id="mph_minify_options_styles_method_manual" name="mph_minify_options[styles_method]" value="manual" <?php checked( 'manual', $this->options['styles_method'] ); ?>/><label for="mph_minify_options_styles_method_manual"> Manual minification</label><br/>
+		<input type="radio" id="mph_minify_options_styles_method_auto" name="mph_minify_options[styles_method]" value="auto" <?php checked( 'auto', $this->options['styles_method'] ); ?>/><label for="mph_minify_options_styles_method_auto"> Semi-automatic minification</label><br/>
+		<input type="radio" id="mph_minify_options_styles_method_disabled" name="mph_minify_options[styles_method]" value="disabled" <?php checked( 'disabled', $this->options['styles_method'] ); ?>/> <label for="mph_minify_options_styles_method_disabled">Disable minification</label>
+	
+	<?php }
 
 	function field_styles() {
 
