@@ -110,6 +110,10 @@ class MPH_Minify {
 				if ( in_array( $handle, $this->ignore_list ) )
 					continue;
 
+				// Skip no asset path (eg is remote.)
+				if ( ! $this->get_asset_path( $handle ) ) 
+					continue;
+
 				// Add this asset to the queue.
 				$this->asset_queue[ $this->class->groups[$handle] ][$handle] = array( 
 					'handle' => $handle,
