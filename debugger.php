@@ -20,29 +20,46 @@ function mph_minify_debugger_style() {
 
 }
 
-
+/**
+ * Helper tool for the minifyier
+ *
+ * All a bit hacked together - but its useful!
+ *
+ * @param array $minifiers array of instances of MPH_Minify.
+ */
 function mph_minify_debugger( $minifiers ) {
 	
 	global $wp_scripts, $wp_styles;
-	
+
+	// The basic queue - scripts & styles enqueued on this page
+	$script_queue = $wp_scripts->queue;
+	$style_queue = $wp_styles->queue;
+		
 	echo '<div id="mph-minify-debugger">';
 
 	if ( isset( $minifiers['minify_scripts'] ) ) {		
 	
 		$minify_scripts = $minifiers['minify_scripts'];
-		$script_queue = $minify_scripts->get_asset_queue();
-	
+		$min_script_queue = $minify_scripts->get_asset_queue();
+		
+		// Add anything that we are minifying but are not enqueued to the queue
+		foreach ( $minify_scripts->get_asset_queue() as $queue )
+			$script_queue = array_merge( $script_queue, array_keys( $queue ) );
+		$script_queue = array_unique( $script_queue );
+
 	}
 
 	echo '<h2>Enqueued Scripts</h2>';
 	echo '<ul>';
 
-	foreach( $wp_scripts->queue as $handle )
+
+
+	foreach( $script_queue as $handle )
 		if ( 0 === strpos( $handle, 'mph-minify' ) )
 			continue;			
-		elseif ( ! empty( $script_queue[0] ) && array_key_exists( $handle, $script_queue[0] ) )
+		elseif ( ! empty( $min_script_queue[0] ) && array_key_exists( $handle, $min_script_queue[0] ) )
 			echo '<li class="header">' . $handle . '</li>';
-		elseif ( ! empty( $script_queue[1] ) && array_key_exists( $handle, $script_queue[1] ) )
+		elseif ( ! empty( $min_script_queue[1] ) && array_key_exists( $handle, $min_script_queue[1] ) )
 			echo '<li class="footer">' . $handle . '</li>';
 		else
 			echo '<li>' . $handle . '</li>';
@@ -53,19 +70,24 @@ function mph_minify_debugger( $minifiers ) {
 	if ( isset( $minifiers['minify_styles'] ) ) {		
 
 		$minify_styles  = $minifiers['minify_styles'];
-		$style_queue = $minify_styles->get_asset_queue();
+		$min_style_queue = $minify_styles->get_asset_queue();
+		
+		// Add anything that we are minifying but are not enqueued to the queue
+		foreach ( $minify_styles->get_asset_queue() as $queue )
+			$style_queue = array_merge( $style_queue, array_keys( $queue ) );
+		$style_queue = array_unique( $style_queue );
 
 	}
 
 	echo '<h2>Enqueued Styles</h2>';
 	echo '<ul>';
 	
-	foreach( $wp_styles->queue as $handle )
+	foreach( $style_queue as $handle )
 		if ( 0 === strpos( $handle, 'mph-minify' ) )
 			continue;
-		elseif ( isset( $style_queue ) && ! empty( $style_queue[0] ) && array_key_exists( $handle, $style_queue[0] ) )
+		elseif ( isset( $min_style_queue ) && ! empty( $min_style_queue[0] ) && array_key_exists( $handle, $min_style_queue[0] ) )
 			echo '<li class="header">' . $handle . '</li>';
-		elseif ( isset( $style_queue ) && ! empty( $style_queue[1] ) && array_key_exists( $handle, $style_queue[1] ) )
+		elseif ( isset( $min_style_queue ) && ! empty( $min_style_queue[1] ) && array_key_exists( $handle, $min_style_queue[1] ) )
 			echo '<li class="footer">' . $handle . '</li>';
 		else
 			echo '<li>' . $handle . '</li>';
