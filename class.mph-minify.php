@@ -96,12 +96,11 @@ class MPH_Minify {
 				$this->queue = array_merge( $this->class->queue, $this->force_list );
 
 			// Remove assets from queue if not registered.
-			foreach( $this->queue as $key => $handle )
+			foreach ( $this->queue as $key => $handle )
 				if ( ! array_key_exists( $handle, $this->class->registered ) )
 					unset( $this->queue[$key] );
 
 			// Set up the todos - in correct order considering dependencies.
-			// Merge the queue and the force_list (assets to minify even if not enqueued)
 			$this->class->all_deps( $this->queue );
 			
 	  		foreach ( $this->class->to_do as $key => $handle ) {
@@ -120,6 +119,7 @@ class MPH_Minify {
 					'version' => $this->class->registered[$handle]->ver
 				);
 
+				// If this asset is localized, store that data.
 				if ( ! empty( $this->class->registered[$handle]->extra['data'] ) )
 					$this->script_localization[ $handle ] = $this->class->registered[$handle]->extra['data'];
 
