@@ -17,14 +17,17 @@ class MPH_Minify_Admin {
 	}
 
 	function clear_cache () {
+	function clear_cache ( $redirect = true ) {
 
 		// Delete the cache if requested.
 		$minify = new MPH_Minify( 'WP_Scripts' );
 		$minify->delete_cache();
 		
 		// Redirect.
-		wp_redirect( add_query_arg( 'mph_minify_action', 'cache_cleared', remove_query_arg( 'mph_minify_action', wp_get_referer() ) ) );	
-		exit;
+		if ( $redirect ) {
+			wp_redirect( add_query_arg( 'mph_minify_action', 'cache_cleared', remove_query_arg( 'mph_minify_action', wp_get_referer() ) ) );	
+			exit;
+		}
 
 	}
 
