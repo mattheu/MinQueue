@@ -256,6 +256,9 @@ class MPH_Minify {
 	 */
 	function delete_cache() { 
 		
+		if ( ! is_dir( $this->cache_dir ) )
+			return;
+
 		$files = new RecursiveIteratorIterator(
     		new RecursiveDirectoryIterator( $this->cache_dir, RecursiveDirectoryIterator::SKIP_DOTS ),
     			RecursiveIteratorIterator::CHILD_FIRST
