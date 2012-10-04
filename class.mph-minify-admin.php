@@ -16,7 +16,12 @@ class MPH_Minify_Admin {
 
 	}
 
-	function clear_cache () {
+	/**
+	 * Delete all cached files
+	 * 
+	 * @param  boolean $redirect whether
+	 * @return [type]            [description]
+	 */
 	function clear_cache ( $redirect = true ) {
 
 		// Delete the cache if requested.
@@ -31,6 +36,10 @@ class MPH_Minify_Admin {
 
 	}
 
+	/**
+	 * Add the options page
+	 * @return null
+	 */
 	function admin_add_page() {
 
 		// add the admin options page
@@ -39,6 +48,10 @@ class MPH_Minify_Admin {
 
 	}
 
+	/**
+	 * Register plugin settings
+	 * @return null
+	 */
 	function admin_init(){
 	
 		register_setting( 'mph_minify_options', 'mph_minify_options', array( $this, 'options_validate' ) );
@@ -59,6 +72,10 @@ class MPH_Minify_Admin {
 
 	}
 
+	/**
+	 * Output the main options page content.
+	 * @return null
+	 */
 	function options_page() { 
 
 		if ( ! empty( $_GET['mph_minify_action'] ) && 'cache_cleared' == $_GET['mph_minify_action'] )
@@ -93,21 +110,29 @@ class MPH_Minify_Admin {
 	
 	}
 
+	/**
+	 * Output general options description text
+	 * 
+	 * @return null
+	 */
 	function general_options_text() {}
 
-	function auto_options_text() { ?>
-	
-		<p>Automatically minify & concatenate all assets on a page.</p>
-		<p>If different scripts and styles are enqueued on different pages, it can lead to multiple large minified files being created that are loaded on different pages, negating many of the benefits of minification and concatenation. To avoid this, you can ignore certain scripts, and force others to always be minified. Alternatively you can manually define a list of assets to be minified and concatenated.</p>
-	
-	<?php }
-
+	/**
+	 * Output clear cache button
+	 * 
+	 * @return null
+	 */
 	function field_clear_cache() { ?>
 
 		<a href="<?php echo add_query_arg( 'mph_minify_action', 'clear_cache', remove_query_arg( 'mph_minify_action' ) ); ?>" class="button">Clear Cache</a>
 
 	<?php }
 
+	/**
+	 * Output cache dir setting field
+	 * 
+	 * @return null
+	 */
 	function field_cache_dir() { ?>
 
 		<input type="text" class="regular-text code" id="mph_minify_options_cache_dir" name="mph_minify_options[cache_dir]" value="<?php echo esc_attr( $this->options['cache_dir'] ); ?>"/>
@@ -115,6 +140,11 @@ class MPH_Minify_Admin {
 
 	<?php }
 
+	/**
+	 * Output debugger setting field.
+	 * 
+	 * @return null
+	 */
 	function field_debugger() {	?>
 
 		<input type="checkbox" id="mph_minify_options_debugger" name="mph_minify_options[debugger]" <?php checked( true, ( ! ( ! isset( $this->options['debugger'] ) || isset( $this->options['debugger'] ) && $this->options['debugger']  === false ) ) ); ?>/>
@@ -122,6 +152,11 @@ class MPH_Minify_Admin {
 
 	<?php }
 
+	/**
+	 * Output script method inputs.
+	 * 
+	 * @return null
+	 */
 	function field_method_scripts() { 
 
 		if ( empty( $this->options['scripts_method'] ) )
@@ -135,6 +170,11 @@ class MPH_Minify_Admin {
 	
 	<?php }
 
+	/**
+	 * Output settings section for scripts.
+	 * 
+	 * @return null
+	 */
 	function field_scripts() {
 
 		$value_manual = ( ! empty( $this->options['scripts_manual'] ) ) ? esc_attr( implode( ',', $this->options['scripts_manual'] ) ) : ''; 
@@ -210,6 +250,11 @@ class MPH_Minify_Admin {
 
 	}
 
+	/**
+	 * Output settings section for styles.
+	 * 
+	 * @return null
+	 */
 	function field_method_styles() { 
 
 		if ( empty( $this->options['styles_method'] ) )
@@ -300,8 +345,6 @@ class MPH_Minify_Admin {
 
 	/**
 	 * Validation
-	 * 
-	 * @todo  Do this better?
 	 */
 	function options_validate( $input ) {
 
@@ -334,6 +377,13 @@ class MPH_Minify_Admin {
 
 	}
 
+	/**
+	 * Filter inputs that contain a comma separated list of asset handles.
+	 * Return an array ready for saving.
+	 * 
+	 * @param  string $list string of comma separated handles
+	 * @return array       array of handles
+	 */
 	function handle_list_filter( $list ) {
 
 		$list = explode(',', $list );		
