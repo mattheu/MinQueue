@@ -64,11 +64,11 @@ class MPH_Minify_Admin {
 		add_settings_field( 'mph_minify_debugger', 'Enable debugger', array( $this, 'field_debugger' ), 'general_minify_options', 'plugin_main' );
 		add_settings_field( 'mph_minify_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
 
-		add_settings_field( 'mph_minify_select_method', 'Script minification method', array( $this, 'field_method_scripts' ), 'script_minify_options', 'plugin_main' );
-		add_settings_field( 'mph_minify_manual_scripts', 'Script minification settings', array( $this, 'field_scripts' ), 'script_minify_options', 'plugin_main' );
+		add_settings_field( 'mph_minify_styles_method', 'Script minification method', array( $this, 'field_method_scripts' ), 'script_minify_options', 'plugin_main' );
+		add_settings_field( 'mph_minify_scripts', 'Script minification settings', array( $this, 'field_scripts' ), 'script_minify_options', 'plugin_main' );
 
-		add_settings_field( 'mph_minify_select_method', 'Style minification method', array( $this, 'field_method_styles' ), 'style_minify_options', 'plugin_main' );
-		add_settings_field( 'mph_minify_manual_styles', 'Style minification settings', array( $this, 'field_styles' ), 'style_minify_options', 'plugin_main' );
+		add_settings_field( 'mph_minify_styles_method', 'Style minification method', array( $this, 'field_method_styles' ), 'style_minify_options', 'plugin_main' );
+		add_settings_field( 'mph_minify_styles', 'Style minification settings', array( $this, 'field_styles' ), 'style_minify_options', 'plugin_main' );
 
 	}
 
@@ -148,7 +148,7 @@ class MPH_Minify_Admin {
 	function field_debugger() {	?>
 
 		<input type="checkbox" id="mph_minify_options_debugger" name="mph_minify_options[debugger]" <?php checked( true, ( ! ( ! isset( $this->options['debugger'] ) || isset( $this->options['debugger'] ) && $this->options['debugger']  === false ) ) ); ?>/>
-		<label for="mph_minify_options_debugger">Enable the debugger in the front end of the site. Helpful in working out which assets to minify and which to ignore.</label>
+		<label for="mph_minify_options_debugger">Enable the debugger in the front end of the site. Helpful in working out which assets should be minified.</label>
 
 	<?php }
 
@@ -165,7 +165,6 @@ class MPH_Minify_Admin {
 		?>
 
 		<input type="radio" id="mph_minify_options_scripts_method_manual" name="mph_minify_options[scripts_method]" value="manual" <?php checked( 'manual', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_manual">Manual minification</label><br/>
-		<input type="radio" id="mph_minify_options_scripts_method_auto" name="mph_minify_options[scripts_method]" value="auto" <?php checked( 'auto', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_auto">Semi-automatic minification</label><br/>
 		<input type="radio" id="mph_minify_options_scripts_method_disabled" name="mph_minify_options[scripts_method]" value="disabled" <?php checked( 'disabled', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_disabled">Disable minification</label>
 	
 	<?php }
@@ -179,32 +178,15 @@ class MPH_Minify_Admin {
 
 		$value_manual = ( ! empty( $this->options['scripts_manual'] ) ) ? esc_attr( implode( ',', $this->options['scripts_manual'] ) ) : ''; 
 		$value_ignore = ( ! empty( $this->options['scripts_ignore'] ) ) ? esc_attr( implode( ',', $this->options['scripts_ignore'] ) ) : '';
-		$value_force  = ( ! empty( $this->options['scripts_force'] ) )  ? esc_attr( implode( ',', $this->options['scripts_force'] ) )  : '';
 
 		?>
 
 		<div id="field_manual_scripts">
 			<label for="mph_minify_field_manual_scripts">
 				<strong>Manual Scripts</strong> 
-				<span class="description">Comma separated list of script handles to ignore.</span>
+				<span class="description">Comma separated list of script handles to minify and concatenate into one file.</span>
 			<label>
 			<textarea id="mph_minify_field_manual_scripts" name="mph_minify_options[scripts_manual]" class="large-text code"><?php echo $value_manual; ?></textarea>
-		</div>
-
-		<div id="field_auto_scripts">
-
-			<label for="mph_minify_field_ignore_scripts">
-				<strong>Ignore List</strong> 
-				<span class="description">Comma separated list of script handles to ignore. These are never minified.</span>
-			</label>
-			<textarea id="mph_minify_field_ignore_scripts" name="mph_minify_options[scripts_ignore]" class="large-text code"><?php echo $value_ignore; ?></textarea>
-
-			<label for="mph_minify_field_force_scripts">
-				<strong>Force Scripts</strong> 
-				<span class="description">Comma separated list of script handles that should always be minified even if not enqueued.</span>
-			</label>
-			<textarea id="mph_minify_field_force_scripts" name="mph_minify_options[scripts_force]" class="large-text code"><?php echo $value_force; ?></textarea>
-
 		</div>
 
 		<div id="field_disabled_scripts">
@@ -216,23 +198,15 @@ class MPH_Minify_Admin {
 			jQuery( document ).ready( function() {
 
 				var scriptsManual = jQuery('#field_manual_scripts'),
-					scriptsAuto = jQuery('#field_auto_scripts'),
 					scriptsDisabled = jQuery('#field_disabled_scripts'),
-					scriptsToggleManual = jQuery( '#mph_minify_options_scripts_method_manual' ),
-					scriptsToggleAuto = jQuery( '#mph_minify_options_scripts_method_auto' );
+					scriptsToggleManual = jQuery( '#mph_minify_options_scripts_method_manual' );
 
 				var myToggle = function () {
 
 					if ( scriptsToggleManual.is( ':checked' ) ) {
 						scriptsManual.slideDown( 100 );
-						scriptsAuto.slideUp( 100 );
-						scriptsDisabled.slideUp( 100 );
-					} else if ( scriptsToggleAuto.is( ':checked' ) ) {
-						scriptsManual.slideUp( 100 );
-						scriptsAuto.slideDown( 100 );
 						scriptsDisabled.slideUp( 100 );
 					} else {
-						scriptsAuto.slideUp( 100 );
 						scriptsManual.slideUp( 100 );
 						scriptsDisabled.slideDown( 100 );
 					}
@@ -263,7 +237,6 @@ class MPH_Minify_Admin {
 		?>
 
 		<input type="radio" id="mph_minify_options_styles_method_manual" name="mph_minify_options[styles_method]" value="manual" <?php checked( 'manual', $this->options['styles_method'] ); ?>/><label for="mph_minify_options_styles_method_manual"> Manual minification</label><br/>
-		<input type="radio" id="mph_minify_options_styles_method_auto" name="mph_minify_options[styles_method]" value="auto" <?php checked( 'auto', $this->options['styles_method'] ); ?>/><label for="mph_minify_options_styles_method_auto"> Semi-automatic minification</label><br/>
 		<input type="radio" id="mph_minify_options_styles_method_disabled" name="mph_minify_options[styles_method]" value="disabled" <?php checked( 'disabled', $this->options['styles_method'] ); ?>/> <label for="mph_minify_options_styles_method_disabled">Disable minification</label>
 	
 	<?php }
@@ -271,33 +244,15 @@ class MPH_Minify_Admin {
 	function field_styles() {
 
 		$value_manual = ( ! empty( $this->options['styles_manual'] ) ) ? esc_attr( implode( ',', $this->options['styles_manual'] ) ) : ''; 
-		$value_ignore = ( ! empty( $this->options['styles_ignore'] ) ) ? esc_attr( implode( ',', $this->options['styles_ignore'] ) ) : '';
-		$value_force  = ( ! empty( $this->options['styles_force'] ) )  ? esc_attr( implode( ',', $this->options['styles_force'] ) )  : '';
-
+		
 		?>
 
 		<div id="field_manual_styles">
 			<label for="mph_minify_field_manual_styles">
 				<strong>Manual styles</strong> 
-				<span class="description">Comma separated list of style handles to ignore.</span>
+				<span class="description">Comma separated list of script handles to minify and concatenate into one file.</span>
 			<label>
 			<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual]" class="large-text code"><?php echo $value_manual; ?></textarea>
-		</div>
-
-		<div id="field_auto_styles">
-
-			<label for="mph_minify_field_ignore_styles">
-				<strong>Ignore List</strong> 
-				<span class="description">Comma separated list of style handles to ignore. These are never minified.</span>
-			</label>
-			<textarea id="mph_minify_field_ignore_styles" name="mph_minify_options[styles_ignore]" class="large-text code"><?php echo $value_ignore; ?></textarea>
-
-			<label for="mph_minify_field_force_styles">
-				<strong>Force styles</strong> 
-				<span class="description">Comma separated list of style handles that should always be minified even if not enqueued.</span>
-			</label>
-			<textarea id="mph_minify_field_force_styles" name="mph_minify_options[styles_force]" class="large-text code"><?php echo $value_force; ?></textarea>
-
 		</div>
 
 		<div id="field_disabled_styles">
@@ -309,24 +264,16 @@ class MPH_Minify_Admin {
 			jQuery( document ).ready( function() {
 
 				var stylesManual = jQuery('#field_manual_styles'),
-					stylesAuto = jQuery('#field_auto_styles'),
 					stylesDisabled = jQuery('#field_disabled_styles'),
-					stylesToggleManual = jQuery( '#mph_minify_options_styles_method_manual' ),
-					stylesToggleAuto = jQuery( '#mph_minify_options_styles_method_auto' );
+					stylesToggleManual = jQuery( '#mph_minify_options_styles_method_manual' );
 
 				var myToggle = function () {
 
 					if ( stylesToggleManual.is( ':checked' ) ) {
 						stylesManual.slideDown( 100 );
-						stylesAuto.slideUp( 100 );
-						stylesDisabled.slideUp( 100 );
-					} else if ( stylesToggleAuto.is( ':checked' ) ) {
-						stylesManual.slideUp( 100 );
-						stylesAuto.slideDown( 100 );
 						stylesDisabled.slideUp( 100 );
 					} else {
 						stylesManual.slideUp( 100 );
-						stylesAuto.slideUp( 100 );
 						stylesDisabled.slideDown( 100 );
 					}
 
@@ -350,11 +297,7 @@ class MPH_Minify_Admin {
 
 		// Create an array of handles & filter out empty ones
 		$input['scripts_manual'] = $this->handle_list_filter( $input['scripts_manual'] );
-		$input['scripts_ignore'] = $this->handle_list_filter( $input['scripts_ignore'] );
-		$input['scripts_force']  = $this->handle_list_filter( $input['scripts_force'] );
 		$input['styles_manual']  = $this->handle_list_filter( $input['styles_manual'] );
-		$input['styles_ignore']  = $this->handle_list_filter( $input['styles_ignore'] );
-		$input['styles_force']   = $this->handle_list_filter( $input['styles_force'] );
 
 		$input['debugger'] = ( empty( $input['debugger'] ) ) ? false : true;
 
