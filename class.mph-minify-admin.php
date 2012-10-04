@@ -110,7 +110,8 @@ class MPH_Minify_Admin {
 
 	function field_cache_dir() { ?>
 
-		<input type="text" class="regular-text code" id="mph_minify_options_cache_dir" name="mph_minify_options[cache_dir]" value="<?php echo $this->options['cache_dir']; ?>"/>
+		<input type="text" class="regular-text code" id="mph_minify_options_cache_dir" name="mph_minify_options[cache_dir]" value="<?php echo esc_attr( $this->options['cache_dir'] ); ?>"/>
+		<input type="hidden" name="mph_minify_options[cache_dir_original]" value="<?php echo esc_attr( $this->options['cache_dir'] ); ?>"/>
 
 	<?php }
 
@@ -313,6 +314,10 @@ class MPH_Minify_Admin {
 		$input['styles_force']   = $this->handle_list_filter( $input['styles_force'] );
 
 		$input['debugger'] = ( empty( $input['debugger'] ) ) ? false : true;
+
+		// If the cache dir has changed delete the old one.
+		if ( $input['cache_dir'] !== $input['cache_dir_original'] )
+			$this->clear_cache( false );
 
 		// If method is manual, and no manual handles are set, disable minification.
 		if ( 'manual' == $input['styles_method'] && empty( $input['styles_manual'] ) )
