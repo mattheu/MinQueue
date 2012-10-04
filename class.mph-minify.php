@@ -39,7 +39,7 @@ class MPH_Minify {
 		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
 		$this->minify_url    = trailingslashit( $this->plugin_url ) . 'php-minify/min/';
 		
-		$this->cache_dirname = trailingslashit( 'mph_minify_cache' );
+		$this->cache_dirname = trailingslashit( apply_filters( 'mph_minify_cache_dir', 'mph_minify_cache' ) );
 		$this->cache_url     = trailingslashit( WP_CONTENT_URL ) . $this->cache_dirname;
 		$this->cache_dir     = trailingslashit( WP_CONTENT_DIR ) . $this->cache_dirname;
 
