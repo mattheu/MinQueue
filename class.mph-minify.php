@@ -214,7 +214,7 @@ class MPH_Minify {
 		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
 			$src = $this->class->base_url . $src;
 
-		// Don't handle remote urls.
+		// Don't handle remote urls or urls with query args.
 		if ( 0 !== strpos( $src, home_url() ) )
 			return;
 

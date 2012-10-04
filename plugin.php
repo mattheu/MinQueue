@@ -38,7 +38,7 @@ function mph_minify_get_plugin_options() {
 	else
 		$options = get_option( 'mph_minify_options', $defaults );
 
-	//$options = wp_parse_args( $options, $defaults );
+
 
 	return $options;
 
@@ -70,16 +70,15 @@ add_action( 'wp_enqueue_scripts', function() {
 	$options = mph_minify_get_plugin_options();
 
 	// Scripts	
+	
+	$minify_scripts = new MPH_Minify( 'WP_Scripts' );  
+	
 	if ( 'auto' == $options['scripts_method'] ) {
-
-		$minify_scripts = new MPH_Minify( 'WP_Scripts' ); 
 
 		if ( isset( $options['scripts_ignore'] ) )
 			$minify_scripts->ignore_list = $options['scripts_ignore'];
 		if ( isset( $options['scripts_force'] ) )
 			$minify_scripts->force_list = $options['scripts_force'];
-
-		$minify_scripts->minify();
 
 	} elseif ( 'manual' == $options['scripts_method'] ) {
 
@@ -88,30 +87,29 @@ add_action( 'wp_enqueue_scripts', function() {
 		if ( isset( $options['scripts_manual'] ) )
 			$minify_scripts->queue = (array) $options['scripts_manual'];
 
-		$minify_scripts->minify();
-
 	}	
 
-	// Styles
-	if ( 'auto' == $options['styles_method'] ) {
+	$minify_scripts->minify();
 
-		$minify_styles = new MPH_Minify( 'WP_Styles' ); 
+	// Styles
+	
+	$minify_styles = new MPH_Minify( 'WP_Styles' ); 
+	
+	if ( 'auto' == $options['styles_method'] ) {
 
 		if ( isset( $options['styles_ignore'] ) )
 			$minify_styles->ignore_list = $options['styles_ignore'];
 		if ( isset( $options['styles_force'] ) )
-		$minify_styles->force_list = $options['styles_force'];
+			$minify_styles->force_list = $options['styles_force'];
 
 	} elseif ( 'manual' == $options['styles_method'] ) {
-
-		$minify_styles = new MPH_Minify( 'WP_Styles' ); 
 
 		if ( isset( $options['styles_manual'] ) )
 			$minify_styles->queue = (array) $options['styles_manual'];
 
-		$minify_styles->minify();
-
 	}
+
+	$minify_styles->minify();
 
 	// Debugger...
 	if ( isset( $options['debugger'] ) && true === $options['debugger'] && current_user_can( 'manage_options' ) ) {
@@ -132,6 +130,5 @@ add_action( 'wp_enqueue_scripts', function() {
 		} );
 	
 	}
-
 
 }, 9999 );
