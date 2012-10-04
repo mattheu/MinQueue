@@ -44,6 +44,27 @@ function mph_minify_get_plugin_options() {
 
 }
 
+/**
+ * Filter the cache directory to allow setting your own.
+ *
+ * If settings or defined
+ * 
+ * @param  [type] $cache_dir [description]
+ * @return [type]            [description]
+ */
+function mph_minify_cache_dir_override( $cache_dir ) {
+
+	$options = mph_minify_get_plugin_options();
+
+	if ( ! empty( $options[ 'cache_dir' ] ) )
+		return $options[ 'cache_dir' ];
+
+	return $cache_dir;
+
+}
+add_filter( 'mph_minify_cache_dir', 'mph_minify_cache_dir_override' );
+
+
 add_action( 'wp_enqueue_scripts', function() {
 
 	$options = mph_minify_get_plugin_options();
