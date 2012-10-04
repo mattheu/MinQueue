@@ -102,7 +102,7 @@ class MPH_Minify {
 
 			// Set up the todos - in correct order considering dependencies.
 			$this->class->all_deps( $this->queue );
-			
+
 	  		foreach ( $this->class->to_do as $key => $handle ) {
 
 				// If this script is ignored, skip it.
@@ -142,9 +142,9 @@ class MPH_Minify {
 	function enqueue_minified_assets( $group ) {
 
 		// Filename is a crc32 hash of the current group asset queue (contains version numbers)
-		$filename = hash( 'crc32b', serialize( $this->asset_queue[$group] ) ) . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );		
-		$src = trailingslashit( $this->cache_url ) . $filename;
-		$minify_handle = 'mph-minify-' . get_class( $this->class ) . '-' . $group;
+		$filename = hash( 'crc32b', serialize( $this->asset_queue[$group] ) );		
+		$src = trailingslashit( $this->cache_url ) . $filename . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+		$minify_handle = 'mph-minify-' . $filename;
 
 		// If no cached file - generate minified asset src.
 		if ( ! file_exists( $this->cache_dir . $filename ) ) {
@@ -168,8 +168,10 @@ class MPH_Minify {
 		}
 
 		// Mark the minified assets as done.
-		foreach ( $this->asset_queue[$group] as $asset )
+		foreach ( $this->asset_queue[$group] as $asset ) {
+			$this->class->to_do = array_diff( $this->class->to_do, array( $asset['handle'] ) );
 			$this->class->done[] = $asset['handle'];
+		}
 		
 		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
 		// Array keys = asset handles in this file.
@@ -240,8 +242,8 @@ class MPH_Minify {
 		if ( $data ) {
 
 			$data = '/*' . implode( ',', $handles ) . '*/' . $data; 
-			file_put_contents( $this->cache_dir . $filename, $data );	
-			return $this->cache_url . $filename;
+			file_put_contents( $this->cache_dir . $filename . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );	
+			return $this->cache_url . $filename . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 
 		}
 		

@@ -25,69 +25,75 @@ function mph_minify_debugger_style() {
  *
  * All a bit hacked together - but its useful!
  *
- * @param array $minifiers array of instances of MPH_Minify.
+ * @param array $instances array of instances of MPH_Minify.
  */
-function mph_minify_debugger( $minifiers ) {
+function mph_minify_debugger( $instances ) {
 	
 	global $wp_scripts, $wp_styles;
 
 	// The basic queue - scripts & styles enqueued on this page
-	$script_queue = $wp_scripts->queue;
-	$style_queue = $wp_styles->queue;
-		
+	$scripts_enqueued = $wp_scripts->queue;
+	$styles_enqueued = $wp_styles->queue;
+	
+	$header_queue = array();
+	$footer_queue = array();
+
 	echo '<div id="mph-minify-debugger">';
 
-	if ( isset( $minifiers['minify_scripts'] ) ) {		
-	
-		$minify_scripts = $minifiers['minify_scripts'];
-		$min_script_queue = $minify_scripts->get_asset_queue();
-		
-		// Add anything that we are minifying but are not enqueued to the queue
-		foreach ( $minify_scripts->get_asset_queue() as $queue )
-			$script_queue = array_merge( $script_queue, array_keys( $queue ) );
-		$script_queue = array_unique( $script_queue );
+	if ( isset( $instances['scripts'] ) ) {		
+		foreach ( $instances['scripts'] as $instance ) {
 
+			$min = $instance->get_asset_queue();
+			$header_queue = array_merge( $header_queue, array_keys( ( ! empty( $min[0] ) ) ? $min[0] : array() ) );
+			$footer_queue = array_merge( $footer_queue, array_keys( ( ! empty( $min[1] ) ) ? $min[1] : array() ) );
+
+			// Add anything that we are minifying but are not enqueued to the queue
+			foreach ( $instance->get_asset_queue() as $queue )
+				$scripts_enqueued = array_merge( $scripts_enqueued, array_keys( $queue ) );
+
+		}
 	}
 
 	echo '<h2>Enqueued Scripts</h2>';
 	echo '<ul>';
 
-
-
-	foreach( $script_queue as $handle )
+	foreach( array_unique( $scripts_enqueued ) as $handle )
 		if ( 0 === strpos( $handle, 'mph-minify' ) )
 			continue;			
-		elseif ( ! empty( $min_script_queue[0] ) && array_key_exists( $handle, $min_script_queue[0] ) )
+		elseif ( in_array( $handle, $header_queue ) )
 			echo '<li class="mph-min-header">' . $handle . '</li>';
-		elseif ( ! empty( $min_script_queue[1] ) && array_key_exists( $handle, $min_script_queue[1] ) )
+		elseif ( in_array( $handle, $footer_queue ) )
 			echo '<li class="mph-min-footer">' . $handle . '</li>';
 		else
 			echo '<li>' . $handle . '</li>';
 	
 	echo '</ul>';
 
-	
-	if ( isset( $minifiers['minify_styles'] ) ) {		
+	$header_queue = array();
+	$footer_queue = array();
 
-		$minify_styles  = $minifiers['minify_styles'];
-		$min_style_queue = $minify_styles->get_asset_queue();
-		
-		// Add anything that we are minifying but are not enqueued to the queue
-		foreach ( $minify_styles->get_asset_queue() as $queue )
-			$style_queue = array_merge( $style_queue, array_keys( $queue ) );
-		$style_queue = array_unique( $style_queue );
+	if ( isset( $instances['styles'] ) ) {		
+		foreach( $instances['styles'] as $instance ) {
 
+			$min = $instance->get_asset_queue();
+			$header_queue = array_merge( $header_queue, array_keys( ( ! empty( $min[0] ) ) ? $min[0] : array() ) );
+
+			// Add anything that we are minifying but are not enqueued to the queue
+			foreach ( $instance->get_asset_queue() as $queue )
+				$styles_enqueued = array_merge( $styles_enqueued, array_keys( $queue ) );
+
+		}
 	}
 
 	echo '<h2>Enqueued Styles</h2>';
 	echo '<ul>';
 	
-	foreach( $style_queue as $handle )
+	foreach( $styles_enqueued = array_unique( $styles_enqueued ) as $handle )
 		if ( 0 === strpos( $handle, 'mph-minify' ) )
 			continue;
-		elseif ( isset( $min_style_queue ) && ! empty( $min_style_queue[0] ) && array_key_exists( $handle, $min_style_queue[0] ) )
+		elseif ( in_array( $handle, $header_queue ) )
 			echo '<li class="mph-min-header">' . $handle . '</li>';
-		elseif ( isset( $min_style_queue ) && ! empty( $min_style_queue[1] ) && array_key_exists( $handle, $min_style_queue[1] ) )
+		elseif ( in_array( $handle, $footer_queue ) )
 			echo '<li class="mph-min-footer">' . $handle . '</li>';
 		else
 			echo '<li>' . $handle . '</li>';

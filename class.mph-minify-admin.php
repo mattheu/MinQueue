@@ -176,17 +176,23 @@ class MPH_Minify_Admin {
 	 */
 	function field_scripts() {
 
-		$value_manual = ( ! empty( $this->options['scripts_manual'] ) ) ? esc_attr( implode( ',', $this->options['scripts_manual'] ) ) : ''; 
-		$value_ignore = ( ! empty( $this->options['scripts_ignore'] ) ) ? esc_attr( implode( ',', $this->options['scripts_ignore'] ) ) : '';
+		$value = ( ! empty( $this->options['scripts_manual'] ) ) ? $this->options['scripts_manual'] : array(); 
+		
 
 		?>
 
 		<div id="field_manual_scripts">
-			<label for="mph_minify_field_manual_scripts">
-				<strong>Manual Scripts</strong> 
+			<label for="mph_minify_field_manual_scripts_1">
+				<strong>Minfy & Concatenate Queue</strong> 
 				<span class="description">Comma separated list of script handles to minify and concatenate into one file.</span>
-			<label>
-			<textarea id="mph_minify_field_manual_scripts" name="mph_minify_options[scripts_manual]" class="large-text code"><?php echo $value_manual; ?></textarea>
+			</label>
+			<textarea id="mph_minify_field_manual_scripts_1" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[0] ) ); ?></textarea>
+			
+			<label for="mph_minify_field_manual_scripts_1">
+				<strong>Minfy & Concatenate Queue</strong> 
+				<span class="description">Comma separated list of script handles to minify and concatenate into one file.</span>
+			</label>
+			<textarea id="mph_minify_field_manual_scripts_2" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[1] ) ); ?></textarea>
 		</div>
 
 		<div id="field_disabled_scripts">
@@ -243,16 +249,17 @@ class MPH_Minify_Admin {
 
 	function field_styles() {
 
-		$value_manual = ( ! empty( $this->options['styles_manual'] ) ) ? esc_attr( implode( ',', $this->options['styles_manual'] ) ) : ''; 
+		$value = ( ! empty( $this->options['styles_manual'] ) ) ? $this->options['styles_manual'] : array(); 
 		
 		?>
 
 		<div id="field_manual_styles">
 			<label for="mph_minify_field_manual_styles">
 				<strong>Manual styles</strong> 
-				<span class="description">Comma separated list of script handles to minify and concatenate into one file.</span>
-			<label>
-			<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual]" class="large-text code"><?php echo $value_manual; ?></textarea>
+				<span class="description">Comma separated list of style handles to minify and concatenate into one file.</span>
+			</label>
+			<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[0] ) ); ?></textarea>
+			<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[1] ) ); ?></textarea>
 		</div>
 
 		<div id="field_disabled_styles">
@@ -296,8 +303,14 @@ class MPH_Minify_Admin {
 	function options_validate( $input ) {
 
 		// Create an array of handles & filter out empty ones
-		$input['scripts_manual'] = $this->handle_list_filter( $input['scripts_manual'] );
-		$input['styles_manual']  = $this->handle_list_filter( $input['styles_manual'] );
+		//$input['scripts_manual'] = $this->handle_list_filter( $input['scripts_manual'] );
+		//$input['styles_manual']  = $this->handle_list_filter( $input['styles_manual'] );
+
+		foreach ( $input['scripts_manual'] as $key => $queue )
+			$input['scripts_manual'][$key] = $this->handle_list_filter( $queue );
+
+		foreach ( $input['styles_manual'] as $key => $queue )
+			$input['styles_manual'][$key] = $this->handle_list_filter( $queue );
 
 		$input['debugger'] = ( empty( $input['debugger'] ) ) ? false : true;
 
