@@ -187,12 +187,7 @@ class MPH_Minify_Admin {
 				<span class="description">Comma separated list of script handles to minify and concatenate into one file.</span>
 			</label>
 			<textarea id="mph_minify_field_manual_scripts_1" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[0] ) ); ?></textarea>
-			
-			<label for="mph_minify_field_manual_scripts_1">
-				<strong>Minfy & Concatenate Queue</strong> 
-				<span class="description">Comma separated list of script handles to minify and concatenate into one file.</span>
-			</label>
-			<textarea id="mph_minify_field_manual_scripts_2" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[1] ) ); ?></textarea>
+			<!--<textarea id="mph_minify_field_manual_scripts_2" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[1] ) ); ?></textarea>-->
 		</div>
 
 		<div id="field_disabled_scripts">
@@ -259,7 +254,7 @@ class MPH_Minify_Admin {
 				<span class="description">Comma separated list of style handles to minify and concatenate into one file.</span>
 			</label>
 			<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[0] ) ); ?></textarea>
-			<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[1] ) ); ?></textarea>
+			<!--<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $value[1] ) ); ?></textarea>-->
 		</div>
 
 		<div id="field_disabled_styles">
