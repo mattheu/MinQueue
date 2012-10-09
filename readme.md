@@ -1,4 +1,4 @@
-# MPH Simple Minify _(Beta) #
+# MPH Simple Minify _(Beta)_ #
 
 Minification & Concatenation plugin aimed at developers looking to minify and concatenate JS and CSS files.
 
