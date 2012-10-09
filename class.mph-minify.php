@@ -28,7 +28,7 @@ class MPH_Minify {
 	 * 
 	 * @param string $class Minify assets for this class.
 	 */
-	function __construct( $class ) {
+	function __construct( $class_name ) {
 
 		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
 		$this->minify_url    = trailingslashit( $this->plugin_url ) . 'php-minify/min/';
@@ -38,12 +38,12 @@ class MPH_Minify {
 		$this->cache_dir     = trailingslashit( WP_CONTENT_DIR ) . $this->cache_dirname;
 
 		// Set up which WP_Dependencies sub-class to use. 
-		if ( 'WP_Scripts' ==  $class ) {
+		if ( 'WP_Scripts' ==  $class_name ) {
 			
 			global $wp_scripts;
 			$this->class = $wp_scripts;
 
-		} elseif ( 'WP_Styles' ==  $class ) {
+		} elseif ( 'WP_Styles' == $class_name ) {
 		
 			global $wp_styles;
 			$this->class = $wp_styles;
@@ -85,7 +85,7 @@ class MPH_Minify {
 	function get_asset_queue() {
 		
 		if ( empty( $this->asset_queue ) ) {
-
+			
 			if ( empty( $this->queue ) )
 				$this->queue = $this->class->queue;
 
@@ -115,7 +115,7 @@ class MPH_Minify {
 
 			}
 
-		}
+		}		
 
 		return $this->asset_queue;
 
