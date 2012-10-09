@@ -172,7 +172,14 @@ class MPH_Minify {
 			$this->class->to_do = array_diff( $this->class->to_do, array( $asset['handle'] ) );
 			$this->class->done[] = $asset['handle'];
 		}
-		
+
+		// Add any dependencies that are not part of this queue as a dependency
+		$deps = array();
+		foreach ( $this->asset_queue[$group] as $asset )
+			foreach ( $this->class->registered[$asset['handle'] ]->deps as $dep )
+				if ( ! array_key_exists( $dep, $this->asset_queue[$group] ) && ! in_array( $dep, $deps ) )
+					$deps[] = $dep;
+
 		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
 		// Array keys = asset handles in this file.
 		foreach ( $this->class->registered as $asset )
@@ -181,7 +188,7 @@ class MPH_Minify {
 					$asset->deps[] = $minify_handle;
 
 		// Enqueue the minified file
-		$this->class->add( $minify_handle, $src, null, null );
+		$this->class->add( $minify_handle, $src, $deps, null );
 		$this->class->add_data( $minify_handle, 'group', $group );
 		$this->class->enqueue( $minify_handle );
 
