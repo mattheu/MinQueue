@@ -11,12 +11,6 @@ class MPH_Minify {
 	// If empty, all enqueued assets are used.
 	public $queue = array();
 
-	// Never minify these assets
-	public $ignore_list = array();
-
-	// Always minify these assets.
-	public $force_list = array();
-
 	// Either WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies. 
 	private $class;
 
@@ -93,7 +87,7 @@ class MPH_Minify {
 		if ( empty( $this->asset_queue ) ) {
 
 			if ( empty( $this->queue ) )
-				$this->queue = array_merge( $this->class->queue, $this->force_list );
+				$this->queue = $this->class->queue;
 
 			// Remove assets from queue if not registered.
 			foreach ( $this->queue as $key => $handle )
@@ -105,9 +99,6 @@ class MPH_Minify {
 
 	  		foreach ( $this->class->to_do as $key => $handle ) {
 
-				// If this script is ignored, skip it.
-				if ( in_array( $handle, $this->ignore_list ) )
-					continue;
 
 				// Skip no asset path (eg is remote.)
 				if ( ! $this->get_asset_path( $handle ) ) 
