@@ -11,7 +11,7 @@ Minification & Concatenation plugin aimed at developers looking to minify and co
 
 ## Issues ##
 
-* Does not work if you enqueue your styles using the wp_print_styles action. I know it sounds right! see http://codex.wordpress.org/Plugin_API/Action_Reference/wp_print_styles
+* Does not work if you enqueue your styles using the wp_print_styles action. I know this sounds like the right place to do it but you should be using the wp_enqueue_scripts action instead! see http://codex.wordpress.org/Plugin_API/Action_Reference/wp_print_styles
 
 ## Reasons for writing this plugin. ##
 
