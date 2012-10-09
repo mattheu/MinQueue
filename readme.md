@@ -9,6 +9,10 @@ Minification & Concatenation plugin aimed at developers looking to minify and co
 * Scripts that should be placed in the footer are minified & concatenated separately and the minified file is placed in the footer.
 * Compatable with localized scripts.
 
+## Issues ##
+
+* Does not work if you enqueue your styles using the wp_print_styles action. I know it sounds right! see http://codex.wordpress.org/Plugin_API/Action_Reference/wp_print_styles
+
 ## Reasons for writing this plugin. ##
 
 * I couldn't get any other minify plugins working correctly when WordPress is installed in a subdirectory.
