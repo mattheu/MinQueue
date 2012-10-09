@@ -163,11 +163,12 @@ class MPH_Minify {
 		}
 
 		// Add any dependencies that are not part of this queue as a dependency of the minified/concatenated file.
+		// @todo - Should do this, but cannot do it without also checking if that dependancy has not already been minified.
 		$deps = array();
-		foreach ( $this->asset_queue[$group] as $asset )
-			foreach ( $this->class->registered[$asset['handle'] ]->deps as $dep )
-				if ( ! array_key_exists( $dep, $this->asset_queue[$group] ) && ! in_array( $dep, $deps ) )
-					$deps[] = $dep;
+		//foreach ( $this->asset_queue[$group] as $asset )
+		//	foreach ( $this->class->registered[$asset['handle'] ]->deps as $dep )
+		//		if ( ! array_key_exists( $dep, $this->asset_queue[$group] ) && ! in_array( $dep, $deps ) )
+		//			$deps[] = $dep;
 
 		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
 		foreach ( $this->class->registered as $asset )
