@@ -1,6 +1,16 @@
 <?php
 
+/**
+ *	Debugger/Helper Tool
+ *
+ *	When enabled, shown on the front end of the site.
+ * 	Debugger window shows all enqueued scripts, and highlights those that are minified. 
+ */
 
+/**
+ * Debugger Style. Inserted into head.
+ * @return null
+ */
 function mph_minify_debugger_style() {
 
 	?>
@@ -13,7 +23,6 @@ function mph_minify_debugger_style() {
 		#mph-minify-debugger li { list-style: disc outside; padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
 		#mph-minify-debugger li.mph-min-header { color: orange;}
 		#mph-minify-debugger li.mph-min-footer { color: yellow;}
-
 	</style>
 
 	<?php
@@ -58,7 +67,7 @@ function mph_minify_debugger( $instances ) {
 	echo '<ul>';
 
 	foreach( array_unique( $scripts_enqueued ) as $handle )
-		if ( 0 === strpos( $handle, 'mph-minify' ) )
+		if ( 0 === strpos( $handle, 'mph-min' ) )
 			continue;			
 		elseif ( in_array( $handle, $header_queue ) )
 			echo '<li class="mph-min-header">' . $handle . '</li>';
@@ -89,7 +98,7 @@ function mph_minify_debugger( $instances ) {
 	echo '<ul>';
 	
 	foreach( $styles_enqueued = array_unique( $styles_enqueued ) as $handle )
-		if ( 0 === strpos( $handle, 'mph-minify' ) )
+		if ( 0 === strpos( $handle, 'mph-min' ) )
 			continue;
 		elseif ( in_array( $handle, $header_queue ) )
 			echo '<li class="mph-min-header">' . $handle . '</li>';
