@@ -9,6 +9,8 @@
 
 /**
  * Debugger Style. Inserted into head.
+ * 
+ * @todo Seriously i'm not even correclty enqueuing my own styles!
  * @return null
  */
 function mph_minify_debugger_style() {
@@ -40,10 +42,15 @@ function mph_minify_debugger( $instances ) {
 	
 	global $wp_scripts, $wp_styles;
 
-	// The basic queue - scripts & styles enqueued on this page
-	$scripts_enqueued = $wp_scripts->queue;
-	$styles_enqueued = $wp_styles->queue;
-	
+	// Get the queue of all scripts & styles that should be loaded.
+	// A bit of a round about way as we need to know those loaded because they are a dependency.
+	$wp_scripts->done = array();
+	$wp_scripts->all_deps( $wp_scripts->queue );
+	$scripts_enqueued = $wp_scripts->to_do;
+	$wp_styles->done = array();
+	$wp_styles->all_deps( $wp_styles->queue );
+	$styles_enqueued = $wp_styles->to_do;
+
 	$header_queue = array();
 	$footer_queue = array();
 
