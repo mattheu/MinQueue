@@ -261,14 +261,14 @@ class MPH_Minify {
 	 * @return string         string, path of the asset, relative to site root.
 	 */
 	function get_asset_path( $handle ) {
-
-		if ( empty( $this->class->registered[$handle] ) )
+		
+		// Don't try and process unregistered files, or other minify.
+		if ( empty( $this->class->registered[$handle] ) || ! $src = $this->class->registered[$handle]->src )
 			return;
-
-		$src = $this->class->registered[$handle]->src;
 
 		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
 			$src = $this->class->base_url . $src;
+
 
 		// Strip query args.
 		$src = strtok( $src, '?' );
