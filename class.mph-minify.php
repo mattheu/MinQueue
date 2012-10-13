@@ -7,6 +7,8 @@ class MPH_Minify {
 	public $minify_url;
 	public $cache_url;
 
+	public $minified_deps;
+
 	// Array of handles to process.
 	// If empty, all enqueued assets are used.
 	public $queue = array();
@@ -37,16 +39,20 @@ class MPH_Minify {
 		$this->cache_url     = trailingslashit( WP_CONTENT_URL ) . $this->cache_dirname;
 		$this->cache_dir     = trailingslashit( WP_CONTENT_DIR ) . $this->cache_dirname;
 
+		// Global record of everything minified.
+		global $minified_deps;
+		$this->minified_deps = &$minified_deps; 
+
 		// Set up which WP_Dependencies sub-class to use. 
 		if ( 'WP_Scripts' ==  $class_name ) {
 			
 			global $wp_scripts;
-			$this->class = $wp_scripts;
+			$this->class = &$wp_scripts;
 
 		} elseif ( 'WP_Styles' == $class_name ) {
 		
 			global $wp_styles;
-			$this->class = $wp_styles;
+			$this->class = &$wp_styles;
 		
 		}
 
@@ -99,8 +105,9 @@ class MPH_Minify {
 
 	  		foreach ( $this->class->to_do as $key => $handle ) {
 
+				// If not in queue - skip
 				// Skip if no asset path (eg is remote.)
-				if ( ! $this->get_asset_path( $handle ) ) 
+				if ( ! in_array( $handle, $this->queue ) || ! $this->get_asset_path( $handle ) ) 
 					continue;
 
 				// Add this asset to the queue.
@@ -132,7 +139,7 @@ class MPH_Minify {
 	function enqueue_minified_assets( $group ) {
 
 		// Handle used as filename. It is a crc32 hash of the current group asset queue - contains version numbers
-		$min_handle = 'mph-min-' . hash( 'crc32b', serialize( $this->asset_queue[$group] ) );
+		$min_handle = $this->get_min_handle( $group );
 		$min_src    = trailingslashit( $this->cache_url ) . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 		
 		// If no cached file - generate minified asset src.
@@ -157,29 +164,73 @@ class MPH_Minify {
 		}
 
 		// Mark the minified assets as done so they are not done again.
+		// Keep a global record of all minified assets
 		foreach ( $this->asset_queue[$group] as $asset ) {
+			
 			$this->class->to_do = array_diff( $this->class->to_do, array( $asset['handle'] ) );
 			$this->class->done[] = $asset['handle'];
-		}
+			$this->minified_deps[ get_class( $this->class ) ][ $asset['handle'] ] = $min_handle;
 
-		// Add any dependencies that are not part of this queue as a dependency of the minified/concatenated file.
-		// @todo - Should do this, but cannot do it without also checking if that dependancy has not already been minified.
-		$deps = array();
-		//foreach ( $this->asset_queue[$group] as $asset )
-		//	foreach ( $this->class->registered[$asset['handle'] ]->deps as $dep )
-		//		if ( ! array_key_exists( $dep, $this->asset_queue[$group] ) && ! in_array( $dep, $deps ) )
-		//			$deps[] = $dep;
+		}	
 
-		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
-		foreach ( $this->class->registered as $asset )
-			if ( ! empty( $asset->deps ) )
-				if ( array_intersect( $asset->deps, array_keys( $this->asset_queue[$group] ) ) ) 
-					$asset->deps[] = $minify_handle;
+		$deps = $this->get_group_deps( $group );
 
 		// Enqueue the minified file
 		$this->class->add( $min_handle, $min_src, $deps, null );
 		$this->class->add_data( $min_handle, 'group', $group );
 		$this->class->enqueue( $min_handle );
+
+		$this->setup_all_deps( $group );
+
+	}
+
+
+	/**
+	 * Get Dependencies of this minify file.
+	 *
+	 * All dependencies of files contained within this file.
+	 * 
+	 * @param  int $group the group of handles currently being processed. 
+	 * @return arary of handles that are dependencies of the current minify group.
+	 */
+	function get_group_deps( $group ) {
+
+		// Add any deps of assets in queue that are not themselves part of this queue as a dependency of the minified/concatenated file.
+		$deps = array();
+		foreach ( $this->asset_queue[$group] as $asset )
+			foreach ( $this->class->registered[$asset['handle'] ]->deps as $dep )
+				if ( ! array_key_exists( $dep, $this->asset_queue[$group] ) && ! in_array( $dep, $deps ) )
+					$deps[] = $dep;
+
+		return $deps;
+
+	}
+
+	/**
+	 * Set up all dependencies.
+	 *
+	 * Minifying and concatenating removes handles from the queue. Causes problems with dependencies.
+	 * Set up dependencies of this file, and others to reflect the current state.
+	 * 
+	 * @param  int $group the group of handles currently being processed. 
+	 * @return arary of handles that are dependencies of the current minify group.
+	 */
+	function setup_all_deps( $group ) {
+
+		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
+		foreach ( $this->class->registered as $asset )
+			if ( ! empty( $asset->deps ) ) 
+				if ( array_intersect( $asset->deps, array_keys( $this->asset_queue[$group] ) ) ) 
+					$asset->deps[] = $this->get_min_handle( $group );
+
+		// If any deps of this file are themselves part of another minified file, remove it and add that min file as a dep of this one.
+		foreach ( $this->class->registered as &$dependency )
+			foreach ( $dependency->deps as $key => $dep )
+				if ( array_key_exists( $dep, (array) $this->minified_deps[ get_class( $this->class ) ] ) ) {
+					unset( $dependency->deps[$key] );
+					if ( ! in_array( $this->minified_deps[ get_class( $this->class ) ][$dep], $dependency->deps ) )
+						$dependency->deps[] = $this->minified_deps[ get_class( $this->class ) ][$dep];
+				}
 
 	}
 
@@ -189,10 +240,17 @@ class MPH_Minify {
 	 * @return null
 	 * @todo - Unfortunately we cannot just localize the minified file using this data but could maybe add this using the wp_scripts class sett print_inline_style().
 	 */
-	function script_localization () {
+	function script_localization() {
 
 		foreach ( $this->script_localization as $handle => $data )
 			echo '<script>' . $data . '</script>';
+
+	}
+
+
+	function get_min_handle( $group ) {
+
+		return 'mph-min-' . hash( 'crc32b', serialize( $this->asset_queue[$group] ) );
 
 	}
 
@@ -212,7 +270,10 @@ class MPH_Minify {
 		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
 			$src = $this->class->base_url . $src;
 
-		// Don't handle remote urls or urls with query args.
+		// Strip query args.
+		$src = strtok( $src, '?' );
+
+		// Don't handle remote urls.
 		if ( 0 !== strpos( $src, home_url() ) )
 			return;
 
@@ -233,7 +294,7 @@ class MPH_Minify {
 		if ( ! is_dir( $this->cache_dir ) )
 			wp_mkdir_p( $this->cache_dir );
 
-		@$data = file_get_contents( $min_src );
+		$data = file_get_contents( $min_src );
 
 		if ( $data ) {
 
