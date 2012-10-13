@@ -3,6 +3,8 @@
 class MPH_Minify {
 
 	// Useful stuff.
+	public $prefix = 'mph-min-';
+
 	public $plugin_url;
 	public $minify_url;
 	public $cache_url;
@@ -250,7 +252,7 @@ class MPH_Minify {
 
 	function get_min_handle( $group ) {
 
-		return 'mph-min-' . hash( 'crc32b', serialize( $this->asset_queue[$group] ) );
+		return $this->prefix . hash( 'crc32b', serialize( $this->asset_queue[$group] ) );
 
 	}
 
