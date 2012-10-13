@@ -294,7 +294,7 @@ class MPH_Minify {
 		if ( ! is_dir( $this->cache_dir ) )
 			wp_mkdir_p( $this->cache_dir );
 
-		$data = file_get_contents( $min_src );
+		$data = @file_get_contents( $min_src );
 
 		if ( $data ) {
 
