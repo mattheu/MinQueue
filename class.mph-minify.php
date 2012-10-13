@@ -302,6 +302,10 @@ class MPH_Minify {
 			file_put_contents( $this->cache_dir . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );	
 			return $this->cache_url . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 
+		} else {
+
+			throw new Exception( 'Error generating minified & concatenated file. Handles:' . implode( ', ', $handles ) );
+
 		}
 		
 	}
