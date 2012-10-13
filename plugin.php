@@ -113,7 +113,7 @@ add_action( 'wp_enqueue_scripts', function() {
 
 			mph_minify_debugger( $instances );			
 
-		} );
+		}, 9999 );
 	
 	}
 
