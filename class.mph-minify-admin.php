@@ -181,13 +181,19 @@ class MPH_Minify_Admin {
 		?>
 
 		<div id="field_manual_scripts">
+		
 			<label for="mph_minify_field_manual_scripts_1">
 				<strong>Minfy & Concatenate Queue</strong> 
 				<span class="description">List of script handles to minify and concatenate into one file. Comma separated or on a new line</span>
 			</label>
-			<?php foreach( $values as $value ) : ?>
-				<textarea id="mph_minify_field_manual_scripts_1" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $value ) ) ? esc_attr( implode( ',', $value ) ) : null; ?></textarea>
-			<?php endforeach; ?>
+		
+			<textarea id="mph_minify_field_manual_scripts_hidden" name="mph_minify_options[scripts_manual][]" class="large-text code" style="display:none;"></textarea>
+		
+			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
+				<?php if ( $i > 0 && empty( $value[$i]) ) continue; ?>
+				<textarea id="mph_minify_field_manual_scripts_1" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $value[$i] ) ) ? esc_attr( implode( ',', $value[$i] ) ) : null; ?></textarea>
+			<?php endfor; ?>
+		
 		</div>
 
 		<div id="field_disabled_scripts">
@@ -245,17 +251,24 @@ class MPH_Minify_Admin {
 	function field_styles() {
 
 		$values = ( ! empty( $this->options['styles_manual'] ) ) ? $this->options['styles_manual'] : array(); 
+		//$count = ( ( count( $values ) > 0 ) ? count( $values ) : 1 );
 
 		?>
 
 		<div id="field_manual_styles">
+			
 			<label for="mph_minify_field_manual_styles">
 				<strong>Manual styles</strong> 
 				<span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span>
 			</label>
-			<?php foreach( $values as $value ) : ?>
-				<textarea id="mph_minify_field_manual_styles_1" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $value ) ) ? esc_attr( implode( ',', $value ) ) : null; ?></textarea>
-			<?php endforeach; ?>
+			
+			<textarea id="mph_minify_field_manual_styles_1" name="mph_minify_options[scripts_manual][]" class="large-text code" style="display:none;"></textarea>
+			
+			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
+				<?php if ( $i > 0 && empty( $value[$i]) ) continue; ?>
+				<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $value[$i] ) ) ? esc_attr( implode( ',', $value[$i] ) ) : null; ?></textarea>
+			<?php endfor; ?>
+		
 		</div>
 
 		<div id="field_disabled_styles">
