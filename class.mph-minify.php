@@ -143,9 +143,10 @@ class MPH_Minify {
 		// Handle used as filename. It is a crc32 hash of the current group asset queue - contains version numbers
 		$min_handle = $this->get_min_handle( $group );
 		$min_src    = trailingslashit( $this->cache_url ) . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+		$min_path   = trailingslashit( $this->cache_dir ) . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 		
 		// If no cached file - generate minified asset src.
-		if ( ! file_exists( $this->cache_dir . $min_handle ) ) {
+		if ( ! file_exists( $min_path ) ) {
 
 			$_srcs = array();
 			foreach ( $this->asset_queue[$group] as $asset )
