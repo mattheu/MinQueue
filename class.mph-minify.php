@@ -4,18 +4,18 @@ class MPH_Minify {
 
 	// Useful stuff.
 	public $prefix = 'mph-min-';
-
 	public $plugin_url;
 	public $minify_url;
 	public $cache_url;
 
+	// Reference to global record of everything minified
 	public $minified_deps;
 
 	// Array of handles to process.
 	// If empty, all enqueued assets are used.
 	public $queue = array();
 
-	// Either WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies. 
+	// Reference to WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies. 
 	private $class;
 
 	// Cache minified files or do it on the fly. 
@@ -85,7 +85,7 @@ class MPH_Minify {
 	}
 
 	/**
-	 * Get the queue of assets for a given class.
+	 * Get the queue of assets to be minified & concatenated
 	 * 
 	 * @param  class $class  type of asset (wp_scripts of wp_styles)
 	 * @return array asset queue. An array of classes. Contains array of groups. contains array of asset handles.
@@ -145,6 +145,7 @@ class MPH_Minify {
 		// If no cached file - generate minified asset src.
 		if ( ! file_exists( $min_path ) ) {
 
+			// Get array of srcs.
 			$_srcs = array();
 			foreach ( $this->asset_queue[$group] as $asset )
 				if ( $_src = $this->get_asset_path( $asset['handle'] ) )
@@ -157,7 +158,7 @@ class MPH_Minify {
 			// On the fly minify url - used to generate the cache.
 			$min_src = $this->minify_url . '/?f=' . implode( ',', array_filter( $_srcs ) );
 
-			// Generate cached file, if we want to.
+			// Generate cached file.
 			if ( $this->cache )
 				$min_src = $this->get_cache_file( $min_handle, $min_src, array_keys( $this->asset_queue[$group] ) );
 
@@ -269,7 +270,6 @@ class MPH_Minify {
 		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
 			$src = $this->class->base_url . $src;
 
-
 		// Strip query args.
 		$src = strtok( $src, '?' );
 
@@ -315,7 +315,6 @@ class MPH_Minify {
 	 * 
 	 * @return null
 	 * @todo This recursive iterator thing is PHP 5.3 only
-	 * @todo Also delete cache dir.
 	 */
 	function delete_cache() { 
 		
