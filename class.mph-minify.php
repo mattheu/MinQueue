@@ -93,9 +93,6 @@ class MPH_Minify {
 	function get_asset_queue() {
 		
 		if ( empty( $this->asset_queue ) ) {
-			
-			if ( empty( $this->queue ) )
-				$this->queue = $this->class->queue;
 
 			// Remove from queue if not a registered asset.
 			foreach ( $this->queue as $key => $handle )
