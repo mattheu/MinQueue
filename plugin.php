@@ -18,7 +18,8 @@ define( 'MPH_MINIFY_VERSION', '0.0.1' );
 $minified_deps = array();
 global $minified_deps;
 
-$admin = new MPH_Minify_Admin();
+if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
+	$admin = new MPH_Minify_Admin();
 
 /** 
  * Return the function options.
