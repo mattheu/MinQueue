@@ -221,7 +221,7 @@ class MPH_Minify {
 	function setup_all_deps( $group ) {
 
 		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
-		foreach ( $this->class->registered as $asset )
+		foreach ( $this->class->registered as &$asset )
 			if ( ! empty( $asset->deps ) ) 
 				if ( array_intersect( $asset->deps, array_keys( $this->asset_queue[$group] ) ) ) 
 					$asset->deps[] = $this->get_min_handle( $group );
