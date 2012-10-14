@@ -190,8 +190,8 @@ class MPH_Minify_Admin {
 			<textarea id="mph_minify_field_manual_scripts_hidden" name="mph_minify_options[scripts_manual][]" class="large-text code" style="display:none;"></textarea>
 		
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
-				<?php if ( $i > 0 && empty( $value[$i]) ) continue; ?>
-				<textarea id="mph_minify_field_manual_scripts_1" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $value[$i] ) ) ? esc_attr( implode( ',', $value[$i] ) ) : null; ?></textarea>
+				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
+				<textarea id="mph_minify_field_manual_scripts_1" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ',', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
 		
 		</div>
@@ -251,8 +251,7 @@ class MPH_Minify_Admin {
 	function field_styles() {
 
 		$values = ( ! empty( $this->options['styles_manual'] ) ) ? $this->options['styles_manual'] : array(); 
-		//$count = ( ( count( $values ) > 0 ) ? count( $values ) : 1 );
-
+		
 		?>
 
 		<div id="field_manual_styles">
@@ -265,8 +264,8 @@ class MPH_Minify_Admin {
 			<textarea id="mph_minify_field_manual_styles_1" name="mph_minify_options[scripts_manual][]" class="large-text code" style="display:none;"></textarea>
 			
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
-				<?php if ( $i > 0 && empty( $value[$i]) ) continue; ?>
-				<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $value[$i] ) ) ? esc_attr( implode( ',', $value[$i] ) ) : null; ?></textarea>
+				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
+				<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $values[$i] ) ); ?></textarea>
 			<?php endfor; ?>
 		
 		</div>
