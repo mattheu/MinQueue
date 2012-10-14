@@ -191,7 +191,7 @@ class MPH_Minify_Admin {
 		
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
-				<textarea id="mph_minify_field_manual_scripts_1" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ',', $values[$i] ) ) : null; ?></textarea>
+				<textarea id="mph_minify_field_manual_scripts_<?php echo $i; ?>" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ',', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
 		
 		</div>
@@ -202,13 +202,15 @@ class MPH_Minify_Admin {
 
 		<script>
 
+			// Functionality for showing & hiding the fields depending on whether minifying is enabled
+
 			jQuery( document ).ready( function() {
 
 				var scriptsManual = jQuery('#field_manual_scripts'),
 					scriptsDisabled = jQuery('#field_disabled_scripts'),
 					scriptsToggleManual = jQuery( '#mph_minify_options_scripts_method_manual' );
 
-				var myToggle = function () {
+				var scriptToggle = function () {
 
 					if ( scriptsToggleManual.is( ':checked' ) ) {
 						scriptsManual.slideDown( 100 );
@@ -220,8 +222,8 @@ class MPH_Minify_Admin {
 
 				}
 
-				myToggle();
-				scriptsToggleManual.siblings( 'input[type=radio]' ).andSelf().change( function() { myToggle(); } );
+				scriptToggle();
+				scriptsToggleManual.siblings( 'input[type=radio]' ).andSelf().change( function() { scriptToggle(); } );
 
 			} );
 
@@ -261,11 +263,11 @@ class MPH_Minify_Admin {
 				<span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span>
 			</label>
 			
-			<textarea id="mph_minify_field_manual_styles_1" name="mph_minify_options[scripts_manual][]" class="large-text code" style="display:none;"></textarea>
+			<textarea id="mph_minify_field_manual_styles_template" name="mph_minify_options[scripts_manual][]" class="large-text code" style="display:none;"></textarea>
 			
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
-				<textarea id="mph_minify_field_manual_styles" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo esc_attr( implode( ',', $values[$i] ) ); ?></textarea>
+					<textarea id="mph_minify_field_manual_styles_<?php echo $i; ?>" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ',', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
 		
 		</div>
@@ -276,13 +278,15 @@ class MPH_Minify_Admin {
 
 		<script>
 
+			// Functionality for showing & hiding the fields depending on whether minifying is enabled
+
 			jQuery( document ).ready( function() {
 
 				var stylesManual = jQuery('#field_manual_styles'),
 					stylesDisabled = jQuery('#field_disabled_styles'),
 					stylesToggleManual = jQuery( '#mph_minify_options_styles_method_manual' );
 
-				var myToggle = function () {
+				var styleFieldToggle = function () {
 
 					if ( stylesToggleManual.is( ':checked' ) ) {
 						stylesManual.slideDown( 100 );
@@ -294,8 +298,8 @@ class MPH_Minify_Admin {
 
 				}
 
-				myToggle();
-				stylesToggleManual.siblings( 'input[type=radio]' ).andSelf().change( function() { myToggle(); } );
+				styleFieldToggle();
+				stylesToggleManual.siblings( 'input[type=radio]' ).andSelf().change( function() { styleFieldToggle(); } );
 
 			} );
 
@@ -310,15 +314,15 @@ class MPH_Minify_Admin {
 	 */
 	function options_validate( $input ) {
 
-		// Create an array of handles & filter out empty ones
-		//$input['scripts_manual'] = $this->handle_list_filter( $input['scripts_manual'] );
-		//$input['styles_manual']  = $this->handle_list_filter( $input['styles_manual'] );
-
 		foreach ( $input['scripts_manual'] as $key => $queue )
 			$input['scripts_manual'][$key] = $this->handle_list_filter( $queue );
 
 		foreach ( $input['styles_manual'] as $key => $queue )
 			$input['styles_manual'][$key] = $this->handle_list_filter( $queue );
+
+		// Remove empty & reset array keys.
+		$input['scripts_manual'] = array_merge( array_filter( $input['scripts_manual'] ) );
+		$input['styles_manual'] = array_merge( array_filter( $input['styles_manual'] ) );
 
 		$input['debugger'] = ( empty( $input['debugger'] ) ) ? false : true;
 
