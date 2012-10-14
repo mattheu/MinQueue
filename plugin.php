@@ -15,11 +15,14 @@ require_once( 'debugger.php' );
 
 define( 'MPH_MINIFY_VERSION', '0.0.1' );
 
-$minified_deps = array();
+$minified_deps = array( 'WP_Scripts' => array(), 'WP_Styles' => array() );
 global $minified_deps;
 
 if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
 	$admin = new MPH_Minify_Admin();
+
+add_action( 'wp_enqueue_scripts', 'mph_minify', 9999 );
+add_filter( 'mph_minify_cache_dir', 'mph_minify_cache_dir_override' );
 
 /** 
  * Return the function options.
@@ -47,27 +50,11 @@ function mph_minify_get_plugin_options() {
 }
 
 /**
- * Filter the cache directory to allow setting your own.
- *
- * If settings or defined
+ * Main Plugin Functionality.
  * 
- * @param  [type] $cache_dir [description]
- * @return [type]            [description]
+ * @return null
  */
-function mph_minify_cache_dir_override( $cache_dir ) {
-
-	$options = mph_minify_get_plugin_options();
-
-	if ( ! empty( $options[ 'cache_dir' ] ) )
-		return $options[ 'cache_dir' ];
-
-	return $cache_dir;
-
-}
-add_filter( 'mph_minify_cache_dir', 'mph_minify_cache_dir_override' );
-
-
-add_action( 'wp_enqueue_scripts', function() {
+function mph_minify() {
 
 	$options = mph_minify_get_plugin_options();
 
@@ -77,7 +64,7 @@ add_action( 'wp_enqueue_scripts', function() {
 	);
 
 	// Scripts	
-	if ( 'disabled' !== $options['scripts_method'] ) {	
+	if ( isset( $options['scripts_method'] ) && 'disabled' !== $options['scripts_method'] ) {	
 
 		foreach ( $options['scripts_manual'] as $key => $queue ) {
 
@@ -92,7 +79,7 @@ add_action( 'wp_enqueue_scripts', function() {
 	}	
 
 	// Styles
-	if ( 'disabled' !== $options['styles_method'] ) {
+	if ( isset( $options['styles_method'] ) && 'disabled' !== $options['styles_method'] ) {
 
 		foreach ( $options['styles_manual'] as $key => $queue ) {
 
@@ -110,12 +97,29 @@ add_action( 'wp_enqueue_scripts', function() {
 	if ( isset( $options['debugger'] ) && true === $options['debugger'] && current_user_can( 'manage_options' ) ) {
 
 		add_action( 'wp_head', 'mph_minify_debugger_style' );
-		add_action( 'wp_footer', function() use ( $instances ) {
+		add_action( 'wp_footer', 'mph_minify_debugger', 9999 );
 
-			mph_minify_debugger( $instances );			
-
-		}, 9999 );
-	
 	}
 
-}, 9999 );
+
+}
+
+
+/**
+ * Filter the cache directory to allow setting your own.
+ *
+ * If settings or defined
+ * 
+ * @param  [type] $cache_dir [description]
+ * @return [type]            [description]
+ */
+function mph_minify_cache_dir_override( $cache_dir ) {
+
+	$options = mph_minify_get_plugin_options();
+
+	if ( ! empty( $options[ 'cache_dir' ] ) )
+		return $options[ 'cache_dir' ];
+
+	return $cache_dir;
+
+}

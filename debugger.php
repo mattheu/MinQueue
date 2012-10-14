@@ -22,9 +22,10 @@ function mph_minify_debugger_style() {
 		#mph-minify-debugger h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; }
 		#mph-minify-debugger ul { margin-bottom: 15px; }
 		#mph-minify-debugger ul,
-		#mph-minify-debugger li { list-style: disc outside; padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
-		#mph-minify-debugger li.mph-min-header { color: orange;}
-		#mph-minify-debugger li.mph-min-footer { color: yellow;}
+		#mph-minify-debugger li { list-style: circle outside; padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
+		#mph-minify-debugger li.mph-min-minified { list-style-type: disc; }
+		#mph-minify-debugger li.mph-min-group-0 { color: orange;}
+		#mph-minify-debugger li.mph-min-group-1 { color: yellow;}
 	</style>
 
 	<?php
@@ -35,87 +36,100 @@ function mph_minify_debugger_style() {
  * Helper tool for the minifyier
  *
  * All a bit hacked together - but its useful!
- *
- * @param array $instances array of instances of MPH_Minify.
+ * Uses global var $minified_deps (as well as $wp_scritps & $wp_styles)
  */
-function mph_minify_debugger( $instances ) {
+function mph_minify_debugger() {
 	
-	global $wp_scripts, $wp_styles;
+	global $wp_scripts, $wp_styles, $minified_deps;
 
 	// Get the queue of all scripts & styles that should be loaded.
 	// A bit of a round about way as we need to know those loaded because they are a dependency.
-	$wp_scripts->done = array();
+	$wp_scripts->done = array();	
 	$wp_scripts->all_deps( $wp_scripts->queue );
 	$scripts_enqueued = $wp_scripts->to_do;
+
 	$wp_styles->done = array();
 	$wp_styles->all_deps( $wp_styles->queue );
 	$styles_enqueued = $wp_styles->to_do;
 
-	$header_queue = array();
-	$footer_queue = array();
-
 	echo '<div id="mph-minify-debugger">';
-
-	if ( isset( $instances['scripts'] ) ) {		
-		foreach ( $instances['scripts'] as $instance ) {
-
-			$min = $instance->get_asset_queue();
-			$header_queue = array_merge( $header_queue, array_keys( ( ! empty( $min[0] ) ) ? $min[0] : array() ) );
-			$footer_queue = array_merge( $footer_queue, array_keys( ( ! empty( $min[1] ) ) ? $min[1] : array() ) );
-
-			// Add anything that we are minifying but are not enqueued to the queue
-			foreach ( $instance->get_asset_queue() as $queue )
-				$scripts_enqueued = array_merge( $scripts_enqueued, array_keys( $queue ) );
-
-		}
-	}
 
 	echo '<h2>Enqueued Scripts</h2>';
 	echo '<ul>';
 
-	foreach( array_unique( $scripts_enqueued ) as $handle )
+	foreach ( array_diff( $scripts_enqueued, array_keys( $minified_deps['WP_Scripts'] ) ) as $handle ) {
+
+		// Don't show minified scripts.
 		if ( 0 === strpos( $handle, 'mph-min' ) )
-			continue;			
-		elseif ( in_array( $handle, $header_queue ) )
-			echo '<li class="mph-min-header">' . $handle . '</li>';
-		elseif ( in_array( $handle, $footer_queue ) )
-			echo '<li class="mph-min-footer">' . $handle . '</li>';
-		else
-			echo '<li>' . $handle . '</li>';
+			continue;	
+
+		$class = array();
+		$class['group'] = 'mph-min-group-' . ( isset( $wp_scripts->registered[$handle]->extra['group'] ) ? $wp_scripts->registered[$handle]->extra['group'] : 0 );
+		
+		if ( array_key_exists( $handle, $minified_deps['WP_Scripts'] ) )
+			$class['minified'] = 'mph-min-minified';
+
+		echo '<li class="' . implode( ' ', $class ) . '" title="' . implode( ', ', $wp_scripts->registered[$handle]->deps ) . '">' . $handle . '</li>';
 	
+	}
+
 	echo '</ul>';
 
-	$header_queue = array();
-	$footer_queue = array();
+	echo '<h2>Minified Scripts</h2>';
+	echo '<ul>';
 
-	if ( isset( $instances['styles'] ) ) {		
-		foreach( $instances['styles'] as $instance ) {
+	foreach ( array_keys( $minified_deps['WP_Scripts'] ) as $handle ) {
 
-			$min = $instance->get_asset_queue();
-			$header_queue = array_merge( $header_queue, array_keys( ( ! empty( $min[0] ) ) ? $min[0] : array() ) );
-
-			// Add anything that we are minifying but are not enqueued to the queue
-			foreach ( $instance->get_asset_queue() as $queue )
-				$styles_enqueued = array_merge( $styles_enqueued, array_keys( $queue ) );
-
-		}
+		$class = array();
+		$class['group'] = 'mph-min-group-' . ( isset( $wp_scripts->registered[$handle]->extra['group'] ) ? $wp_scripts->registered[$handle]->extra['group'] : 0 );
+		
+		if ( array_key_exists( $handle, $minified_deps['WP_Scripts'] ) )
+			$class['minified'] = 'mph-min-minified';
+		
+		echo '<li class="' . implode( ' ', $class ) . '">' . $handle . '</li>';
+	
 	}
+
+	echo '</ul>';
 
 	echo '<h2>Enqueued Styles</h2>';
 	echo '<ul>';
-	
-	foreach( $styles_enqueued = array_unique( $styles_enqueued ) as $handle )
+
+	foreach ( array_diff( $styles_enqueued, array_keys( $minified_deps['WP_Styles'] ) ) as $handle ) {
+
+		// Don't show minified scripts.
 		if ( 0 === strpos( $handle, 'mph-min' ) )
-			continue;
-		elseif ( in_array( $handle, $header_queue ) )
-			echo '<li class="mph-min-header">' . $handle . '</li>';
-		elseif ( in_array( $handle, $footer_queue ) )
-			echo '<li class="mph-min-footer">' . $handle . '</li>';
-		else
-			echo '<li>' . $handle . '</li>';
+			continue;	
+
+		$class = array();
+		$class['group'] = 'mph-min-group-' . ( isset( $wp_styles->registered[$handle]->extra['group'] ) ? $wp_styles->registered[$handle]->extra['group'] : 0 );
+		
+		if ( array_key_exists( $handle, $minified_deps['WP_Styles'] ) )
+			$class['minified'] = 'mph-min-minified';
+		
+		echo '<li class="' . implode( ' ', $class ) . '" title="' . implode( ', ', $wp_styles->registered[$handle]->deps ) . '">' . $handle . '</li>';
+	
+	}
 
 	echo '</ul>';
 	
+	echo '<h2>Minified Styles</h2>';
+	echo '<ul>';
+
+	foreach ( array_keys( $minified_deps['WP_Styles'] ) as $handle ) {
+
+		$class = array();
+		$class['group'] = 'mph-min-group-' . ( isset( $wp_styles->registered[$handle]->extra['group'] ) ? $wp_styles->registered[$handle]->extra['group'] : 0 );
+		
+		if ( array_key_exists( $handle, $minified_deps['WP_Styles'] ) )
+			$class['minified'] = 'mph-min-minified';
+		
+		echo '<li class="' . implode( ' ', $class ) . '">' . $handle . '</li>';
+	
+	}
+
+	echo '</ul>';
+
 	echo '<h2>Key</h2><ul><li class="mph-min-header">Orange: Minified in header</li><li class="mph-min-footer">Yellow: Minified in footer</li><li>White: not minified.</li></ul>';
 
 	echo '</div>';
