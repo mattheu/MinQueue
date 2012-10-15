@@ -191,7 +191,7 @@ class MPH_Minify_Admin {
 		
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
-				<textarea id="mph_minify_field_manual_scripts_<?php echo $i; ?>" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ',', $values[$i] ) ) : null; ?></textarea>
+				<textarea id="mph_minify_field_manual_scripts_<?php echo $i; ?>" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ', ', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
 		
 		</div>
@@ -267,7 +267,7 @@ class MPH_Minify_Admin {
 			
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
-					<textarea id="mph_minify_field_manual_styles_<?php echo $i; ?>" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ',', $values[$i] ) ) : null; ?></textarea>
+					<textarea id="mph_minify_field_manual_styles_<?php echo $i; ?>" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ', ', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
 		
 		</div>
