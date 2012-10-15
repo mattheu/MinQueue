@@ -35,7 +35,6 @@ function mph_minify_debugger_style() {
 /**
  * Helper tool for the minifyier
  *
- * All a bit hacked together - but its useful!
  * Uses global var $minified_deps (as well as $wp_scritps & $wp_styles)
  */
 function mph_minify_debugger() {
@@ -52,86 +51,73 @@ function mph_minify_debugger() {
 	$wp_styles->all_deps( $wp_styles->queue );
 	$styles_enqueued = $wp_styles->to_do;
 
-	echo '<div id="mph-minify-debugger">';
-
-	echo '<h2>Enqueued Scripts</h2>';
-	echo '<ul>';
-
-	foreach ( array_diff( $scripts_enqueued, array_keys( $minified_deps['WP_Scripts'] ) ) as $handle ) {
-
-		// Don't show minified scripts.
-		if ( 0 === strpos( $handle, 'mph-min' ) )
-			continue;	
-
-		$class = array();
-		$class['group'] = 'mph-min-group-' . ( isset( $wp_scripts->registered[$handle]->extra['group'] ) ? $wp_scripts->registered[$handle]->extra['group'] : 0 );
-		
-		if ( array_key_exists( $handle, $minified_deps['WP_Scripts'] ) )
-			$class['minified'] = 'mph-min-minified';
-
-		echo '<li class="' . implode( ' ', $class ) . '" title="' . implode( ', ', $wp_scripts->registered[$handle]->deps ) . '">' . $handle . '</li>';
+	?>
 	
-	}
+	<div id="mph-minify-debugger">
 
-	echo '</ul>';
+		<h2>Enqueued Scripts</h2>
+		<ul>
+			<?php mph_minify_debugger_list( array_diff( $scripts_enqueued, array_keys( $minified_deps['WP_Scripts'] ) ) ); ?>
+		</ul>
 
-	echo '<h2>Minified Scripts</h2>';
-	echo '<ul>';
+		<h2>Minified Scripts</h2>
+		<ul>
+			<?php mph_minify_debugger_list( array_keys( $minified_deps['WP_Scripts'] ) ); ?>
+		</ul>
 
-	foreach ( array_keys( $minified_deps['WP_Scripts'] ) as $handle ) {
-
-		$class = array();
-		$class['group'] = 'mph-min-group-' . ( isset( $wp_scripts->registered[$handle]->extra['group'] ) ? $wp_scripts->registered[$handle]->extra['group'] : 0 );
-		
-		if ( array_key_exists( $handle, $minified_deps['WP_Scripts'] ) )
-			$class['minified'] = 'mph-min-minified';
-		
-		echo '<li class="' . implode( ' ', $class ) . '">' . $handle . '</li>';
+		<h2>Enqueued Styles</h2>
+		<ul>
+			<?php mph_minify_debugger_list( array_diff( $styles_enqueued, array_keys( $minified_deps['WP_Styles'] ) ), false ); ?>
+		</ul>
 	
-	}
+		<h2>Minified Styles</h2>
+		<ul>
+			<?php mph_minify_debugger_list( array_keys( $minified_deps['WP_Styles'] ), false ); ?>
+		</ul>
 
-	echo '</ul>';
+		<h2>Key</h2>
+		<ul>
+			<li class="mph-min-group-0">Orange: in header</li>
+			<li class="mph-min-group-1">Yellow: in footer</li>
+		</ul>
 
-	echo '<h2>Enqueued Styles</h2>';
-	echo '<ul>';
+	</div>
 
-	foreach ( array_diff( $styles_enqueued, array_keys( $minified_deps['WP_Styles'] ) ) as $handle ) {
-
-		// Don't show minified scripts.
-		if ( 0 === strpos( $handle, 'mph-min' ) )
-			continue;	
-
-		$class = array();
-		$class['group'] = 'mph-min-group-' . ( isset( $wp_styles->registered[$handle]->extra['group'] ) ? $wp_styles->registered[$handle]->extra['group'] : 0 );
-		
-		if ( array_key_exists( $handle, $minified_deps['WP_Styles'] ) )
-			$class['minified'] = 'mph-min-minified';
-		
-		echo '<li class="' . implode( ' ', $class ) . '" title="' . implode( ', ', $wp_styles->registered[$handle]->deps ) . '">' . $handle . '</li>';
-	
-	}
-
-	echo '</ul>';
-	
-	echo '<h2>Minified Styles</h2>';
-	echo '<ul>';
-
-	foreach ( array_keys( $minified_deps['WP_Styles'] ) as $handle ) {
-
-		$class = array();
-		$class['group'] = 'mph-min-group-' . ( isset( $wp_styles->registered[$handle]->extra['group'] ) ? $wp_styles->registered[$handle]->extra['group'] : 0 );
-		
-		if ( array_key_exists( $handle, $minified_deps['WP_Styles'] ) )
-			$class['minified'] = 'mph-min-minified';
-		
-		echo '<li class="' . implode( ' ', $class ) . '">' . $handle . '</li>';
-	
-	}
-
-	echo '</ul>';
-
-	echo '<h2>Key</h2><ul><li class="mph-min-header">Orange: Minified in header</li><li class="mph-min-footer">Yellow: Minified in footer</li><li>White: not minified.</li></ul>';
-
-	echo '</div>';
+	<?php
 
 }
+
+
+/**
+ * Output a list of assets for use in the debugger
+ * 
+ * @param  array  $asset_list list of handles to display
+ * @param  boolean $scripts   whether minifying scripts. If false, minifyling styles.
+ * @return null outputs <li> for each handle. 
+ */
+function mph_minify_debugger_list( $asset_list, $scripts = true ) {
+
+		global $minified_deps, $wp_scripts, $wp_styles;
+
+		if ( $scripts )
+			$class = &$wp_scripts;	
+		else
+			$class = &$wp_styles;
+
+		foreach ( $asset_list as $handle ) {
+
+			// Don't show minified scripts.
+			if ( 0 === strpos( $handle, 'mph-min' ) )
+				continue;
+
+			$classes = array();
+			$classes['group'] = 'mph-min-group-' . ( isset( $class->registered[$handle]->extra['group'] ) ? $class->registered[$handle]->extra['group'] : 0 );
+			
+			if ( array_key_exists( $handle, $minified_deps[get_class($class)] ) )
+				$classes['minified'] = 'mph-min-minified';
+
+			echo '<li class="' . implode( ' ', $classes ) . '" title="' . implode( ', ', $class->registered[$handle]->deps ) . '">' . $handle . '</li>';
+
+		}
+
+	}
