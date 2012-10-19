@@ -6,10 +6,12 @@ class MPH_Minify_Admin {
 	var $notices = array();
 
 	function __construct() {
-		
+
 		add_action( 'admin_menu', array( $this, 'admin_add_page' ) );
 
 		$this->options = mph_minify_get_plugin_options();
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 
 		if ( isset( $_GET['mph_minify_action'] ) && 'clear_cache' == $_GET['mph_minify_action'] )
 			add_action( 'admin_init', array( $this, 'clear_cache' ) );
@@ -18,7 +20,7 @@ class MPH_Minify_Admin {
 
 	/**
 	 * Delete all cached files
-	 * 
+	 *
 	 * @param  boolean $redirect whether
 	 * @return [type]            [description]
 	 */
@@ -27,10 +29,10 @@ class MPH_Minify_Admin {
 		// Delete the cache if requested.
 		$minify = new MPH_Minify( 'WP_Scripts' );
 		$minify->delete_cache();
-		
+
 		// Redirect.
 		if ( $redirect ) {
-			wp_redirect( add_query_arg( 'mph_minify_action', 'cache_cleared', remove_query_arg( 'mph_minify_action', wp_get_referer() ) ) );	
+			wp_redirect( add_query_arg( 'mph_minify_action', 'cache_cleared', remove_query_arg( 'mph_minify_action', wp_get_referer() ) ) );
 			exit;
 		}
 
@@ -53,13 +55,13 @@ class MPH_Minify_Admin {
 	 * @return null
 	 */
 	function admin_init(){
-	
+
 		register_setting( 'mph_minify_options', 'mph_minify_options', array( $this, 'options_validate' ) );
-		
+
 		add_settings_section( 'plugin_main', 'General Options', array( $this, 'general_options_text' ), 'general_minify_options' );
 		add_settings_section( 'plugin_main', 'Script Minification', array( $this, 'general_options_text' ), 'script_minify_options' );
 		add_settings_section( 'plugin_main', 'Style Minification', array( $this, 'general_options_text' ), 'style_minify_options' );
-	
+
 		add_settings_field( 'mph_minify_cache_dir', 'Cache directory name', array( $this, 'field_cache_dir' ), 'general_minify_options', 'plugin_main' );
 		add_settings_field( 'mph_minify_debugger', 'Enable debugger', array( $this, 'field_debugger' ), 'general_minify_options', 'plugin_main' );
 		add_settings_field( 'mph_minify_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
@@ -76,7 +78,7 @@ class MPH_Minify_Admin {
 	 * Output the main options page content.
 	 * @return null
 	 */
-	function options_page() { 
+	function options_page() {
 
 		if ( ! empty( $_GET['mph_minify_action'] ) && 'cache_cleared' == $_GET['mph_minify_action'] )
 			echo '<div class="updated settings-error"><p>Cache Cleared</p></div>';
@@ -86,15 +88,15 @@ class MPH_Minify_Admin {
 		<div class="wrap">
 
 			<h2>MPH Minify Plugin Settings</h2>
-				
+
 			<form action="options.php" method="post">
 
-				<?php 
+				<?php
 
 				settings_fields('mph_minify_options');
 				do_settings_sections('general_minify_options');
 				do_settings_sections('script_minify_options');
-				do_settings_sections('style_minify_options'); 
+				do_settings_sections('style_minify_options');
 
 				?>
 
@@ -107,19 +109,19 @@ class MPH_Minify_Admin {
 		</div>
 
 		<?php
-	
+
 	}
 
 	/**
 	 * Output general options description text
-	 * 
+	 *
 	 * @return null
 	 */
 	function general_options_text() {}
 
 	/**
 	 * Output clear cache button
-	 * 
+	 *
 	 * @return null
 	 */
 	function field_clear_cache() { ?>
@@ -130,7 +132,7 @@ class MPH_Minify_Admin {
 
 	/**
 	 * Output cache dir setting field
-	 * 
+	 *
 	 * @return null
 	 */
 	function field_cache_dir() { ?>
@@ -142,7 +144,7 @@ class MPH_Minify_Admin {
 
 	/**
 	 * Output debugger setting field.
-	 * 
+	 *
 	 * @return null
 	 */
 	function field_debugger() {	?>
@@ -154,10 +156,10 @@ class MPH_Minify_Admin {
 
 	/**
 	 * Output script method inputs.
-	 * 
+	 *
 	 * @return null
 	 */
-	function field_method_scripts() { 
+	function field_method_scripts() {
 
 		if ( empty( $this->options['scripts_method'] ) )
 			$this->options['scripts_method'] = 'disabled';
@@ -166,79 +168,50 @@ class MPH_Minify_Admin {
 
 		<input type="radio" id="mph_minify_options_scripts_method_manual" name="mph_minify_options[scripts_method]" value="manual" <?php checked( 'manual', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_manual">Manual minification</label><br/>
 		<input type="radio" id="mph_minify_options_scripts_method_disabled" name="mph_minify_options[scripts_method]" value="disabled" <?php checked( 'disabled', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_disabled">Disable minification</label>
-	
+
 	<?php }
 
 	/**
 	 * Output settings section for scripts.
-	 * 
+	 *
 	 * @return null
 	 */
 	function field_scripts() {
 
-		$values = ( ! empty( $this->options['scripts_manual'] ) ) ? $this->options['scripts_manual'] : array(); 
+		$values = ( ! empty( $this->options['scripts_manual'] ) ) ? $this->options['scripts_manual'] : array();
 
 		?>
 
 		<div id="field_manual_scripts">
-		
-			<label for="mph_minify_field_manual_scripts_1">
-				<strong>Minfy & Concatenate Queue</strong> 
+
+			<label for="mph_minify_field_manual_scripts">
+				<strong>Minfy & Concatenate Queue</strong>
 				<span class="description">List of script handles to minify and concatenate into one file. Comma separated or on a new line</span>
 			</label>
-		
-			<textarea id="mph_minify_field_manual_scripts_hidden" name="mph_minify_options[scripts_manual][]" class="large-text code" style="display:none;"></textarea>
-		
+
+			<textarea id="mph_minify_field_manual_scripts_hidden" name="mph_minify_options[scripts_manual][]" class="large-text code input-template" style="display:none;"></textarea>
+
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
 				<textarea id="mph_minify_field_manual_scripts_<?php echo $i; ?>" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ', ', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
-		
+
 		</div>
 
 		<div id="field_disabled_scripts">
 			<span class="description">Script minification is disabled</span>
 		</div>
 
-		<script>
-
-			// Functionality for showing & hiding the fields depending on whether minifying is enabled
-
-			jQuery( document ).ready( function() {
-
-				var scriptsManual = jQuery('#field_manual_scripts'),
-					scriptsDisabled = jQuery('#field_disabled_scripts'),
-					scriptsToggleManual = jQuery( '#mph_minify_options_scripts_method_manual' );
-
-				var scriptToggle = function () {
-
-					if ( scriptsToggleManual.is( ':checked' ) ) {
-						scriptsManual.slideDown( 100 );
-						scriptsDisabled.slideUp( 100 );
-					} else {
-						scriptsManual.slideUp( 100 );
-						scriptsDisabled.slideDown( 100 );
-					}
-
-				}
-
-				scriptToggle();
-				scriptsToggleManual.siblings( 'input[type=radio]' ).andSelf().change( function() { scriptToggle(); } );
-
-			} );
-
-		</script>
-
-		<?php 
+		<?php
 
 	}
 
 	/**
 	 * Output settings section for styles.
-	 * 
+	 *
 	 * @return null
 	 */
-	function field_method_styles() { 
+	function field_method_styles() {
 
 		if ( empty( $this->options['styles_method'] ) )
 			$this->options['styles_method'] = 'disabled';
@@ -247,65 +220,36 @@ class MPH_Minify_Admin {
 
 		<input type="radio" id="mph_minify_options_styles_method_manual" name="mph_minify_options[styles_method]" value="manual" <?php checked( 'manual', $this->options['styles_method'] ); ?>/><label for="mph_minify_options_styles_method_manual"> Manual minification</label><br/>
 		<input type="radio" id="mph_minify_options_styles_method_disabled" name="mph_minify_options[styles_method]" value="disabled" <?php checked( 'disabled', $this->options['styles_method'] ); ?>/> <label for="mph_minify_options_styles_method_disabled">Disable minification</label>
-	
+
 	<?php }
 
 	function field_styles() {
 
-		$values = ( ! empty( $this->options['styles_manual'] ) ) ? $this->options['styles_manual'] : array(); 
-		
+		$values = ( ! empty( $this->options['styles_manual'] ) ) ? $this->options['styles_manual'] : array();
+
 		?>
 
 		<div id="field_manual_styles">
-			
+
 			<label for="mph_minify_field_manual_styles">
-				<strong>Manual styles</strong> 
+				<strong>Manual styles</strong>
 				<span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span>
 			</label>
-			
-			<textarea id="mph_minify_field_manual_styles_template" name="mph_minify_options[scripts_manual][]" class="large-text code" style="display:none;"></textarea>
-			
+
+			<textarea id="mph_minify_field_manual_styles_template" name="mph_minify_options[scripts_manual][]" class="large-text code input-template" style="display:none;"></textarea>
+
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
 					<textarea id="mph_minify_field_manual_styles_<?php echo $i; ?>" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ', ', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
-		
+
 		</div>
 
 		<div id="field_disabled_styles">
 			<span class="description">Style minification is disabled</span>
 		</div>
 
-		<script>
-
-			// Functionality for showing & hiding the fields depending on whether minifying is enabled
-
-			jQuery( document ).ready( function() {
-
-				var stylesManual = jQuery('#field_manual_styles'),
-					stylesDisabled = jQuery('#field_disabled_styles'),
-					stylesToggleManual = jQuery( '#mph_minify_options_styles_method_manual' );
-
-				var styleFieldToggle = function () {
-
-					if ( stylesToggleManual.is( ':checked' ) ) {
-						stylesManual.slideDown( 100 );
-						stylesDisabled.slideUp( 100 );
-					} else {
-						stylesManual.slideUp( 100 );
-						stylesDisabled.slideDown( 100 );
-					}
-
-				}
-
-				styleFieldToggle();
-				stylesToggleManual.siblings( 'input[type=radio]' ).andSelf().change( function() { styleFieldToggle(); } );
-
-			} );
-
-		</script>
-
-		<?php 
+		<?php
 
 	}
 
@@ -348,7 +292,7 @@ class MPH_Minify_Admin {
 	/**
 	 * Filter inputs that contain a comma separated list of asset handles.
 	 * Return an array ready for saving.
-	 * 
+	 *
 	 * @param  string $list string of comma separated handles
 	 * @return array       array of handles
 	 */
@@ -356,12 +300,26 @@ class MPH_Minify_Admin {
 
 		$list = str_replace( array( "\n", "\r" ), ',', $list );
 
-		$list = explode(',', $list );		
+		$list = explode(',', $list );
 
 		foreach ( $list as &$item )
 			$item = trim( $item );
-		
+
 		return array_filter( $list );
+
+	}
+
+	/**
+	 * Enqueue all scripts required by the admin page
+	 *
+	 * @return null
+	 */
+	function enqueue( $hook ) {
+
+		if ( 'settings_page_mph_minify' !== $hook )
+			return;
+
+		wp_enqueue_script( 'mph-admin', trailingslashit( plugins_url( basename( __DIR__ ) ) ) . 'admin.js' );
 
 	}
 
