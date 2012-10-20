@@ -280,6 +280,11 @@ class MPH_Minify {
 		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
 			$src = $this->class->base_url . $src;
 
+		if ( 'WP_Scripts' == get_class( $this->class ) )
+			$src = apply_filters( 'script_loader_src', $src, $handle );
+		elseif ( 'WP_Styles' == get_class( $this->class ) )
+			$src = apply_filters( 'style_loader_src', $src, $handle );
+
 		// Strip query args.
 		$src = strtok( $src, '?' );
 
@@ -287,7 +292,7 @@ class MPH_Minify {
 		if ( 0 !== strpos( $src, home_url() ) )
 			return;
 
-		return str_replace( home_url(), '', $src );
+		return str_replace( home_url(), '', esc_url( $src ) );
 
 	}
 
