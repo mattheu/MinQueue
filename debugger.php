@@ -4,12 +4,12 @@
  *	Debugger/Helper Tool
  *
  *	When enabled, shown on the front end of the site.
- * 	Debugger window shows all enqueued scripts, and highlights those that are minified. 
+ * 	Debugger window shows all enqueued scripts, and highlights those that are minified.
  */
 
 /**
  * Debugger Style. Inserted into head.
- * 
+ *
  * @todo Seriously i'm not even correclty enqueuing my own styles!
  * @return null
  */
@@ -38,8 +38,11 @@ function mph_minify_debugger_style() {
  * Uses global var $minified_deps (as well as $wp_scritps & $wp_styles)
  */
 function mph_minify_debugger() {
-	
+
 	global $wp_scripts, $wp_styles, $minified_deps;
+
+	$styles_enqueued = array();
+	$scripts_enqueued = array();
 
 	// Get the queue of all scripts & styles that should be loaded.
 	// A bit of a round about way as we need to know those loaded because they are a dependency.
@@ -57,7 +60,7 @@ function mph_minify_debugger() {
 	}
 
 	?>
-	
+
 	<div id="mph-minify-debugger">
 
 		<h2>Enqueued Scripts</h2>
@@ -74,7 +77,7 @@ function mph_minify_debugger() {
 		<ul>
 			<?php mph_minify_debugger_list( array_diff( $styles_enqueued, array_keys( $minified_deps['WP_Styles'] ) ), false ); ?>
 		</ul>
-	
+
 		<h2>Minified Styles</h2>
 		<ul>
 			<?php mph_minify_debugger_list( array_keys( $minified_deps['WP_Styles'] ), false ); ?>
@@ -95,17 +98,17 @@ function mph_minify_debugger() {
 
 /**
  * Output a list of assets for use in the debugger
- * 
+ *
  * @param  array  $asset_list list of handles to display
  * @param  boolean $scripts   whether minifying scripts. If false, minifyling styles.
- * @return null outputs <li> for each handle. 
+ * @return null outputs <li> for each handle.
  */
 function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 
 		global $minified_deps, $wp_scripts, $wp_styles;
 
 		if ( $scripts )
-			$class = &$wp_scripts;	
+			$class = &$wp_scripts;
 		else
 			$class = &$wp_styles;
 
@@ -117,7 +120,7 @@ function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 
 			$classes = array();
 			$classes['group'] = 'mph-min-group-' . ( isset( $class->registered[$handle]->extra['group'] ) ? $class->registered[$handle]->extra['group'] : 0 );
-			
+
 			if ( array_key_exists( $handle, $minified_deps[get_class($class)] ) )
 				$classes['minified'] = 'mph-min-minified';
 
