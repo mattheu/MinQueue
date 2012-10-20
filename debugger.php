@@ -43,13 +43,18 @@ function mph_minify_debugger() {
 
 	// Get the queue of all scripts & styles that should be loaded.
 	// A bit of a round about way as we need to know those loaded because they are a dependency.
-	$wp_scripts->done = array();	
-	$wp_scripts->all_deps( $wp_scripts->queue );
-	$scripts_enqueued = $wp_scripts->to_do;
 
-	$wp_styles->done = array();
-	$wp_styles->all_deps( $wp_styles->queue );
-	$styles_enqueued = $wp_styles->to_do;
+	if ( ! empty( $wp_scripts ) ) {
+		$wp_scripts->done = array();
+		$wp_scripts->all_deps( $wp_scripts->queue );
+		$scripts_enqueued = $wp_scripts->to_do;
+	}
+
+	if ( ! empty( $wp_styles ) ) {
+		$wp_styles->done = array();
+		$wp_styles->all_deps( $wp_styles->queue );
+		$styles_enqueued = $wp_styles->to_do;
+	}
 
 	?>
 	
