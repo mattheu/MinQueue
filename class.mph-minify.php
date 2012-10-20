@@ -99,7 +99,15 @@ class MPH_Minify {
 				if ( ! array_key_exists( $handle, $this->class->registered ) )
 					unset( $this->queue[$key] );
 
-			// Set up the todos - in correct order considering dependencies.
+			// Find all that should normally be enqueued.
+			$this->class->all_deps( $this->class->queue );
+
+			// If no scripts in the queue have been enqueued, don't proccess queue.
+			$intersect = array_intersect( $this->class->to_do, $this->queue );
+			if ( empty( $intersect ) )
+				return array();
+
+			// Set up the todos according to our queue - in correct order considering dependencies.
 			$this->class->all_deps( $this->queue );
 
 	  		foreach ( $this->class->to_do as $key => $handle ) {
