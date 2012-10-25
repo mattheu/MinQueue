@@ -171,6 +171,10 @@ class MPH_Minify {
 
 		}
 
+		// If no $min_src - eg generating minified file, fall back to default.
+		if ( empty ( $min_src ) )
+			return;
+
 		// Mark the minified assets as done so they are not done again.
 		// Keep a global record of all minified assets
 		foreach ( $this->asset_queue[$group] as $asset ) {
@@ -311,17 +315,13 @@ class MPH_Minify {
 
 		$data = @file_get_contents( $min_src );
 
-		if ( $data ) {
+		if ( ! $data )
+			return;
 
-			$data = '/*' . implode( ', ', $handles ) . '*/ ' . $data;
-			file_put_contents( $this->cache_dir . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );
-			return $this->cache_url . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+		$data = '/*' . implode( ', ', $handles ) . '*/ ' . $data;
+		file_put_contents( $this->cache_dir . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );
 
-		} else {
-
-			throw new Exception( 'Error generating minified & concatenated file. Handles:' . implode( ', ', $handles ) );
-
-		}
+		return $this->cache_url . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 
 	}
 
