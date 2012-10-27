@@ -7,6 +7,8 @@ class MPH_Minify_Admin {
 
 	function __construct() {
 
+		add_action( 'admin_init', array( $this, 'init' ) );
+
 		add_action( 'admin_menu', array( $this, 'admin_add_page' ) );
 
 		$this->options = mph_minify_get_plugin_options();
@@ -15,9 +17,19 @@ class MPH_Minify_Admin {
 
 		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
 
-		// Maybe clear cache (done if nonce is verified - done within the function as here is too early)
-		add_action( 'admin_init', array( $this, 'clear_cache' ) );
+	}
 
+	/**
+	 * Admin Init
+	 *
+	 * Everything that needs hooking in here, goes here!
+	 *
+	 */
+	function init() {
+
+		// Maybe clear cache (done if nonce is verified - done within the function as here is too early)
+		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'mph_minify_clear_cache' ) )
+			$this->clear_cache();
 	}
 
 	/**
@@ -310,10 +322,7 @@ class MPH_Minify_Admin {
 	 * @param  boolean $redirect whether
 	 * @return [type]            [description]
 	 */
-	function clear_cache() {
-
-		if ( ! isset( $_REQUEST['_wpnonce'] ) || isset( $_REQUEST['_wpnonce'] ) && ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mph_minify_clear_cache' ) )
-			return;
+	function clear_cache( $redirect = true ) {
 
 		// Delete the cache if requested.
 		$minify = new MPH_Minify( 'WP_Scripts' );
@@ -322,8 +331,10 @@ class MPH_Minify_Admin {
 		$this->add_admin_notice( 'Cache Cleared', 'updated', true );
 
 		// Redirect.
-		wp_redirect( remove_query_arg( '_wpnonce' ) );
-		exit;
+		if ( $redirect ) {
+			wp_redirect( remove_query_arg( '_wpnonce' ) );
+			exit;
+		}
 
 	}
 
