@@ -105,6 +105,10 @@ class MPH_Minify_Admin {
 
 		<a href="<?php echo wp_nonce_url( 'options-general.php?page=mph_minify', 'mph_minify_clear_cache' ); ?>" class="button" style="margin-right: 10px;">Clear Cache</a>
 
+		<?php if ( $cached_files_count = $this->get_cached_files_count() ) : ?>
+			<?php echo $cached_files_count; ?> files cached.
+		<?php endif; ?>
+
 	<?php }
 
 	/**
@@ -297,6 +301,42 @@ class MPH_Minify_Admin {
 			return;
 
 		wp_enqueue_script( 'mph-admin', trailingslashit( plugins_url( basename( __DIR__ ) ) ) . 'admin.js' );
+
+	}
+
+	/**
+	 * Delete all cached files
+	 *
+	 * @param  boolean $redirect whether
+	 * @return [type]            [description]
+	 */
+	function clear_cache() {
+
+		if ( ! isset( $_REQUEST['_wpnonce'] ) || isset( $_REQUEST['_wpnonce'] ) && ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mph_minify_clear_cache' ) )
+			return;
+
+		// Delete the cache if requested.
+		$minify = new MPH_Minify( 'WP_Scripts' );
+		$minify->delete_cache();
+
+		$this->add_admin_notice( 'Cache Cleared', 'updated', true );
+
+		// Redirect.
+		wp_redirect( remove_query_arg( '_wpnonce' ) );
+		exit;
+
+	}
+
+	/**
+	 * Get number of cached files.
+	 *
+	 * @return int number of cached files.
+	 */
+	function get_cached_files_count() {
+
+		$dir = trailingslashit( WP_CONTENT_DIR ) . trailingslashit( apply_filters( 'mph_minify_cache_dir', 'mph_minify_cache' ) );
+
+	 	return count( glob( $dir . "*" ) );
 
 	}
 
