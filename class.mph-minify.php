@@ -319,8 +319,14 @@ class MPH_Minify {
 
 		$data = @file_get_contents( $min_src );
 
-		if ( ! $data )
+		if ( ! $data ) {
+
+			// If error, display admin error notice.
+			$this->add_admin_notice( 'There was an error generating the minified file. Failed processing handles: ' . implode( ', ', $handles ), 'error' );
+
 			return;
+
+		}
 
 		$data = '/*' . implode( ', ', $handles ) . '*/ ' . $data;
 		file_put_contents( $this->cache_dir . $min_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );
