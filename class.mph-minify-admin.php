@@ -60,12 +60,7 @@ class MPH_Minify_Admin {
 	 * Output the main options page content.
 	 * @return null
 	 */
-	function options_page() {
-
-		if ( ! empty( $_GET['mph_minify_action'] ) && 'cache_cleared' == $_GET['mph_minify_action'] )
-			echo '<div class="updated settings-error"><p>Cache Cleared</p></div>';
-
-		?>
+	function options_page() { ?>
 
 		<div class="wrap">
 
