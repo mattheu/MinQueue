@@ -11,6 +11,9 @@ class MPH_Minify {
 	// Cache minified files or do it on the fly.
 	public $cache = true;
 
+	// Check file modified date also when generating new filename.
+	public $checks_last_modified = true;
+
 	// Array of handles to process.
 	public $queue = array();
 
@@ -119,7 +122,8 @@ class MPH_Minify {
 				// Add this asset to the queue.
 				$this->asset_queue[ $this->class->groups[$handle] ][$handle] = array(
 					'handle' => $handle,
-					'version' => $this->class->registered[$handle]->ver
+					'version' => $this->class->registered[$handle]->ver,
+					'modified' => ( $this->checks_last_modified ) ? filemtime( $this->site_root .  $this->get_asset_path( $handle ) ) : false
 				);
 
 				// If this asset is localized, store that data.
