@@ -13,29 +13,10 @@ class MPH_Minify_Admin {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 
-		if ( isset( $_GET['mph_minify_action'] ) && 'clear_cache' == $_GET['mph_minify_action'] )
-			add_action( 'admin_init', array( $this, 'clear_cache' ) );
 		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
 
-	}
-
-	/**
-	 * Delete all cached files
-	 *
-	 * @param  boolean $redirect whether
-	 * @return [type]            [description]
-	 */
-	function clear_cache ( $redirect = true ) {
-
-		// Delete the cache if requested.
-		$minify = new MPH_Minify( 'WP_Scripts' );
-		$minify->delete_cache();
-
-		// Redirect.
-		if ( $redirect ) {
-			wp_redirect( add_query_arg( 'mph_minify_action', 'cache_cleared', remove_query_arg( 'mph_minify_action', wp_get_referer() ) ) );
-			exit;
-		}
+		// Maybe clear cache (done if nonce is verified - done within the function as here is too early)
+		add_action( 'admin_init', array( $this, 'clear_cache' ) );
 
 	}
 
@@ -127,7 +108,7 @@ class MPH_Minify_Admin {
 	 */
 	function field_clear_cache() { ?>
 
-		<a href="<?php echo add_query_arg( 'mph_minify_action', 'clear_cache', remove_query_arg( 'mph_minify_action' ) ); ?>" class="button">Clear Cache</a>
+		<a href="<?php echo wp_nonce_url( 'options-general.php?page=mph_minify', 'mph_minify_clear_cache' ); ?>" class="button" style="margin-right: 10px;">Clear Cache</a>
 
 	<?php }
 
