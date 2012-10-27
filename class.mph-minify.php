@@ -350,4 +350,23 @@ class MPH_Minify {
 
 	}
 
+
+	/**
+	 * Creates an admin notice - saved in options to be shown in the admin, until dismissed.
+	 *
+	 * @param string $new_notice Message content
+	 * @param string $type Message type - added as a class to the message when displayed. Reccommended to use: updated, error.
+	 * @param bool $display_once Display message once, or require manual dismissal.
+	 */
+	function add_admin_notice( $new_notice, $type = 'updated', $display_once = false ) {
+
+		$admin_notices = get_option( 'mph_minify_notices', array() );
+
+		if ( ! in_array( $notice = array( 'type' => $type, 'message' => $new_notice, 'display_once' => $display_once ), $admin_notices ) )
+			$admin_notices[] = $notice;
+
+		update_option( 'mph_minify_notices', $admin_notices );
+
+	}
+
 }

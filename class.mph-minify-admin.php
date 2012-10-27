@@ -15,6 +15,7 @@ class MPH_Minify_Admin {
 
 		if ( isset( $_GET['mph_minify_action'] ) && 'clear_cache' == $_GET['mph_minify_action'] )
 			add_action( 'admin_init', array( $this, 'clear_cache' ) );
+		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
 
 	}
 
@@ -320,6 +321,78 @@ class MPH_Minify_Admin {
 			return;
 
 		wp_enqueue_script( 'mph-admin', trailingslashit( plugins_url( basename( __DIR__ ) ) ) . 'admin.js' );
+
+	}
+
+	/**
+	 * Display all notices in the admin.
+	 *
+	 * @return null
+	 */
+	function display_admin_notices() {
+
+		// If delete admin notice request is set, delete admin notice.
+		if ( isset( $_REQUEST['mph-minify-notice-dismiss'] ) && isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'mph-minify-notice-dismiss' ) )
+			$this->delete_admin_notice( $_REQUEST['mph-minify-notice-dismiss'] );
+
+		// Get admin notices.
+		$admin_notices = get_option( 'mph_minify_notices', array() );
+
+		if ( isset( $this->options['debugger'] ) && $this->options['debugger']  === true )
+			$admin_notices[] = array( 'type' => 'updated', 'message' => 'MPH Minify debugger is currently active', 'display_once' => true );
+
+		// Display admin notices
+		foreach ( $admin_notices as $key => $notice ) {
+
+			echo '<div class="' . $notice['type'] . ' fade"><p>';
+			echo $notice['message'];
+
+			if ( empty( $notice['display_once'] ) )
+				echo '<a class="button" style="margin-left: 10px; color: inherit; text-decoration: none;" href="' . wp_nonce_url( add_query_arg( 'mph-minify-notice-dismiss', $key ), 'mph-minify-notice-dismiss' ) . '">Dismiss</a>';
+
+			echo '</p></div>';
+
+			if ( $notice['display_once'] )
+				unset( $admin_notices[$key] );
+
+		}
+
+		update_option( 'mph_minify_notices', $admin_notices );
+
+	}
+
+	/**
+	 * Deletes an admin notice.
+	 *
+	 * @param string $key message unique identifier
+	 */
+	function delete_admin_notice( $key ) {
+
+		$admin_notices = get_option( 'mph_minify_notices', array() );
+
+		if ( isset( $admin_notices[$key] ) )
+			unset( $admin_notices[$key] );
+
+		update_option( 'mph_minify_notices', $admin_notices );
+
+
+	}
+
+	/**
+	 * Creates an admin notice - saved in options to be shown in the admin, until dismissed.
+	 *
+	 * @param string $new_notice Message content
+	 * @param string $type Message type - added as a class to the message when displayed. Reccommended to use: updated, error.
+	 * @param bool $display_once Display message once, or require manual dismissal.
+	 */
+	function add_admin_notice( $new_notice, $type = 'updated', $display_once = false ) {
+
+		$admin_notices = get_option( 'mph_minify_notices', array() );
+
+		if ( ! in_array( $notice = array( 'type' => $type, 'message' => $new_notice, 'display_once' => $display_once ), $admin_notices ) )
+			$admin_notices[] = $notice;
+
+		update_option( 'mph_minify_notices', $admin_notices );
 
 	}
 
