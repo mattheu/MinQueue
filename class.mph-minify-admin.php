@@ -7,11 +7,11 @@ class MPH_Minify_Admin {
 
 	function __construct() {
 
+		$this->options = mph_minify_get_plugin_options();
+
 		add_action( 'admin_init', array( $this, 'init' ) );
 
 		add_action( 'admin_menu', array( $this, 'admin_add_page' ) );
-
-		$this->options = mph_minify_get_plugin_options();
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 
@@ -27,9 +27,10 @@ class MPH_Minify_Admin {
 	 */
 	function init() {
 
-		// Maybe clear cache (done if nonce is verified - done within the function as here is too early)
+		// Maybe clear cache
 		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'mph_minify_clear_cache' ) )
 			$this->clear_cache();
+
 	}
 
 	/**
@@ -347,7 +348,8 @@ class MPH_Minify_Admin {
 
 		$dir = trailingslashit( WP_CONTENT_DIR ) . trailingslashit( apply_filters( 'mph_minify_cache_dir', 'mph_minify_cache' ) );
 
-	 	return count( glob( $dir . "*" ) );
+		if ( is_dir( $dir ) )
+	 		return count( glob( $dir . "*" ) );
 
 	}
 
