@@ -18,6 +18,7 @@ define( 'MPH_MINIFY_VERSION', '0.0.2' );
 $minified_deps = array( 'WP_Scripts' => array(), 'WP_Styles' => array() );
 global $minified_deps;
 
+// Load the admin - unless settings are not defined.
 if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
 	$admin = new MPH_Minify_Admin();
 
@@ -27,7 +28,7 @@ add_filter( 'mph_minify_cache_dir', 'mph_minify_cache_dir_override' );
 /**
  * Return the function options.
  *
- * Handles defaults & overriding with define.
+ * Sets defaults & handles disabling the admin by defining settings instead.
  */
 function mph_minify_get_plugin_options() {
 
