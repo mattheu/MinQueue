@@ -45,7 +45,7 @@ function mph_minify_get_plugin_options() {
 	else
 		$options = get_option( 'mph_minify_options', $defaults );
 
-	wp_parse_args( $options, $defaults );
+	$options = wp_parse_args( $options, $defaults );
 
 	return $options;
 
