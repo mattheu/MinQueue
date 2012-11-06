@@ -10,11 +10,27 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 * Handles scripts loaded in the footer. These are minified and concatenated separately.
 * Works if WordPress is installed in a subdirectory.
 * Complete control - only a manually defined list of files is processed.
-* Multiple minified files. Can specify several lists of handles to be minified and concatenated into separate files. Useful if you have scripts that are loaded conditionally and should be handled separately rather than minified and concatenated into one large file.
+* Multiple, independently processed files.
 * Minified files are only loaded if at least one component file should be loaded.
 * Compatable with localized scripts.
 * Compatable with LESS: use wp-less plugin: https://github.com/sanchothefat/wp-less.git
 * Debugger tool - displays a list of scripts and styles enqueued on each page on the front end of the site.
+
+## Instructions ##
+
+* Install & Activate the plugin.
+
+### Basic Use ###
+
+* Enable the plugin front end tool to check what scripts and styles are minified on each page.
+* Copy the file handles you want to minify, and paste them into the minify queue textarea on the settings page.
+* Save the settings and view the front end of your site. The processed files are generated on page load. Check that everything is working correctly.
+* Uncheck the show debugger option and save the settings again.
+
+### Advanced Use ###
+
+* Multiple independantly proccessed files. You can specify several lists of file handles to be minified and concatenated into separate files. Useful if you have scripts that are loaded conditionally on certain pages and should be handled separately rather than minified and concatenated into one large file.
+* Options can be defined in your config file. This then disables access to the settings page in the admin.
 
 ## Problems? ##
 
