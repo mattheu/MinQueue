@@ -99,23 +99,25 @@ class MPH_Minify {
 
 		if ( empty( $this->asset_queue ) ) {
 
+			// Use a clone of the current class to avoid conflicts
+			$class = wp_clone( $this->class );
+			$class->all_deps( $class->queue );
+
 			// Remove from queue if not a registered asset.
 			foreach ( $this->queue as $key => $handle )
-				if ( ! array_key_exists( $handle, $this->class->registered ) )
+				if ( ! array_key_exists( $handle, $class->registered ) )
 					unset( $this->queue[$key] );
 
-			// Find all handles that should be enqueued.
-			$this->class->all_deps( $this->class->queue );
-
 			// If no scripts in the queue have been enqueued, don't proccess queue at all.
-			$intersect = array_intersect( $this->class->to_do, $this->queue );
+			$intersect = array_intersect( $class->to_do, $this->queue );
 			if ( empty( $intersect ) )
 				return array();
 
 			// Set up the todos according to our queue - do this to handle dependencies.
-			$this->class->all_deps( $this->queue );
+			$class->to_do = array();
+			$class->all_deps( $this->queue );
 
-	  		foreach ( $this->class->to_do as $key => $handle ) {
+	  		foreach ( $class->to_do as $key => $handle ) {
 
 				// If not in queue - skip
 				// Skip if no asset path (eg is remote.)
@@ -123,15 +125,15 @@ class MPH_Minify {
 					continue;
 
 				// Add this asset to the queue.
-				$this->asset_queue[ $this->class->groups[$handle] ][$handle] = array(
+				$this->asset_queue[ $class->groups[$handle] ][$handle] = array(
 					'handle' => $handle,
-					'version' => $this->class->registered[$handle]->ver,
+					'version' => $class->registered[$handle]->ver,
 					'modified' => ( $this->checks_last_modified ) ? filemtime( $this->site_root .  $this->get_asset_path( $handle ) ) : false
 				);
 
 				// If this asset is localized, store that data.
-				if ( ! empty( $this->class->registered[$handle]->extra['data'] ) )
-					$this->script_localization[ $handle ] = $this->class->registered[$handle]->extra['data'];
+				if ( ! empty( $class->registered[$handle]->extra['data'] ) )
+					$this->script_localization[ $handle ] = $class->registered[$handle]->extra['data'];
 
 			}
 
