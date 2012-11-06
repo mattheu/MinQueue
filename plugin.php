@@ -93,15 +93,6 @@ function mph_minify() {
 
 	}
 
-	// Debugger
-	if ( isset( $options['debugger'] ) && true === $options['debugger'] ) {
-
-		add_action( 'wp_head', 'mph_minify_debugger_style' );
-		add_action( 'wp_footer', 'mph_minify_debugger', 9999 );
-
-	}
-
-
 }
 
 

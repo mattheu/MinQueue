@@ -7,6 +7,14 @@
  * 	Debugger window shows all enqueued scripts, and highlights those that are minified.
  */
 
+$options = mph_minify_get_plugin_options();
+if ( isset( $options['debugger'] ) && true === $options['debugger'] ) {
+
+	add_action( 'wp_head', 'mph_minify_debugger_style' );
+	add_action( 'wp_footer', 'mph_minify_debugger', 9999 );
+
+}
+
 /**
  * Debugger Style. Inserted into head.
  *
