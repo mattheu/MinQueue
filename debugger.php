@@ -30,6 +30,7 @@ function mph_minify_debugger_style() {
 		#mph-minify-debugger h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; }
 		#mph-minify-debugger ul { margin-bottom: 15px; }
 		#mph-minify-debugger ul,
+		#mph-minify-debugger p,
 		#mph-minify-debugger li { list-style: circle outside; padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
 		#mph-minify-debugger li.mph-min-minified { list-style-type: disc; }
 		#mph-minify-debugger li.mph-min-group-0 { color: orange;}
@@ -57,12 +58,14 @@ function mph_minify_debugger() {
 
 	if ( ! empty( $wp_scripts ) ) {
 		$wp_scripts->done = array();
+		$wp_scripts->to_do = array();
 		$wp_scripts->all_deps( $wp_scripts->queue );
 		$scripts_enqueued = $wp_scripts->to_do;
 	}
 
 	if ( ! empty( $wp_styles ) ) {
 		$wp_styles->done = array();
+		$wp_scripts->to_do = array();
 		$wp_styles->all_deps( $wp_styles->queue );
 		$styles_enqueued = $wp_styles->to_do;
 	}
@@ -96,6 +99,7 @@ function mph_minify_debugger() {
 			<li class="mph-min-group-0">Orange: in header</li>
 			<li class="mph-min-group-1">Yellow: in footer</li>
 		</ul>
+		<p>Note: minified files displayed in order of processing, not order in which they are loaded.</p>
 
 	</div>
 
