@@ -386,7 +386,10 @@ class MPH_Minify_Admin {
 
 		}
 
-		update_option( 'mph_minify_notices', $admin_notices );
+		if ( empty( $admin_notices ) )
+			delete_option( 'mph_minify_notices' );
+		else
+			update_option( 'mph_minify_notices', $admin_notices );
 
 	}
 
@@ -402,8 +405,10 @@ class MPH_Minify_Admin {
 		if ( isset( $admin_notices[$key] ) )
 			unset( $admin_notices[$key] );
 
-		update_option( 'mph_minify_notices', $admin_notices );
-
+		if ( empty( $admin_notices ) )
+			delete_option( 'mph_minify_notices' );
+		else
+			update_option( 'mph_minify_notices', $admin_notices );
 
 	}
 
