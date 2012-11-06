@@ -35,7 +35,9 @@ function mph_minify_get_plugin_options() {
 		'debugger' => false,
 		'cache_dir' => 'mph_minify_cache',
 		'scripts_method' => 'disabled',
-		'styles_method' => 'disabled'
+		'styles_method' => 'disabled',
+		'scripts_manual' => array(),
+		'styles_manual' => array()
 	);
 
 	if ( defined( 'MPH_MINIFY_OPTIONS' ) )
@@ -43,7 +45,7 @@ function mph_minify_get_plugin_options() {
 	else
 		$options = get_option( 'mph_minify_options', $defaults );
 
-	wp_parse_args( $options, $defaults );
+	$options = wp_parse_args( $options, $defaults );
 
 	return $options;
 
