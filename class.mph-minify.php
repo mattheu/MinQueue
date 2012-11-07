@@ -37,7 +37,7 @@ class MPH_Minify {
 	function __construct( $class_name ) {
 
 		$this->wp_dir 		 = str_replace( home_url(), '', site_url() );
-		$this->site_root     = str_replace( "$this->wp_dir/", '/', ABSPATH );
+		$this->site_root     = str_replace( "$this->wp_dir" . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, ABSPATH );
 
 		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
 		$this->minify_url    = trailingslashit( $this->plugin_url ) . 'php-minify/min/';
