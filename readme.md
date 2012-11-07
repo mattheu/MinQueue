@@ -38,4 +38,13 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 * Does not work if you enqueue your styles using the wp_print_styles action. I know this sounds like the right place to do it but you should be using the wp_enqueue_scripts action instead! see http://codex.wordpress.org/Plugin_API/Action_Reference/wp_print_styles
 * Minify removes spaces and line breaks. Javascript that relies on these may break. Twitter Bootstrap javascript is not compatable.
 * Be careful of errors in your CSS and JS that may not be apparent when they are loaded separately. eg code comments that are not closed correctly, when concatenated, can comment out all subsequent files.
-* Be careful of dependencies. Avoid infinite loops.
+* Be careful of dependencies & the order things will be processed. See Troubleshooting, Fatal error: Allowed memory size...
+
+## Troubleshooting ##
+
+### Fatal error: Allowed memory size... ###
+
+Created some sort of infinite loop when working out the order of depencies.
+eg Files 1, 2 and 3. File 1 is a dependency of 2, which is a dependency of 3.
+If only scripts 1 and 3 are minified and concatenated into 1 file, it will fail.
+You must either process all files, or handle 1 and 3 in separately.
