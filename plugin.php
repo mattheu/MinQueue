@@ -25,6 +25,8 @@ if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
 add_action( 'wp_enqueue_scripts', 'mph_minify', 9999 );
 add_filter( 'mph_minify_cache_dir', 'mph_minify_cache_dir_override' );
 
+register_deactivation_hook( basename( __DIR__ ) . DIRECTORY_SEPARATOR . basename( __FILE__ ), 'mph_minify_deactivate' );
+
 /**
  * Return the function options.
  *
@@ -115,5 +117,24 @@ function mph_minify_cache_dir_override( $cache_dir ) {
 		return $options[ 'cache_dir' ];
 
 	return $cache_dir;
+
+}
+
+
+/**
+ * Plugn deactivate callback
+ *
+ * Delete all options and files.
+ *
+ * @return null
+ */
+function mph_minify_deactivate() {
+
+	// Delete the cache if requested.
+	$minify = new MPH_Minify( 'WP_Scripts' );
+	$minify->delete_cache();
+
+	delete_option( 'mph_minify_notices' );
+	delete_option( 'mph_minify_options' );
 
 }
