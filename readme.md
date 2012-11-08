@@ -31,6 +31,7 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 
 * Multiple independantly proccessed files. You can specify several lists of file handles to be minified and concatenated into separate files. Useful if you have scripts that are loaded conditionally on certain pages and should be handled separately rather than minified and concatenated into one large file.
 * Options can be defined in your config file. This then disables access to the settings page in the admin.
+* Install MPH Minfiy outside of plugins directory? eg as an mu-plugin or in a theme? You will need to filter the plugins_url using 'mph_minify_plugin_dir' filter to give the root relative path to the location of the plugin.
 
 ## Problems? ##
 
@@ -44,7 +45,10 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 
 ### Fatal error: Allowed memory size... ###
 
-Created some sort of infinite loop when working out the order of depencies.
-eg Files 1, 2 and 3. File 1 is a dependency of 2, which is a dependency of 3.
+You have probably created an infinite loop when working out the order of depencies.
+
+_Example:_
+Files 1, 2 and 3 are enqueued. File 1 is a dependency of 2, which is a dependency of 3.
 If only scripts 1 and 3 are minified and concatenated into 1 file, it will fail.
-You must either process all files, or handle 1 and 3 in separately.
+This is because the processed file is now a dependency of file 2, but file 2 is also a dependency of it.
+You must either process all files, or process 1 and 3 in separately.

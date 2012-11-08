@@ -11,21 +11,23 @@ Author URI: http://www.matth.eu
 
 require_once( 'class.mph-minify.php' );
 require_once( 'class.mph-minify-admin.php' );
+require_once( 'class.mph-minify-notices.php' );
 require_once( 'debugger.php' );
 
 define( 'MPH_MINIFY_VERSION', '0.0.2' );
 
 $minified_deps = array( 'WP_Scripts' => array(), 'WP_Styles' => array() );
+
 global $minified_deps;
+
+add_action( 'wp_enqueue_scripts', 'mph_minify', 9999 );
+
+register_deactivation_hook( basename( __DIR__ ) . DIRECTORY_SEPARATOR . basename( __FILE__ ), 'mph_minify_deactivate' );
 
 // Load the admin - unless settings are not defined.
 if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
 	$admin = new MPH_Minify_Admin();
 
-add_action( 'wp_enqueue_scripts', 'mph_minify', 9999 );
-add_filter( 'mph_minify_cache_dir', 'mph_minify_cache_dir_override' );
-
-register_deactivation_hook( basename( __DIR__ ) . DIRECTORY_SEPARATOR . basename( __FILE__ ), 'mph_minify_deactivate' );
 
 /**
  * Return the function options.
@@ -99,27 +101,6 @@ function mph_minify() {
 	}
 
 }
-
-
-/**
- * Filter the cache directory to allow setting your own.
- *
- * If settings or defined
- *
- * @param  [type] $cache_dir [description]
- * @return [type]            [description]
- */
-function mph_minify_cache_dir_override( $cache_dir ) {
-
-	$options = mph_minify_get_plugin_options();
-
-	if ( ! empty( $options[ 'cache_dir' ] ) )
-		return $options[ 'cache_dir' ];
-
-	return $cache_dir;
-
-}
-
 
 /**
  * Plugn deactivate callback
