@@ -57,7 +57,6 @@ class MPH_Minify_Admin {
 		add_settings_section( 'plugin_main', 'Script Minification', array( $this, 'general_options_text' ), 'script_minify_options' );
 		add_settings_section( 'plugin_main', 'Style Minification', array( $this, 'general_options_text' ), 'style_minify_options' );
 
-		add_settings_field( 'mph_minify_cache_dir', 'Cache directory name', array( $this, 'field_cache_dir' ), 'general_minify_options', 'plugin_main' );
 		add_settings_field( 'mph_minify_debugger', 'Enable debugger', array( $this, 'field_debugger' ), 'general_minify_options', 'plugin_main' );
 		add_settings_field( 'mph_minify_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
 
@@ -121,18 +120,6 @@ class MPH_Minify_Admin {
 		<?php if ( $cached_files_count = $this->get_cached_files_count() ) : ?>
 			<?php echo $cached_files_count; ?> files cached.
 		<?php endif; ?>
-
-	<?php }
-
-	/**
-	 * Output cache dir setting field
-	 *
-	 * @return null
-	 */
-	function field_cache_dir() { ?>
-
-		<input type="text" class="regular-text code" id="mph_minify_options_cache_dir" name="mph_minify_options[cache_dir]" value="<?php echo esc_attr( $this->options['cache_dir'] ); ?>"/>
-		<input type="hidden" name="mph_minify_options[cache_dir_original]" value="<?php echo esc_attr( $this->options['cache_dir'] ); ?>"/>
 
 	<?php }
 
@@ -263,10 +250,6 @@ class MPH_Minify_Admin {
 		$input['styles_manual'] = array_merge( array_filter( $input['styles_manual'] ) );
 
 		$input['debugger'] = ( empty( $input['debugger'] ) ) ? false : true;
-
-		// If the cache dir has changed delete the old one.
-		if ( $input['cache_dir'] !== $input['cache_dir_original'] )
-			$this->clear_cache( false );
 
 		// If method is manual, and no manual handles are set, disable minification.
 		if ( 'manual' == $input['styles_method'] && empty( $input['styles_manual'] ) )
