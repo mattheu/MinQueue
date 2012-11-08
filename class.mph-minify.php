@@ -376,7 +376,11 @@ class MPH_Minify {
 	public function delete_cache() {
 
 		$cache_dir_path = $this->site_root . $this->cache_dir;
+
+		if ( ! is_dir( $cache_dir_path ) ) {
+			$this->add_admin_notice( 'Cache empty.', true );
 			return;
+		}
 
 		$files = new RecursiveIteratorIterator(
     		new RecursiveDirectoryIterator( $cache_dir_path, RecursiveDirectoryIterator::SKIP_DOTS ),
@@ -390,6 +394,8 @@ class MPH_Minify {
 
 		rmdir( $cache_dir_path );
 
+		$this->add_admin_notice( 'Cache cleared.', true );
+
 	}
 
 
@@ -400,14 +406,10 @@ class MPH_Minify {
 	 * @param string $type Message type - added as a class to the message when displayed. Reccommended to use: updated, error.
 	 * @param bool $display_once Display message once, or require manual dismissal.
 	 */
-	function add_admin_notice( $new_notice, $type = 'updated', $display_once = false ) {
+	private function add_admin_notice( $new_notice, $display_once = false, $type = 'updated' ) {
 
-		$admin_notices = get_option( 'mph_minify_notices', array() );
-
-		if ( ! in_array( $notice = array( 'type' => $type, 'message' => $new_notice, 'display_once' => $display_once ), $admin_notices ) )
-			$admin_notices[] = $notice;
-
-		update_option( 'mph_minify_notices', $admin_notices );
+		$admin_notices = new MPH_Admin_Notices( $this->prefix );
+		$admin_notices->add_notice( $new_notice, $display_once, $type );
 
 	}
 

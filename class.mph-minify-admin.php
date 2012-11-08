@@ -2,20 +2,33 @@
 
 class MPH_Minify_Admin {
 
-	var $options = '';
-	var $notices = array();
+	// Plugin unique prefix. Used for options, filenames etc.
+	public $prefix = 'mph-min';
+
+	// Plugin options
+	var $options;
+
+	// Reference to admin notice abstraction.
+	var $admin_notices = array();
 
 	function __construct() {
 
+		$this->prefix = apply_filters( 'mph_minify_prefix', $this->prefix );
+
 		$this->options = mph_minify_get_plugin_options();
+		$this->admin_notices = new MPH_Admin_Notices( $this->prefix );
 
 		add_action( 'admin_init', array( $this, 'init' ) );
-
+		add_action( 'admin_notices', array( $this, 'admin_notices' ), 1 );
 		add_action( 'admin_menu', array( $this, 'admin_add_page' ) );
-
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 
-		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
+	}
+
+	function admin_notices() {
+
+		if ( isset( $this->options['debugger'] ) && $this->options['debugger'] === true )
+			$this->admin_notices->add_notice( 'MPH Minify debugger is currently active', true );
 
 	}
 
@@ -312,8 +325,6 @@ class MPH_Minify_Admin {
 		$minify = new MPH_Minify( 'WP_Scripts' );
 		$minify->delete_cache();
 
-		$this->add_admin_notice( 'Cache Cleared', 'updated', true );
-
 		// Redirect.
 		if ( $redirect ) {
 			wp_redirect( remove_query_arg( '_wpnonce' ) );
@@ -329,87 +340,9 @@ class MPH_Minify_Admin {
 	 */
 	function get_cached_files_count() {
 
-		$dir = trailingslashit( WP_CONTENT_DIR ) . trailingslashit( apply_filters( 'mph_minify_cache_dir', 'mph_minify_cache' ) );
+		$minify = new MPH_Minify( 'WP_Scripts' );
 
-		if ( is_dir( $dir ) )
-	 		return count( glob( $dir . "*" ) );
-
-	}
-
-	/**
-	 * Display all notices in the admin.
-	 *
-	 * @return null
-	 */
-	function display_admin_notices() {
-
-		// If delete admin notice request is set, delete admin notice.
-		if ( isset( $_REQUEST['mph-minify-notice-dismiss'] ) && isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'mph-minify-notice-dismiss' ) )
-			$this->delete_admin_notice( $_REQUEST['mph-minify-notice-dismiss'] );
-
-		// Get admin notices.
-		$admin_notices = get_option( 'mph_minify_notices', array() );
-
-		if ( isset( $this->options['debugger'] ) && $this->options['debugger']  === true )
-			$admin_notices[] = array( 'type' => 'updated', 'message' => 'MPH Minify debugger is currently active', 'display_once' => true );
-
-		// Display admin notices
-		foreach ( $admin_notices as $key => $notice ) {
-
-			echo '<div class="' . $notice['type'] . ' fade"><p>';
-			echo $notice['message'];
-
-			if ( empty( $notice['display_once'] ) )
-				echo '<a class="button" style="margin-left: 10px; color: inherit; text-decoration: none;" href="' . wp_nonce_url( add_query_arg( 'mph-minify-notice-dismiss', $key ), 'mph-minify-notice-dismiss' ) . '">Dismiss</a>';
-
-			echo '</p></div>';
-
-			if ( $notice['display_once'] )
-				unset( $admin_notices[$key] );
-
-		}
-
-		if ( empty( $admin_notices ) )
-			delete_option( 'mph_minify_notices' );
-		else
-			update_option( 'mph_minify_notices', $admin_notices );
-
-	}
-
-	/**
-	 * Deletes an admin notice.
-	 *
-	 * @param string $key message unique identifier
-	 */
-	function delete_admin_notice( $key ) {
-
-		$admin_notices = get_option( 'mph_minify_notices', array() );
-
-		if ( isset( $admin_notices[$key] ) )
-			unset( $admin_notices[$key] );
-
-		if ( empty( $admin_notices ) )
-			delete_option( 'mph_minify_notices' );
-		else
-			update_option( 'mph_minify_notices', $admin_notices );
-
-	}
-
-	/**
-	 * Creates an admin notice - saved in options to be shown in the admin, until dismissed.
-	 *
-	 * @param string $new_notice Message content
-	 * @param string $type Message type - added as a class to the message when displayed. Reccommended to use: updated, error.
-	 * @param bool $display_once Display message once, or require manual dismissal.
-	 */
-	function add_admin_notice( $new_notice, $type = 'updated', $display_once = false ) {
-
-		$admin_notices = get_option( 'mph_minify_notices', array() );
-
-		if ( ! in_array( $notice = array( 'type' => $type, 'message' => $new_notice, 'display_once' => $display_once ), $admin_notices ) )
-			$admin_notices[] = $notice;
-
-		update_option( 'mph_minify_notices', $admin_notices );
+		return $minify->get_cached_files_count();
 
 	}
 
