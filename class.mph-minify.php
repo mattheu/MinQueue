@@ -14,6 +14,12 @@ class MPH_Minify {
 	// Array of handles to process.
 	public $queue = array();
 
+	// URL of the plugin directory.
+	private $plugin_url;
+
+	// Root relative path of the cache directory
+	private $cache_dir;
+
 	// Internal reference to global record of everything minified
 	private $minified_deps;
 
@@ -21,7 +27,7 @@ class MPH_Minify {
 	private $class;
 
 	// Internal queue of assets to be minified. By group.
-	private $asset_queue = array();
+	private $process_queue = array();
 
 	// Array of script Localization data.
 	private $script_localization = array();
@@ -33,15 +39,19 @@ class MPH_Minify {
 	 */
 	function __construct( $class_name ) {
 
-		$this->wp_dir 		 = str_replace( home_url(), '', site_url() );
-		$this->site_root     = str_replace( "$this->wp_dir" . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, ABSPATH );
+		global $wp_scripts, $wp_styles, $minified_deps;
 
-		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
-		$this->minify_url    = trailingslashit( $this->plugin_url ) . 'php-minify/min/';
+		$this->prefix        = apply_filters( 'mph_minify_prefix', $this->prefix );
 
-		$this->cache_dirname = trailingslashit( apply_filters( 'mph_minify_cache_dir', 'mph_minify_cache' ) );
-		$this->cache_url     = trailingslashit( WP_CONTENT_URL ) . $this->cache_dirname;
-		$this->cache_dir     = trailingslashit( WP_CONTENT_DIR ) . $this->cache_dirname;
+		$wp_dir 		     = str_replace( home_url(), '', site_url() );
+		$this->site_root     = str_replace( "$wp_dir" . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, ABSPATH );
+		$this->site_root     = apply_filters( 'mph_minify_site_root', $this->site_root );
+
+		$this->plugin_url    = apply_filters( 'mph_minify_plugin_url', trailingslashit( plugins_url( basename( __DIR__ ) ) ) );
+
+		$uploads             = wp_upload_dir();
+		$this->cache_dir     = trailingslashit( str_replace( $this->site_root, '', $uploads['basedir'] ) ) . $this->prefix . '-cache';
+		$this->cache_dir     = apply_filters( 'mph_minify_cache_dir', $this->cache_dir );
 
 		// Global record of everything minified.
 		global $minified_deps;
