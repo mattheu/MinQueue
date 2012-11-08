@@ -398,6 +398,19 @@ class MPH_Minify {
 
 	}
 
+	/**
+	 * Get number of cached files.
+	 *
+	 * @return int number of cached files.
+	 */
+	public function get_cached_files_count() {
+
+		$dir = $this->site_root . $this->cache_dir;
+
+		if ( is_dir( $dir ) )
+	 		return count( glob( $dir . "*" ) );
+
+	}
 
 	/**
 	 * Creates an admin notice - saved in options to be shown in the admin, until dismissed.
