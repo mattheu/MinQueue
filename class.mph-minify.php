@@ -361,7 +361,7 @@ class MPH_Minify {
 		}
 
 		$data = '/*' . implode( ', ', $this->process_queue[$group] ) . '*/ ' . $data;
-		file_put_contents( $this->site_root . $this->cache_dir . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );
+		file_put_contents( trailingslashit( $this->site_root . $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );
 
 		return home_url( '/' ) . trailingslashit( $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 
