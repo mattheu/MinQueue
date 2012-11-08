@@ -2,11 +2,8 @@
 
 class MPH_Minify {
 
-	// Useful stuff.
-	public $prefix = 'mph-min-';
-	public $plugin_url;
-	public $minify_url;
-	public $cache_url;
+	// Prefix
+	private $prefix = 'mph-min';
 
 	// Cache minified files or do it on the fly.
 	public $cache = true;
