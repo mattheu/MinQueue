@@ -74,10 +74,10 @@ class MPH_Minify_Admin {
 		add_settings_field( 'mph_minify_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
 
 		add_settings_field( 'mph_minify_styles_method', 'Script minification method', array( $this, 'field_method_scripts' ), 'script_minify_options', 'plugin_main' );
-		add_settings_field( 'mph_minify_scripts', 'Script minification settings', array( $this, 'field_scripts' ), 'script_minify_options', 'plugin_main' );
+		add_settings_field( 'mph_minify_scripts', 'Script minification queue', array( $this, 'field_scripts' ), 'script_minify_options', 'plugin_main' );
 
 		add_settings_field( 'mph_minify_styles_method', 'Style minification method', array( $this, 'field_method_styles' ), 'style_minify_options', 'plugin_main' );
-		add_settings_field( 'mph_minify_styles', 'Style minification settings', array( $this, 'field_styles' ), 'style_minify_options', 'plugin_main' );
+		add_settings_field( 'mph_minify_styles', 'Style minification queue', array( $this, 'field_styles' ), 'style_minify_options', 'plugin_main' );
 
 	}
 
@@ -179,8 +179,8 @@ class MPH_Minify_Admin {
 		<div id="field_manual_scripts">
 
 			<label for="mph_minify_field_manual_scripts">
-				<strong>Minfy & Concatenate Queue</strong>
-				<span class="description">List of script handles to minify and concatenate into one file. Comma separated or on a new line</span>
+				<p><span class="description">List of script handles to minify and concatenate into one file. Comma separated or on a new line</span></p>
+				<p><span class="description">Multiple queues will be processed separately, creating multiple processed files.</span></p>
 			</label>
 
 			<textarea id="mph_minify_field_manual_scripts_hidden" name="mph_minify_options[scripts_manual][]" class="large-text code input-template" style="display:none;"></textarea>
@@ -226,8 +226,8 @@ class MPH_Minify_Admin {
 		<div id="field_manual_styles">
 
 			<label for="mph_minify_field_manual_styles">
-				<strong>Manual styles</strong>
-				<span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span>
+				<p><span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span></p>
+				<p><span class="description">Multiple queues will be processed separately, creating multiple processed files.</span></p>
 			</label>
 
 			<textarea id="mph_minify_field_manual_styles_template" name="mph_minify_options[scripts_manual][]" class="large-text code input-template" style="display:none;"></textarea>
