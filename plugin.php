@@ -5,36 +5,62 @@ Plugin Name: MPH Minify
 Plugin URI: http://matth.eu
 Description: Mega Simple Minify. Minifies enqueued scripts & styles.
 Author: Matthew Haines-Young
-Version: 0.2
+Version: 1.0-beta1
 Author URI: http://www.matth.eu
 */
 
+// The core minify class.
 require_once( 'class.mph-minify.php' );
+
+// Minify Admin Page.
 require_once( 'class.mph-minify-admin.php' );
+
+// Admin Notices Abstraction to handle displaying of admin notices.
 require_once( 'class.mph-minify-notices.php' );
+
+// Front end debugger tool for showing what is enqueued on each page.
 require_once( 'debugger.php' );
 
-define( 'MPH_MINIFY_VERSION', '0.0.2' );
+define( 'MPH_MINIFY_VERSION', '1.0-beta1' );
 
 $minified_deps = array( 'WP_Scripts' => array(), 'WP_Styles' => array() );
-
 global $minified_deps;
 
-add_action( 'wp_enqueue_scripts', 'mph_minify', 9999 );
+add_action( 'init', 'mph_minify_init' );
 
-register_deactivation_hook( basename( __DIR__ ) . DIRECTORY_SEPARATOR . basename( __FILE__ ), 'mph_minify_deactivate' );
+/**
+ * Init
+ *
+ * @return null
+ */
+function mph_minify_init () {
 
-// Load the admin - unless settings are not defined.
-if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
-	$admin = new MPH_Minify_Admin();
+	// Save current version no.
+	if ( ! $version = get_option( 'mph_minify_version' ) )
+		update_option( 'mph_minify_version', MPH_MINIFY_VERSION );
 
+	// Update hook.
+	if ( 0 !== version_compare( $version, MPH_MINIFY_VERSION ) ) {
+		do_action( 'mph_minify_update', $version, MPH_MINIFY_VERSION );
+		update_option( 'mph_minify_version', MPH_MINIFY_VERSION );
+	}
+
+	add_action( 'wp_enqueue_scripts', 'mph_minify', 9999 );
+
+	// Load the admin - unless settings are not defined.
+	if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
+		new MPH_Minify_Admin;
+
+	register_deactivation_hook( basename( __DIR__ ) . DIRECTORY_SEPARATOR . basename( __FILE__ ), 'mph_minify_deactivation_hook' );
+
+}
 
 /**
  * Return the function options.
  *
  * Sets defaults & handles disabling the admin by defining settings instead.
  */
-function mph_minify_get_plugin_options() {
+function mph_minify_get_options() {
 
 	$defaults = array(
 		'debugger' => false,
@@ -56,14 +82,14 @@ function mph_minify_get_plugin_options() {
 
 }
 
-/**
+	/**
  * Main Plugin Functionality.
  *
  * @return null
  */
 function mph_minify() {
 
-	$options = mph_minify_get_plugin_options();
+	$options = mph_minify_get_options();
 
 	$instances = array(
 		'scripts' => array(),
@@ -109,7 +135,7 @@ function mph_minify() {
  *
  * @return null
  */
-function mph_minify_deactivate() {
+function mph_minify_deactivation_hook() {
 
 	// Delete the cache if requested.
 	$minify = new MPH_Minify( 'WP_Scripts' );
@@ -119,3 +145,4 @@ function mph_minify_deactivate() {
 	delete_option( 'mph_minify_options' );
 
 }
+

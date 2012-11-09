@@ -15,7 +15,7 @@ class MPH_Minify_Admin {
 
 		$this->prefix = apply_filters( 'mph_minify_prefix', $this->prefix );
 
-		$this->options = mph_minify_get_plugin_options();
+		$this->options = mph_minify_get_options();
 		$this->admin_notices = new MPH_Admin_Notices( $this->prefix );
 
 		add_action( 'admin_init', array( $this, 'init' ) );
