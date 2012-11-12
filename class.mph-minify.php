@@ -70,7 +70,6 @@ class MPH_Minify {
 
 	}
 
-
 	/**
 	 * Action! Run the minifier.
 	 *
@@ -431,6 +430,5 @@ class MPH_Minify {
 
 	}
 
-	}
 
 }
