@@ -130,6 +130,8 @@ function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 
 	global $minified_deps, $wp_scripts, $wp_styles;
 
+	$options = mph_minify_get_options();
+
 	if ( $scripts )
 		$class = &$wp_scripts;
 	else
@@ -147,10 +149,15 @@ function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 		if ( array_key_exists( $handle, $minified_deps[get_class($class)] ) )
 			$classes['minified'] = 'mph-min-minified';
 
+		if ( 'WP_Scripts' == get_class($class) )
+			$checked = in_array( $handle, $options['scripts_manual'][0] ) || in_array( $handle, $options['scripts_manual'][0] );
+		if ( 'WP_Styles' == get_class($class) )
+			$checked = in_array( $handle, $options['styles_manual'][0] ) || in_array( $handle, $options['styles_manual'][0] );
+
 		?>
 		<li class="<?php echo implode( ' ', $classes ); ?>" title="<?php echo implode( ', ', $class->registered[$handle]->deps ); ?>">
 			<label for="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>">
-				<input type="checkbox" name="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>[]" id="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>" value="<?php echo $handle; ?>" <?php checked( array_key_exists( $handle, $minified_deps[get_class($class)] ) ); ?> />
+				<input type="checkbox" name="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>[]" id="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>" value="<?php echo $handle; ?>" <?php checked( $checked ); ?>/>
 				<?php echo $handle; ?>
 			</label>
 		</li>
@@ -166,7 +173,7 @@ function mph_minify_tool_process() {
 	if ( ! isset( $_POST['mph_minify_tool_nonce'] ) || ! wp_verify_nonce( $_POST['mph_minify_tool_nonce'], 'mph_minify_tool' ) )
 		return;
 
-	$options = mph_minify_get_plugin_options();
+	$options = mph_minify_get_options();
 
 	$submitted = ( isset( $_POST['mph_minify_scripts'] ) ) ? $_POST['mph_minify_scripts'] : array();
 	$minified_scripts = array();
