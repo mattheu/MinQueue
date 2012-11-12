@@ -62,8 +62,6 @@ class MPH_Admin_Notices {
 			update_option( $this->ID, $this->admin_notices );
 		}
 
-		hm_log( 'saving' );
-
 	}
 
 	/**
