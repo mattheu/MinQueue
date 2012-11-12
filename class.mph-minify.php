@@ -40,7 +40,7 @@ class MPH_Minify {
 	 *
 	 * @param string $class Minify assets for this class.
 	 */
-	function __construct( $class_name ) {
+	function __construct( $class_name = 'WP_Scripts' ) {
 
 		global $wp_scripts, $wp_styles, $minified_deps;
 
