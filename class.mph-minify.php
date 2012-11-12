@@ -32,6 +32,9 @@ class MPH_Minify {
 	// Array of script Localization data.
 	private $script_localization = array();
 
+	// Reference to MPH_Admin_Notices class
+	private $admin_notices;
+
 	/**
 	 * Set things up.
 	 *
@@ -421,8 +424,12 @@ class MPH_Minify {
 	 */
 	private function add_admin_notice( $new_notice, $display_once = false, $type = 'updated' ) {
 
-		$admin_notices = new MPH_Admin_Notices( $this->prefix );
-		$admin_notices->add_notice( $new_notice, $display_once, $type );
+		if ( ! $this->admin_notices )
+			$this->admin_notices = new MPH_Admin_Notices( $this->prefix );
+
+		$this->admin_notices->add_notice( $new_notice, $display_once, $type );
+
+	}
 
 	}
 
