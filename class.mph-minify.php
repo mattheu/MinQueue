@@ -2,11 +2,8 @@
 
 class MPH_Minify {
 
-	// Useful stuff.
-	public $prefix = 'mph-min-';
-	public $plugin_url;
-	public $minify_url;
-	public $cache_url;
+	// Prefix
+	private $prefix = 'mph-min';
 
 	// Cache minified files or do it on the fly.
 	public $cache = true;
@@ -17,6 +14,12 @@ class MPH_Minify {
 	// Array of handles to process.
 	public $queue = array();
 
+	// URL of the plugin directory.
+	private $plugin_url;
+
+	// Root relative path of the cache directory
+	private $cache_dir;
+
 	// Internal reference to global record of everything minified
 	private $minified_deps;
 
@@ -24,63 +27,61 @@ class MPH_Minify {
 	private $class;
 
 	// Internal queue of assets to be minified. By group.
-	private $asset_queue = array();
+	private $process_queue = array();
 
 	// Array of script Localization data.
 	private $script_localization = array();
+
+	// Reference to MPH_Admin_Notices class
+	private $admin_notices;
 
 	/**
 	 * Set things up.
 	 *
 	 * @param string $class Minify assets for this class.
 	 */
-	function __construct( $class_name ) {
+	function __construct( $class_name = 'WP_Scripts' ) {
 
-		$this->wp_dir 		 = str_replace( home_url(), '', site_url() );
-		$this->site_root     = str_replace( "$this->wp_dir" . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, ABSPATH );
+		global $wp_scripts, $wp_styles, $minified_deps;
 
-		$this->plugin_url    = plugins_url( basename( __DIR__ ) );
-		$this->minify_url    = trailingslashit( $this->plugin_url ) . 'php-minify/min/';
+		$this->prefix        = apply_filters( 'mph_minify_prefix', $this->prefix );
 
-		$this->cache_dirname = trailingslashit( apply_filters( 'mph_minify_cache_dir', 'mph_minify_cache' ) );
-		$this->cache_url     = trailingslashit( WP_CONTENT_URL ) . $this->cache_dirname;
-		$this->cache_dir     = trailingslashit( WP_CONTENT_DIR ) . $this->cache_dirname;
+		$wp_dir 		     = str_replace( home_url(), '', site_url() );
+		$this->site_root     = str_replace( "$wp_dir" . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, ABSPATH );
+		$this->site_root     = apply_filters( 'mph_minify_site_root', $this->site_root );
+
+		$this->plugin_url    = apply_filters( 'mph_minify_plugin_url', trailingslashit( plugins_url( basename( __DIR__ ) ) ) );
+
+		$uploads             = wp_upload_dir();
+		$this->cache_dir     = trailingslashit( str_replace( $this->site_root, '', $uploads['basedir'] ) ) . $this->prefix . '-cache';
+		$this->cache_dir     = apply_filters( 'mph_minify_cache_dir', $this->cache_dir );
 
 		// Global record of everything minified.
-		global $minified_deps;
 		$this->minified_deps = &$minified_deps;
 
 		// Set up which WP_Dependencies sub-class to use.
-		if ( 'WP_Scripts' ==  $class_name ) {
-
-			global $wp_scripts;
+		if ( 'WP_Scripts' ==  $class_name )
 			$this->class = &$wp_scripts;
-
-		} elseif ( 'WP_Styles' == $class_name ) {
-
-			global $wp_styles;
+		elseif ( 'WP_Styles' == $class_name )
 			$this->class = &$wp_styles;
-
-		}
 
 		if ( ! empty( $this->class ) && ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
 			die( get_class( $this->class ) . ' does not extend WP_Dependencies' );
 
 	}
 
-
 	/**
 	 * Action! Run the minifier.
 	 *
 	 * @return null
 	 */
-	function minify() {
+	public function minify() {
 
 		if ( empty( $this->class ) )
 			return;
 
 		// Get the queue of assets & Enqueue each group.
-		foreach ( (array) $this->get_asset_queue() as $group => $assets  )
+		foreach ( (array) $this->get_process_queue() as $group => $assets  )
 			$this->enqueue_minified_group( $group );
 
 		// Add the localization data to the head. Do it as early as possible.
@@ -91,12 +92,13 @@ class MPH_Minify {
 
 	/**
 	 * Get the queue of assets to be minified & concatenated
+	 * Handles dependencies etc.
 	 *
-	 * @return array asset queue. An array of classes. Contains array of groups. contains array of asset handles.
+	 * @return array process_queue. An array of file handles.
 	 */
-	function get_asset_queue() {
+	private function get_process_queue() {
 
-		if ( empty( $this->asset_queue ) ) {
+		if ( empty( $this->process_queue ) ) {
 
 			// Use a clone of the current class to avoid conflicts
 			$_class = wp_clone( $this->class );
@@ -123,7 +125,7 @@ class MPH_Minify {
 				if ( ! in_array( $handle, $this->queue ) || ! $this->get_asset_path( $handle ) )
 					continue;
 
-				$this->asset_queue[$_class->groups[$handle]][] = $handle;
+				$this->process_queue[$_class->groups[$handle]][] = $handle;
 
 				// If this asset is localized, store that data.
 				if ( ! empty( $_class->registered[$handle]->extra['data'] ) )
@@ -133,7 +135,7 @@ class MPH_Minify {
 
 		}
 
-		return $this->asset_queue;
+		return $this->process_queue;
 
 	}
 
@@ -145,12 +147,14 @@ class MPH_Minify {
 	 * @param  int $group Group identifier
 	 * @return null
 	 */
-	function enqueue_minified_group( $group ) {
+	private function enqueue_minified_group( $group ) {
 
-		// Handle used as filename. It is a crc32 hash of the current group asset queue - contains version numbers
+		// Unique handle used as filename. (hash of the current group & version info)
 		$group_handle = $this->get_group_handle( $group );
-		$min_src      = trailingslashit( $this->cache_url ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
-		$min_path     = trailingslashit( $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+		$group_filename = $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+
+		$min_path     = trailingslashit( $this->site_root . $this->cache_dir ) . $group_filename;
+		$min_src      = trailingslashit( home_url( '/' ) . $this->cache_dir ) . $group_filename;
 
 		// If no cached file - generate minified asset src.
 		if ( ! file_exists( $min_path ) ) {
@@ -168,7 +172,7 @@ class MPH_Minify {
 
 		// Mark the minified assets as done so they are not done again.
 		// Keep a global record of all minified assets
-		foreach ( $this->asset_queue[$group] as $handle ) {
+		foreach ( $this->process_queue[$group] as $handle ) {
 
 			$this->class->to_do = array_diff( $this->class->to_do, array( $handle ) );
 			$this->class->done[] = $handle;
@@ -198,13 +202,13 @@ class MPH_Minify {
 	 * @param  int $group the group of handles currently being processed.
 	 * @return arary of handles that are dependencies of the current minify group.
 	 */
-	function get_group_deps( $group ) {
+	private function get_group_deps( $group ) {
 
 		// Add any deps of assets in queue that are not themselves part of this queue as a dependency of the minified/concatenated file.
 		$deps = array();
-		foreach ( $this->asset_queue[$group] as $handle )
+		foreach ( $this->process_queue[$group] as $handle )
 			foreach ( $this->class->registered[$handle]->deps as $dep )
-				if ( ! in_array( $dep, $this->asset_queue[$group] ) && ! in_array( $dep, $deps ) )
+				if ( ! in_array( $dep, $this->process_queue[$group] ) && ! in_array( $dep, $deps ) )
 					$deps[] = $dep;
 
 		return $deps;
@@ -214,18 +218,18 @@ class MPH_Minify {
 	/**
 	 * Set up all dependencies for a group.
 	 *
-	 * Minifying and concatenating removes handles from the queue. Causes problems with dependencies.
-	 * Modify dependencies of registered assets that have a file within this group.
+	 * Minifying and concatenating removes items from the queue.
+	 * We need to modify dependencies of registered assets that have a file within this group.
 	 *
 	 * @param  int $group the group of handles currently being processed.
 	 * @return arary of handles that are dependencies of the current minify group.
 	 */
-	function setup_all_deps( $group ) {
+	private function setup_all_deps( $group ) {
 
 		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
 		foreach ( $this->class->registered as &$asset )
 			if ( ! empty( $asset->deps ) )
-				if ( array_intersect( $asset->deps, $this->asset_queue[$group] ) )
+				if ( array_intersect( $asset->deps, $this->process_queue[$group] ) )
 					$asset->deps[] = $this->get_group_handle( $group );
 
 		// If any deps of this file are themselves part of another minified file, remove it and add that min file as a dep of this one.
@@ -245,17 +249,26 @@ class MPH_Minify {
 	 * @return null
 	 * @todo - Unfortunately we cannot just localize the minified file using this data but could maybe add this using the wp_scripts class sett print_inline_style().
 	 */
-	function script_localization() {
+	public function script_localization() {
 
 		foreach ( $this->script_localization as $handle => $data )
 			echo '<script>' . $data . '</script>';
 
 	}
 
-	function get_group_handle( $group ) {
+	/**
+	 * Get Unique Group Handle
+	 *
+	 * Handle is a crc32b hash of all handles & version numbers.
+	 * If $this->checks_last_modified, also checks last modified times of files.
+	 *
+	 * @param  [type] $group [description]
+	 * @return [type]        [description]
+	 */
+	private function get_group_handle( $group ) {
 
 		$data = array();
-		foreach( $this->asset_queue[$group] as $handle ) {
+		foreach( $this->process_queue[$group] as $handle ) {
 
 			$data[$handle] = array( 'version' => $this->class->registered[$handle]->ver );
 
@@ -264,7 +277,7 @@ class MPH_Minify {
 
 		}
 
-		return $this->prefix . hash( 'crc32b', serialize( $data ) );
+		return $this->prefix . '-' . hash( 'crc32b', serialize( $data ) );
 
 	}
 
@@ -276,11 +289,11 @@ class MPH_Minify {
 	 * @param  int $group Group
 	 * @return string SRC of on the fly minfy file
 	 */
-	function get_group_minify_src( $group ) {
+	private function get_group_minify_src( $group ) {
 
 		// Get array of srcs.
 		$_srcs = array();
-		foreach ( $this->asset_queue[$group] as $handle )
+		foreach ( $this->process_queue[$group] as $handle )
 			if ( $_src = $this->get_asset_path( $handle ) )
 				$_srcs[] = $_src;
 
@@ -288,17 +301,17 @@ class MPH_Minify {
 		if ( empty( $_srcs ) )
 			return;
 
-		return $this->minify_url . '/?f=' . implode( ',', array_filter( $_srcs ) );
+		return trailingslashit( $this->plugin_url ) . 'php-minify/min/' . '?f=' . implode( ',', array_filter( $_srcs ) );
 
 	}
 
 	/**
-	 * Return the path to an asset relative to the site root, Uses $wp_scripts->registered.
+	 * Return the path to an asset relative to the site root
 	 *
-	 * @param  string $handle handle of the asset
-	 * @return string         string, path of the asset, relative to site root.
+	 * @param  string $handle handle of the item
+	 * @return string - root relative path of the item src.
 	 */
-	function get_asset_path( $handle ) {
+	private function get_asset_path( $handle ) {
 
 		// Don't try and process unregistered files, or other minify.
 		if ( empty( $this->class->registered[$handle] ) || ! $src = $this->class->registered[$handle]->src )
@@ -326,34 +339,44 @@ class MPH_Minify {
 	/**
 	 * Create Cache file.
 	 *
-	 * @param  string $filename name used to create file. A hash of args.
-	 * @param  array  $srcs     srcs of assets.
+	 * @param  int $group id of group
+	 * @param  string $group_handle group handle. Only passed to avoid having to hash again.
 	 * @return string           src of cache file.
 	 */
-	function get_cache_file( $group, $group_handle ) {
+	private function get_cache_file( $group, $group_handle ) {
 
 		if ( ! $min_src = $this->get_group_minify_src( $group ) )
 			return;
 
 		// Create Directory.
-		if ( ! is_dir( $this->cache_dir ) )
-			wp_mkdir_p( $this->cache_dir );
+		if ( ! is_dir( $this->site_root . $this->cache_dir ) )
+			if ( false === wp_mkdir_p( $this->site_root . $this->cache_dir ) ) {
+				$this->add_admin_notice( 'MPH Minify was unable to create the cache directory: ' . $this->site_root . $this->cache_dir, false, 'error' );
+				return;
+			}
+
 
 		$data = @file_get_contents( $min_src );
 
-		if ( ! $data ) {
+		if ( false === $data ) {
 
 			// If error, display admin error notice.
-			$this->add_admin_notice( 'There was an error generating the minified file. Failed processing handles: ' . implode( ', ', $this->asset_queue[$group] ), 'error' );
-
+			$this->add_admin_notice( 'There was an error generating the minified file. Failed processing handles: ' . implode( ', ', $this->process_queue[$group] ), false, 'error' );
 			return;
 
 		}
 
-		$data = '/*' . implode( ', ', $this->asset_queue[$group] ) . '*/ ' . $data;
-		file_put_contents( $this->cache_dir . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );
+		$data = '/*' . implode( ', ', $this->process_queue[$group] ) . '*/ ' . $data;
+		$file = trailingslashit( $this->site_root . $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 
-		return $this->cache_url . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+		if ( false === @file_put_contents( $file , $data ) ) {
+
+			$this->add_admin_notice( 'MPH Minify was unable to create the file: ' . $file . ' for handles ' . implode( ', ', $this->process_queue[$group] ), false, 'error' );
+			return;
+
+		}
+
+		return home_url( '/' ) . trailingslashit( $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 
 	}
 
@@ -363,13 +386,17 @@ class MPH_Minify {
 	 * @return null
 	 * @todo This recursive iterator thing is PHP 5.3 only
 	 */
-	function delete_cache() {
+	public function delete_cache() {
 
-		if ( ! is_dir( $this->cache_dir ) )
+		$cache_dir_path = $this->site_root . $this->cache_dir;
+
+		if ( ! is_dir( $cache_dir_path ) ) {
+			$this->add_admin_notice( 'Cache empty.', true );
 			return;
+		}
 
 		$files = new RecursiveIteratorIterator(
-    		new RecursiveDirectoryIterator( $this->cache_dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+    		new RecursiveDirectoryIterator( $cache_dir_path, RecursiveDirectoryIterator::SKIP_DOTS ),
     			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
@@ -378,10 +405,25 @@ class MPH_Minify {
     		$todo( $fileinfo->getRealPath() );
 		}
 
-		rmdir( $this->cache_dir );
+		rmdir( $cache_dir_path );
+
+		$this->add_admin_notice( 'Cache cleared.', true );
 
 	}
 
+	/**
+	 * Get number of cached files.
+	 *
+	 * @return int number of cached files.
+	 */
+	public function get_cached_files_count() {
+
+		$dir = $this->site_root . $this->cache_dir;
+
+		if ( is_dir( $dir ) )
+	 		return count( array_filter( scandir( $dir ), create_function( '$value', 'return ( \'.\' === $value || \'..\' === $value ) ? false : true;' ) ) );
+
+	}
 
 	/**
 	 * Creates an admin notice - saved in options to be shown in the admin, until dismissed.
@@ -390,15 +432,14 @@ class MPH_Minify {
 	 * @param string $type Message type - added as a class to the message when displayed. Reccommended to use: updated, error.
 	 * @param bool $display_once Display message once, or require manual dismissal.
 	 */
-	function add_admin_notice( $new_notice, $type = 'updated', $display_once = false ) {
+	private function add_admin_notice( $new_notice, $display_once = false, $type = 'updated' ) {
 
-		$admin_notices = get_option( 'mph_minify_notices', array() );
+		if ( ! $this->admin_notices )
+			$this->admin_notices = new MPH_Admin_Notices( $this->prefix );
 
-		if ( ! in_array( $notice = array( 'type' => $type, 'message' => $new_notice, 'display_once' => $display_once ), $admin_notices ) )
-			$admin_notices[] = $notice;
-
-		update_option( 'mph_minify_notices', $admin_notices );
+		$this->admin_notices->add_notice( $new_notice, $display_once, $type );
 
 	}
+
 
 }

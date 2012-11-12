@@ -7,7 +7,7 @@
  * 	Debugger window shows all enqueued scripts, and highlights those that are minified.
  */
 
-$options = mph_minify_get_plugin_options();
+$options = mph_minify_get_options();
 if ( isset( $options['debugger'] ) && true === $options['debugger'] ) {
 
 	add_action( 'init', 'mph_minify_tool_process' );
