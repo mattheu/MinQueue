@@ -6,8 +6,8 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 
 ## Features. ##
 
-* Minify & concatenate scripts and styles added using the WordPress dependency enqueueing system. Note they must be correctly enqueued.
-* Handles scripts loaded in the footer. These are minified and concatenated separately.
+* Minifies & concatenates scripts and styles loaded using the WordPress dependency enqueueing system.
+* Handles scripts loaded in the footer.
 * Works if WordPress is installed in a subdirectory.
 * Complete control - only a manually defined list of files is processed.
 * Multiple, independently processed files.
@@ -51,4 +51,11 @@ _Example:_
 Files 1, 2 and 3 are enqueued. File 1 is a dependency of 2, which is a dependency of 3.
 If only scripts 1 and 3 are minified and concatenated into 1 file, it will fail.
 This is because the processed file is now a dependency of file 2, but file 2 is also a dependency of it.
-You must either process all files, or process 1 and 3 in separately.
+
+_Solution_
+You must either process all files together, or process 1 and 3 in separately.
+
+## To Do ##
+
+* More error handling - is cache dir writable?
+* Use WP_Filesyestem to write the files?
