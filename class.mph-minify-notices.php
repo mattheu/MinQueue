@@ -23,8 +23,8 @@ class MPH_Admin_Notices {
 		else
 			$this->admin_notices = get_option( $this->ID, array() );
 
-		if ( isset( $_REQUEST[ $this->ID . '_notice_dismiss' ] ) || isset( $_REQUEST['_wpnonce'] ) )
-			add_action( 'init', array( $this, 'delete_notice_action' ) );
+		if ( isset( $_GET[ $this->ID . '_notice_dismiss' ] ) || isset( $_GET['_wpnonce'] ) )
+			add_action( 'admin_init', array( $this, 'delete_notice_action' ) );
 
 		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
 
@@ -138,7 +138,7 @@ class MPH_Admin_Notices {
 	 */
 	public function delete_notice_action() {
 
-		if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], $this->ID . '_notice_dismiss' ) )
+		if ( ! wp_verify_nonce( $_GET['_wpnonce'], $this->ID . '_notice_dismiss' ) )
 			return;
 
 		$this->unset_admin_notice( $_GET[$this->ID . '_notice_dismiss'] );
