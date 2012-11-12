@@ -411,7 +411,7 @@ class MPH_Minify {
 		$dir = $this->site_root . $this->cache_dir;
 
 		if ( is_dir( $dir ) )
-	 		return count( glob( $dir . "*" ) );
+	 		return count( array_filter( scandir( $dir ), create_function( '$value', 'return ( \'.\' === $value || \'..\' === $value ) ? false : true;' ) ) );
 
 	}
 
