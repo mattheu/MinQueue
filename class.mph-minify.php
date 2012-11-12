@@ -353,9 +353,9 @@ class MPH_Minify {
 		if ( ! is_dir( $this->site_root . $this->cache_dir ) )
 			wp_mkdir_p( $this->site_root . $this->cache_dir );
 
-		$data = @file_get_contents( $min_src );
+		@$data = file_get_contents( $min_src );
 
-		if ( ! $data ) {
+		if ( false === $data ) {
 
 			// If error, display admin error notice.
 			$this->add_admin_notice( 'There was an error generating the minified file. Failed processing handles: ' . implode( ', ', $this->process_queue[$group] ), false, 'error' );
