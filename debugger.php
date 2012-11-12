@@ -149,10 +149,10 @@ function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 		if ( array_key_exists( $handle, $minified_deps[get_class($class)] ) )
 			$classes['minified'] = 'mph-min-minified';
 
-		if ( 'WP_Scripts' == get_class($class) )
-			$checked = in_array( $handle, $options['scripts_manual'][0] ) || in_array( $handle, $options['scripts_manual'][0] );
-		if ( 'WP_Styles' == get_class($class) )
-			$checked = in_array( $handle, $options['styles_manual'][0] ) || in_array( $handle, $options['styles_manual'][0] );
+		$checked = false;
+		foreach( $options[( 'WP_Scripts' == get_class($class) ) ? 'scripts_manual' : 'styles_manual'] as $queue )
+			if( ! $checked )
+				$checked = in_array( $handle, $queue );
 
 		?>
 		<li class="<?php echo implode( ' ', $classes ); ?>" title="<?php echo implode( ', ', $class->registered[$handle]->deps ); ?>">
