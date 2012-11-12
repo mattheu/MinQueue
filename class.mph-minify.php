@@ -350,9 +350,13 @@ class MPH_Minify {
 
 		// Create Directory.
 		if ( ! is_dir( $this->site_root . $this->cache_dir ) )
-			wp_mkdir_p( $this->site_root . $this->cache_dir );
+			if ( false === wp_mkdir_p( $this->site_root . $this->cache_dir ) ) {
+				$this->add_admin_notice( 'MPH Minify was unable to create the cache directory: ' . $this->site_root . $this->cache_dir, false, 'error' );
+				return;
+			}
 
-		@$data = file_get_contents( $min_src );
+
+		$data = @file_get_contents( $min_src );
 
 		if ( false === $data ) {
 
@@ -363,7 +367,14 @@ class MPH_Minify {
 		}
 
 		$data = '/*' . implode( ', ', $this->process_queue[$group] ) . '*/ ' . $data;
-		file_put_contents( trailingslashit( $this->site_root . $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' ), $data );
+		$file = trailingslashit( $this->site_root . $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+
+		if ( false === @file_put_contents( $file , $data ) ) {
+
+			$this->add_admin_notice( 'MPH Minify was unable to create the file: ' . $file . ' for handles ' . implode( ', ', $this->process_queue[$group] ), false, 'error' );
+			return;
+
+		}
 
 		return home_url( '/' ) . trailingslashit( $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
 
