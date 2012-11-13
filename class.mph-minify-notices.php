@@ -143,4 +143,10 @@ class MPH_Admin_Notices {
 
 	}
 
+	public function deactivation_hook() {
+
+		delete_option( $this->ID );
+
+	}
+
 }

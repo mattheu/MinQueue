@@ -51,7 +51,9 @@ function mph_minify_init () {
 	if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
 		new MPH_Minify_Admin;
 
-	register_deactivation_hook( basename( __DIR__ ) . DIRECTORY_SEPARATOR . basename( __FILE__ ), 'mph_minify_deactivation_hook' );
+	$plugin_file = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . basename( __DIR__ ) . DIRECTORY_SEPARATOR . basename( __FILE__ );
+	register_activation_hook( $plugin_file, 'mph_minify_activation_hook' );
+	register_deactivation_hook( $plugin_file, 'mph_minify_deactivation_hook' );
 
 }
 
@@ -129,6 +131,20 @@ function mph_minify() {
 }
 
 /**
+ * Plugn activation callback
+ *
+ * Display admin notice with instructions.
+ *
+ * @return null
+ */
+function mph_minify_activation_hook() {
+
+	$admin_notices = new MPH_Admin_Notices( apply_filters( 'mph_minify_prefix', 'mph-min' ) );
+	$admin_notices->add_notice( '<a href="#">Visit the MPH Minify settings page to configure the plugin.</a>' );
+
+}
+
+/**
  * Plugn deactivate callback
  *
  * Delete all options and files.
@@ -137,12 +153,15 @@ function mph_minify() {
  */
 function mph_minify_deactivation_hook() {
 
-	// Delete the cache if requested.
-	$minify = new MPH_Minify( 'WP_Scripts' );
+	error_log( 'Deactivate' );
+
+	$minify = new MPH_Minify();
 	$minify->delete_cache();
 
-	delete_option( 'mph_minify_notices' );
 	delete_option( 'mph_minify_options' );
+
+	$admin_notices = new MPH_Admin_Notices( apply_filters( 'mph_minify_prefix', 'mph-min' ) );
+	$admin_notices->deactivation_hook();
 
 }
 
