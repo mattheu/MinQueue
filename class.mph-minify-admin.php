@@ -3,72 +3,50 @@
 class MPH_Minify_Admin {
 
 	// Plugin unique prefix. Used for options, filenames etc.
-	public $prefix = 'mph-min';
+	private $prefix = 'mph-min';
 
 	// Plugin options
-	var $options;
-
-	// Reference to admin notice abstraction.
-	var $admin_notices = array();
+	private $options;
 
 	function __construct() {
 
 		$this->prefix = apply_filters( 'mph_minify_prefix', $this->prefix );
-
 		$this->options = mph_minify_get_options();
-		$this->admin_notices = new MPH_Admin_Notices( $this->prefix );
 
-		add_action( 'admin_init', array( $this, 'init' ) );
-		add_action( 'admin_notices', array( $this, 'admin_notices' ), 1 );
-		add_action( 'admin_menu', array( $this, 'admin_add_page' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
-
-	}
-
-	function admin_notices() {
-
-		if ( isset( $this->options['debugger'] ) && $this->options['debugger'] === true )
-			$this->admin_notices->add_notice( 'MPH Minify debugger is currently active', true );
+		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
+		add_action( 'admin_notices', array( $this, 'display_admin_notices' ), 1 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 	}
 
 	/**
-	 * Admin Init
+	 * Add the adminmenu item
 	 *
-	 * Everything that needs hooking in here, goes here!
-	 *
-	 */
-	function init() {
-
-		// Maybe clear cache
-		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'mph_minify_clear_cache' ) )
-			$this->clear_cache();
-
-	}
-
-	/**
-	 * Add the options page
 	 * @return null
 	 */
-	function admin_add_page() {
+	function admin_menu() {
 
-		// add the admin options page
 		add_options_page( 'MPH Minify Plugin Page', 'MPH Minify', 'manage_options', 'mph_minify', array( $this, 'options_page' ) );
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
 
 	}
 
 	/**
 	 * Register plugin settings
+	 *
 	 * @return null
 	 */
 	function admin_init(){
 
-		register_setting( 'mph_minify_options', 'mph_minify_options', array( $this, 'options_validate' ) );
+		// Maybe clear cache
+		if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'mph_minify_clear_cache' ) )
+			$this->clear_cache();
 
-		add_settings_section( 'plugin_main', 'General Options', array( $this, 'general_options_text' ), 'general_minify_options' );
-		add_settings_section( 'plugin_main', 'Script Minification', array( $this, 'general_options_text' ), 'script_minify_options' );
-		add_settings_section( 'plugin_main', 'Style Minification', array( $this, 'general_options_text' ), 'style_minify_options' );
+		register_setting( 'mph_minify_options', 'mph_minify_options', array( $this, 'validate_options' ) );
+
+		add_settings_section( 'plugin_main', 'General Options', null, 'general_minify_options' );
+		add_settings_section( 'plugin_main', 'Script Minification', null, 'script_minify_options' );
+		add_settings_section( 'plugin_main', 'Style Minification', null, 'style_minify_options' );
 
 		add_settings_field( 'mph_minify_debugger', 'Enable debugger', array( $this, 'field_debugger' ), 'general_minify_options', 'plugin_main' );
 		add_settings_field( 'mph_minify_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
@@ -83,6 +61,7 @@ class MPH_Minify_Admin {
 
 	/**
 	 * Output the main options page content.
+	 *
 	 * @return null
 	 */
 	function options_page() { ?>
@@ -115,13 +94,6 @@ class MPH_Minify_Admin {
 	}
 
 	/**
-	 * Output general options description text
-	 *
-	 * @return null
-	 */
-	function general_options_text() {}
-
-	/**
 	 * Output clear cache button
 	 *
 	 * @return null
@@ -149,7 +121,7 @@ class MPH_Minify_Admin {
 	<?php }
 
 	/**
-	 * Output script method inputs.
+	 * Output settings section for scripts enable/disable toggle.
 	 *
 	 * @return null
 	 */
@@ -166,7 +138,7 @@ class MPH_Minify_Admin {
 	<?php }
 
 	/**
-	 * Output settings section for scripts.
+	 * Output settings section for scripts queue textarea/s
 	 *
 	 * @return null
 	 */
@@ -201,7 +173,7 @@ class MPH_Minify_Admin {
 	}
 
 	/**
-	 * Output settings section for styles.
+	 * Output settings section for styles enable/disable toggle.
 	 *
 	 * @return null
 	 */
@@ -217,6 +189,11 @@ class MPH_Minify_Admin {
 
 	<?php }
 
+	/**
+	 * Output settings section for styles queue textarea/s
+	 *
+	 * @return null
+	 */
 	function field_styles() {
 
 		$values = ( ! empty( $this->options['styles_manual'] ) ) ? $this->options['styles_manual'] : array();
@@ -248,15 +225,17 @@ class MPH_Minify_Admin {
 	}
 
 	/**
-	 * Validation
+	 * Settings validation.
+	 *
+	 * @return null
 	 */
-	function options_validate( $input ) {
+	function validate_options( $input ) {
 
 		foreach ( $input['scripts_manual'] as $key => $queue )
-			$input['scripts_manual'][$key] = $this->handle_list_filter( $queue );
+			$input['scripts_manual'][$key] = $this->validate_handle_list( $queue );
 
 		foreach ( $input['styles_manual'] as $key => $queue )
-			$input['styles_manual'][$key] = $this->handle_list_filter( $queue );
+			$input['styles_manual'][$key] = $this->validate_handle_list( $queue );
 
 		// Remove empty & reset array keys.
 		$input['scripts_manual'] = array_merge( array_filter( $input['scripts_manual'] ) );
@@ -280,13 +259,16 @@ class MPH_Minify_Admin {
 	}
 
 	/**
-	 * Filter inputs that contain a comma separated list of asset handles.
+	 * Validate the list of handles from the scripts & style queue textareas.
+	 *
+	 * Deal with new lines, spaces, double commas & convert to array.
+	 *
 	 * Return an array ready for saving.
 	 *
 	 * @param  string $list string of comma separated handles
 	 * @return array       array of handles
 	 */
-	function handle_list_filter( $list ) {
+	function validate_handle_list( $list ) {
 
 		$list = str_replace( array( "\n", "\r" ), ',', $list );
 
@@ -304,12 +286,26 @@ class MPH_Minify_Admin {
 	 *
 	 * @return null
 	 */
-	function enqueue( $hook ) {
+	function enqueue_scripts( $hook ) {
 
 		if ( 'settings_page_mph_minify' !== $hook )
 			return;
 
 		wp_enqueue_script( 'mph-admin', trailingslashit( plugins_url( basename( __DIR__ ) ) ) . 'admin.js' );
+
+	}
+
+	/**
+	 * Display Admin notices.
+	 *
+	 * @return null
+	 */
+	function display_admin_notices() {
+
+		$admin_notices = new MPH_Admin_Notices( $this->prefix );
+
+		if ( isset( $this->options['debugger'] ) && $this->options['debugger'] === true )
+			$admin_notices->add_notice( 'MPH Minify debugger is currently active', true );
 
 	}
 
@@ -322,7 +318,7 @@ class MPH_Minify_Admin {
 	function clear_cache( $redirect = true ) {
 
 		// Delete the cache if requested.
-		$minify = new MPH_Minify( 'WP_Scripts' );
+		$minify = new MPH_Minify();
 		$minify->delete_cache();
 
 		// Redirect.
@@ -340,8 +336,7 @@ class MPH_Minify_Admin {
 	 */
 	function get_cached_files_count() {
 
-		$minify = new MPH_Minify( 'WP_Scripts' );
-
+		$minify = new MPH_Minify();
 		return $minify->get_cached_files_count();
 
 	}
