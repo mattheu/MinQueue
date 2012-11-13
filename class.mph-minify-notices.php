@@ -1,4 +1,5 @@
 <?php
+
 /**
  *	MPH Notices
  *
@@ -28,8 +29,6 @@ class MPH_Admin_Notices {
 
 		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
 
-		add_action( 'shutdown', array( $this, '_update_notices' ) );
-
 	}
 
 	/**
@@ -50,9 +49,11 @@ class MPH_Admin_Notices {
 		if ( ! in_array( $notice , $this->admin_notices ) )
 			$this->admin_notices[uniqid()] = $notice;
 
+		$this->update_notices();
+
 	}
 
-	public function _update_notices() {
+	public function update_notices() {
 
 		$this->admin_notices = array_filter( $this->admin_notices );
 
@@ -75,6 +76,8 @@ class MPH_Admin_Notices {
 		foreach ( array_keys( $this->admin_notices ) as $notice_id )
 			$this->display_admin_notice( $notice_id );
 
+		$this->update_notices();
+
 	}
 
 	/**
@@ -94,7 +97,7 @@ class MPH_Admin_Notices {
 
 			<p>
 
-				<?php echo esc_attr( $notice['message'] ); ?>
+				<?php echo $notice['message']; ?>
 
 				<?php if ( empty( $notice['display_once'] ) ) : ?>
 					<a class="button" style="margin-left: 10px; color: inherit; text-decoration: none;" href="<?php echo wp_nonce_url( add_query_arg( $this->ID . '_notice_dismiss', $notice_id ), $this->ID . '_notice_dismiss' ); ?>">Dismiss</a>
@@ -141,11 +144,23 @@ class MPH_Admin_Notices {
 
 		$this->unset_admin_notice( $_GET[$this->ID . '_notice_dismiss'] );
 
+		$this->update_notices();
+
 	}
 
-	public function deactivation_hook() {
+	/**
+	 * Delete all admin notices.
+	 *
+	 * Reccommended to call this in deactivation hook.
+	 *
+	 * @return null
+	 */
+	function clean_up() {
 
-		delete_option( $this->ID );
+		foreach ( array_keys( $this->admin_notices ) as $notice_id )
+			$this->unset_admin_notice( $notice_id );
+
+		$this->update_notices();
 
 	}
 

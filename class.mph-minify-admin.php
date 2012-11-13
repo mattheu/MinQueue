@@ -8,10 +8,15 @@ class MPH_Minify_Admin {
 	// Plugin options
 	private $options;
 
+	// Admin Notices.
+	private $admin_notices;
+
 	function __construct() {
 
 		$this->prefix = apply_filters( 'mph_minify_prefix', $this->prefix );
 		$this->options = mph_minify_get_options();
+
+		$this->admin_notices = new MPH_Admin_Notices( $this->prefix );
 
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
@@ -298,14 +303,14 @@ class MPH_Minify_Admin {
 	/**
 	 * Display Admin notices.
 	 *
+	 * Hook in on display admin notices, otherwise this is called when saving, before the redirect, causing the notice to be displayed and extra time.
+	 *
 	 * @return null
 	 */
 	function display_admin_notices() {
 
-		$admin_notices = new MPH_Admin_Notices( $this->prefix );
-
 		if ( isset( $this->options['debugger'] ) && $this->options['debugger'] === true )
-			$admin_notices->add_notice( 'MPH Minify debugger is currently active', true );
+			$this->admin_notices->add_notice( 'MPH Minify debugger is currently active', true );
 
 	}
 
