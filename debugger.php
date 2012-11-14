@@ -177,7 +177,7 @@ function mph_minify_tool_process() {
 
 	$submitted = ( isset( $_POST['mph_minify_scripts'] ) ) ? $_POST['mph_minify_scripts'] : array();
 	$minified_scripts = array();
-	foreach ( $options['scripts_manual'] as $queue_key => $queue ) {
+	foreach ( (array) $options['scripts_manual'] as $queue_key => $queue ) {
 		if ( is_array( $queue ) ) {
 			foreach ( $queue as $handle_key => $handle  ) {
 
@@ -203,7 +203,7 @@ function mph_minify_tool_process() {
 
 	$submitted = ( isset( $_POST['mph_minify_styles'] ) ) ? $_POST['mph_minify_styles'] : array();
 	$minified_styles = array();
-	foreach ( $options['styles_manual'] as $queue_key => $queue ) {
+	foreach ( (array) $options['styles_manual'] as $queue_key => $queue ) {
 		if ( is_array( $queue ) ) {
 			foreach ( $queue as $handle_key => $handle  ) {
 
@@ -229,10 +229,14 @@ function mph_minify_tool_process() {
 	}
 
 	if ( ! empty( $options['scripts_manual'] ) )
-		$options['scripts_manual'] = 'manual';
+		$options['scripts_method'] = 'manual';
+	else
+		$options['scripts_manual'] = array();
 
 	if ( ! empty( $options['styles_manual'] ) )
 		$options['styles_method'] = 'manual';
+	else
+		$options['styles_manual'] = array();
 
 	update_option( 'mph_minify_options', $options );
 
