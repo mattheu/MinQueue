@@ -228,6 +228,12 @@ function mph_minify_tool_process() {
 		}
 	}
 
+	if ( ! empty( $options['scripts_manual'] ) )
+		$options['scripts_manual'] = 'manual';
+
+	if ( ! empty( $options['styles_manual'] ) )
+		$options['styles_method'] = 'manual';
+
 	update_option( 'mph_minify_options', $options );
 
 }
