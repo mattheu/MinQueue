@@ -212,7 +212,7 @@ class MPH_Minify_Admin {
 				<p><span class="description">Multiple queues will be processed separately, creating multiple processed files.</span></p>
 			</label>
 
-			<textarea id="mph_minify_field_manual_styles_template" name="mph_minify_options[scripts_manual][]" class="large-text code input-template" style="display:none;"></textarea>
+			<textarea id="mph_minify_field_manual_styles_template" name="mph_minify_options[styles_manual][]" class="large-text code input-template" style="display:none;"></textarea>
 
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
