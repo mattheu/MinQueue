@@ -7,13 +7,22 @@
  * 	Debugger window shows all enqueued scripts, and highlights those that are minified.
  */
 
-$options = mph_minify_get_options();
-if ( isset( $options['debugger'] ) && true === $options['debugger'] ) {
+add_action( 'init', 'mph_minify_tool' );
+function mph_minify_tool () {
 
-	add_action( 'init', 'mph_minify_tool_process' );
+	if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) )
+		return;
 
-	add_action( 'wp_head', 'mph_minify_debugger_style' );
-	add_action( 'wp_footer', 'mph_minify_debugger', 9999 );
+	$options = mph_minify_get_options();
+
+	if ( isset( $options['debugger'] ) && true === $options['debugger'] ) {
+
+		add_action( 'wp_head', 'mph_minify_debugger_style' );
+		add_action( 'wp_footer', 'mph_minify_debugger', 9999 );
+
+		mph_minify_tool_process();
+
+	}
 
 }
 
@@ -28,8 +37,14 @@ function mph_minify_debugger_style() {
 	?>
 
 	<style>
-		#mph-minify-debugger { position: fixed; top: 50px; right: 30px; width: 180px; border-radius: 10px; background: rgba(0,0,0,0.8); border: 1px solid rgba(0,0,0,0.5); color: #FFF; padding: 10px; margin-bottom: 30px; z-index: 9999; }
-		#mph-minify-debugger h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; }
+		#mph-minify-debugger { position: fixed; top: 10px; right: 10px; overflow: hidden; width: 220px; height: 60%; border-radius: 10px; background: rgba(0,0,0,0.8); border: none; color: #FFF; padding: 10px;  margin-bottom: 30px; z-index: 9999; }
+		.admin-bar #mph-minify-debugger { top: 38px; }
+		#mph-minify-debugger form { height: 100%; }
+		#mph-minify-debugger-inner { height: 100%; overflow: auto; }
+
+
+		#mph-minify-debugger * { background: none !important; text-shadow: none !important; padding: 0 !important; }
+		#mph-minify-debugger h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; background: none; text-shadow: none; padding: 0;  }
 		#mph-minify-debugger ul { margin-bottom: 15px; }
 		#mph-minify-debugger ul,
 		#mph-minify-debugger p,
@@ -37,6 +52,12 @@ function mph_minify_debugger_style() {
 		#mph-minify-debugger li.mph-min-group-0 { color: orange;}
 		#mph-minify-debugger li.mph-min-group-1 { color: yellow;}
 		#mph-minify-debugger li input { margin-right: 7px; }
+		#mph-minify-debugger-submit,
+		#mph-minify-debugger-submit:hover
+		#mph-minify-debugger-submit:active { border: 1px solid black !important; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.2); padding-bottom: 3px !important; padding-left: 6px !important; padding-right: 6px !important; padding-top: 2px !important; vertical-align: middle; }
+		#mph-minify-debugger-submit { background-image: -moz-linear-gradient(top,#CCC,#999) !important; background-image: -ms-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#CCC),to(#999)) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: -o-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: linear-gradient(top,#CCC,#999) !important;  }
+		#mph-minify-debugger-submit:hover { background-image: -moz-linear-gradient(top,#FFF,#AAA) !important; background-image: -ms-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#FFF),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: -o-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: linear-gradient(top,#FFF,#AAA) !important;  }
+		#mph-minify-debugger-submit:active {  background-image: -moz-linear-gradient(top,#999,#AAA) !important; background-image: -ms-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#999),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: -o-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: linear-gradient(top,#999,#AAA) !important; box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3), inset 0 1px 3px rgba(0,0,0,0.2); }
 	</style>
 
 	<?php
@@ -59,58 +80,65 @@ function mph_minify_debugger() {
 	// A bit of a round about way as we need to know those loaded because they are a dependency.
 
 	if ( ! empty( $wp_scripts ) ) {
-		$wp_scripts->done = array();
-		$wp_scripts->to_do = array();
-		$wp_scripts->all_deps( $wp_scripts->queue );
-		$scripts_enqueued = $wp_scripts->to_do;
+		$scripts = wp_clone( $wp_scripts );
+		$scripts->done = array();
+		$scripts->to_do = array();
+		$queue = array_unique( array_merge( array_keys( $minified_deps['WP_Scripts'] ), $scripts->queue ) );
+		$scripts->all_deps( $queue );
+		$scripts_enqueued = $scripts->to_do;
 	}
 
 	if ( ! empty( $wp_styles ) ) {
-		$wp_styles->done = array();
-		$wp_scripts->to_do = array();
-		$wp_styles->all_deps( $wp_styles->queue );
-		$styles_enqueued = $wp_styles->to_do;
+		$styles = wp_clone( $wp_styles );
+		$styles->done = array();
+		$styles->to_do = array();
+		$queue = array_unique( array_merge( array_keys( $minified_deps['WP_Styles'] ), $styles->queue ) );
+		$styles->all_deps( $queue );
+		$styles_enqueued = $styles->to_do;
 	}
+
 
 	?>
 
 	<div id="mph-minify-debugger">
 
-		<h2>Enqueued Scripts</h2>
-
 		<form method="post">
 
-		<ul>
-			<?php mph_minify_debugger_list( array_diff( $scripts_enqueued, array_keys( $minified_deps['WP_Scripts'] ) ) ); ?>
-		</ul>
+			<div id="mph-minify-debugger-inner">
 
-		<h2>Minified Scripts</h2>
-		<ul>
-			<?php mph_minify_debugger_list( array_keys( $minified_deps['WP_Scripts'] ) ); ?>
-		</ul>
+				<h2>Enqueued Scripts</h2>
 
-		<h2>Enqueued Styles</h2>
-		<ul>
-			<?php mph_minify_debugger_list( array_diff( $styles_enqueued, array_keys( $minified_deps['WP_Styles'] ) ), false ); ?>
-		</ul>
+				<ul>
+					<?php mph_minify_debugger_list( $scripts_enqueued ); ?>
+				</ul>
 
-		<h2>Minified Styles</h2>
-		<ul>
-			<?php mph_minify_debugger_list( array_keys( $minified_deps['WP_Styles'] ), false ); ?>
-		</ul>
+				<h2>Enqueued Styles</h2>
 
-		<?php wp_nonce_field( 'mph_minify_tool', 'mph_minify_tool_nonce', false ); ?>
+				<ul>
+					<?php mph_minify_debugger_list( $styles_enqueued, false ); ?>
+				</ul>
 
-		<button type="submit">Update</button>
+				<?php wp_nonce_field( 'mph_minify_tool', 'mph_minify_tool_nonce', false ); ?>
+
+				<?php if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) : ?>
+					<button type="submit"  id="mph-minify-debugger-submit" >
+						Update
+					</button>
+				<?php endif; ?>
+
+				<h2>Key</h2>
+				<ul>
+					<li class="mph-min-group-0">Orange: in header</li>
+					<li class="mph-min-group-1">Yellow: in footer</li>
+				</ul>
+				<p>Files displayed in the order in which they are loaded.</p>
+				<p>Only visible to admin users.<p>
+				<p>Remember some scripts are loaded conditionally (on certain pages, or for certain visitors).</p>
+
+			</div>
+
 
 		</form>
-
-		<h2>Key</h2>
-		<ul>
-			<li class="mph-min-group-0">Orange: in header</li>
-			<li class="mph-min-group-1">Yellow: in footer</li>
-		</ul>
-		<p>Note: minified files displayed in order of processing, not order in which they are loaded.</p>
 
 	</div>
 
@@ -154,10 +182,19 @@ function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 			if( ! $checked )
 				$checked = in_array( $handle, $queue );
 
+		$disabled = ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ? true : false;
+
 		?>
 		<li class="<?php echo implode( ' ', $classes ); ?>" title="<?php echo implode( ', ', $class->registered[$handle]->deps ); ?>">
 			<label for="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>">
-				<input type="checkbox" name="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>[]" id="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>" value="<?php echo $handle; ?>" <?php checked( $checked ); ?>/>
+				<input
+					type="checkbox"
+					name="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>[]"
+					id="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>"
+					value="<?php echo $handle; ?>"
+					<?php checked( $checked ); ?>
+					<?php disabled( $disabled ); ?>
+				/>
 				<?php echo $handle; ?>
 			</label>
 		</li>
@@ -169,6 +206,9 @@ function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 
 
 function mph_minify_tool_process() {
+
+	if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) )
+		return;
 
 	if ( ! isset( $_POST['mph_minify_tool_nonce'] ) || ! wp_verify_nonce( $_POST['mph_minify_tool_nonce'], 'mph_minify_tool' ) )
 		return;
@@ -241,3 +281,4 @@ function mph_minify_tool_process() {
 	update_option( 'mph_minify_options', $options );
 
 }
+
