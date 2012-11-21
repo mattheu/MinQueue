@@ -34,8 +34,9 @@ class MPH_Admin_Notices {
 	 * @param string $new_notice Message content
 	 * @param string $type Message type - added as a class to the message when displayed. Reccommended to use: updated, error.
 	 * @param bool $display_once Display message once, or require manual dismissal.
+	 * @param int $notice_id Pass an ID. Useful if we need to access this notice later. Defaults to uniqid().
 	 */
-	public function add_notice( $message, $display_once = false, $type = 'updated' ) {
+	public function add_notice( $message, $display_once = false, $type = 'updated', $notice_id = null ) {
 
 		$notice = array(
 			'message' => $message,
@@ -43,22 +44,28 @@ class MPH_Admin_Notices {
 			'display_once' => $display_once
 		);
 
+		$notice_id = ( $notice_id ) ? $notice_id : uniqid();
+
 		if ( ! in_array( $notice , $this->admin_notices ) )
-			$this->admin_notices[uniqid()] = $notice;
+			$this->admin_notices[$notice_id] = $notice;
 
 		$this->update_notices();
 
 	}
 
-	public function update_notices() {
+	/**
+	 * Delete Notice
+	 *
+	 * Also updates.
+	 *
+	 * @param  int $notice_id
+	 * @return null
+	 */
+	public function delete_notice( $notice_id ) {
 
-		$this->admin_notices = array_filter( $this->admin_notices );
+		$this->unset_admin_notice( $notice_id );
 
-		if ( empty( $this->admin_notices ) ) {
-			delete_option( $this->ID );
-		} else {
-			update_option( $this->ID, $this->admin_notices );
-		}
+		$this->update_notices();
 
 	}
 
@@ -97,7 +104,7 @@ class MPH_Admin_Notices {
 				<?php echo $notice['message']; ?>
 
 				<?php if ( empty( $notice['display_once'] ) ) : ?>
-					<a class="button" style="margin-left: 10px; color: inherit; text-decoration: none;" href="<?php echo wp_nonce_url( add_query_arg( $this->ID . '_notice_dismiss', $notice_id ), $this->ID . '_notice_dismiss' ); ?>">Dismiss</a>
+					<a class="button" style="margin: -4px 10px -3px; color: inherit; text-decoration: none; " href="<?php echo wp_nonce_url( add_query_arg( $this->ID . '_notice_dismiss', $notice_id ), $this->ID . '_notice_dismiss' ); ?>">Dismiss</a>
 				<?php endif; ?>
 
 			</p>
@@ -108,6 +115,23 @@ class MPH_Admin_Notices {
 
 		if ( $notice['display_once'] )
 			$this->unset_admin_notice( $notice_id );
+
+	}
+
+	/**
+	 * Save the current admin_notices.
+	 *
+	 * @return null
+	 */
+	private function update_notices() {
+
+		$this->admin_notices = array_filter( $this->admin_notices );
+
+		if ( empty( $this->admin_notices ) ) {
+			delete_option( $this->ID );
+		} else {
+			update_option( $this->ID, $this->admin_notices );
+		}
 
 	}
 
@@ -139,9 +163,7 @@ class MPH_Admin_Notices {
 		if ( ! wp_verify_nonce( $_GET['_wpnonce'], $this->ID . '_notice_dismiss' ) )
 			return;
 
-		$this->unset_admin_notice( $_GET[$this->ID . '_notice_dismiss'] );
-
-		$this->update_notices();
+		$this->delete_notice( $_GET[$this->ID . '_notice_dismiss'] );
 
 	}
 
