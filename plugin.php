@@ -53,7 +53,8 @@ function mph_minify_init () {
 		update_option( 'mph_minify_version', MPH_MINIFY_VERSION );
 	}
 
-	add_action( 'wp_enqueue_scripts', 'mph_minify', 9999 );
+	add_action( 'wp_print_scripts', 'mph_minify_scripts', 9999 );
+	add_action( 'wp_print_styles', 'mph_minify_styles', 9999 );
 
 	// Load the admin - unless settings are not defined.
 	if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
@@ -88,19 +89,17 @@ function mph_minify_get_options() {
 
 }
 
-	/**
- * Main Plugin Functionality.
+/**
+ * Process Scripts
  *
  * @return null
  */
-function mph_minify() {
+function mph_minify_scripts() {
+
+	if ( is_admin() )
+		return;
 
 	$options = mph_minify_get_options();
-
-	$instances = array(
-		'scripts' => array(),
-		'styles' => array()
-	);
 
 	// Scripts
 	if ( isset( $options['scripts_method'] ) && 'disabled' !== $options['scripts_method'] ) {
@@ -108,14 +107,28 @@ function mph_minify() {
 		foreach ( $options['scripts_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$instances['scripts'][$key] = new MPH_Minify( 'WP_Scripts' );
-				$instances['scripts'][$key]->queue = (array) $queue;
-				$instances['scripts'][$key]->minify();
+				$scripts[$key] = new MPH_Minify( 'WP_Scripts' );
+				$scripts[$key]->queue = (array) $queue;
+				$scripts[$key]->minify();
 			}
 
 		}
 
 	}
+
+}
+
+/**
+ * Process Styles
+ *
+ * @return null
+ */
+function mph_minify_styles() {
+
+	if ( is_admin() )
+		return;
+
+	$options = mph_minify_get_options();
 
 	// Styles
 	if ( isset( $options['styles_method'] ) && 'disabled' !== $options['styles_method'] ) {
@@ -123,9 +136,9 @@ function mph_minify() {
 		foreach ( $options['styles_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$instances['styles'][$key] = new MPH_Minify( 'WP_Styles' );
-				$instances['styles'][$key]->queue = (array) $queue;
-				$instances['styles'][$key]->minify();
+				$styles[$key] = new MPH_Minify( 'WP_Styles' );
+				$styles[$key]->queue = (array) $queue;
+				$styles[$key]->minify();
 			}
 
 		}
@@ -144,7 +157,7 @@ function mph_minify() {
 function mph_minify_activation_hook() {
 
 	$admin_notices = new MPH_Admin_Notices( apply_filters( 'mph_minify_prefix', 'mph-min' ) );
-	$admin_notices->add_notice( 'MPH Minify activated. Go to the <a href="options-general.php?page=mph_minify">settings page</a> to configure the plugin.' );
+	$admin_notices->add_notice( 'MPH Minify activated. Go to the <a href="options-general.php?page=mph_minify">settings page</a> to configure the plugin.', false, 'updated', 'mph_min_activation_notice' );
 
 }
 
