@@ -20,7 +20,8 @@ function mph_minify_tool () {
 		add_action( 'wp_head', 'mph_minify_debugger_style' );
 		add_action( 'wp_footer', 'mph_minify_debugger', 9999 );
 
-		mph_minify_tool_process();
+		// Temporarily disabled as its a little buggy.
+		//mph_minify_tool_process();
 
 	}
 
@@ -48,10 +49,13 @@ function mph_minify_debugger_style() {
 		#mph-minify-debugger ul { margin-bottom: 15px; }
 		#mph-minify-debugger ul,
 		#mph-minify-debugger p,
-		#mph-minify-debugger li { list-style: none; padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
+		#mph-minify-debugger li { padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
 		#mph-minify-debugger li.mph-min-group-0 { color: orange;}
 		#mph-minify-debugger li.mph-min-group-1 { color: yellow;}
 		#mph-minify-debugger li input { margin-right: 7px; }
+		#mph-minify-debugger li span.mph-min-icon { display: inline-block; width: 10px; display: none;  }
+		#mph-minify-debugger li:before { content: '•'; display: inline-block; width: 10px; }
+		#mph-minify-debugger li.mph-min-minified:before { content: '✔'; }
 		#mph-minify-debugger-submit,
 		#mph-minify-debugger-submit:hover
 		#mph-minify-debugger-submit:active { border: 1px solid black !important; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.2); padding-bottom: 3px !important; padding-left: 6px !important; padding-right: 6px !important; padding-top: 2px !important; vertical-align: middle; }
@@ -102,43 +106,40 @@ function mph_minify_debugger() {
 
 	<div id="mph-minify-debugger">
 
-		<form method="post">
+		<div id="mph-minify-debugger-inner">
 
-			<div id="mph-minify-debugger-inner">
+			<h2>Enqueued Scripts</h2>
 
-				<h2>Enqueued Scripts</h2>
+			<ul>
+				<?php mph_minify_debugger_list( $scripts_enqueued ); ?>
+			</ul>
 
-				<ul>
-					<?php mph_minify_debugger_list( $scripts_enqueued ); ?>
-				</ul>
+			<h2>Enqueued Styles</h2>
 
-				<h2>Enqueued Styles</h2>
+			<ul>
+				<?php mph_minify_debugger_list( $styles_enqueued, false ); ?>
+			</ul>
 
-				<ul>
-					<?php mph_minify_debugger_list( $styles_enqueued, false ); ?>
-				</ul>
+			<?php /*
+			<?php wp_nonce_field( 'mph_minify_tool', 'mph_minify_tool_nonce', false ); ?>
 
-				<?php wp_nonce_field( 'mph_minify_tool', 'mph_minify_tool_nonce', false ); ?>
+			<?php if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) : ?>
+				<button type="submit"  id="mph-minify-debugger-submit" >
+					Update
+				</button>
+			<?php endif; ?>
+			*/ ?>
 
-				<?php if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) : ?>
-					<button type="submit"  id="mph-minify-debugger-submit" >
-						Update
-					</button>
-				<?php endif; ?>
+			<h2>Key</h2>
+			<ul>
+				<li class="mph-min-group-0">Orange: in header</li>
+				<li class="mph-min-group-1">Yellow: in footer</li>
+			</ul>
+			<p>Files displayed in the order in which they are loaded.</p>
+			<p>Only visible to admin users.<p>
+			<p>Remember some scripts are loaded conditionally (on certain pages, or for certain visitors).</p>
 
-				<h2>Key</h2>
-				<ul>
-					<li class="mph-min-group-0">Orange: in header</li>
-					<li class="mph-min-group-1">Yellow: in footer</li>
-				</ul>
-				<p>Files displayed in the order in which they are loaded.</p>
-				<p>Only visible to admin users.<p>
-				<p>Remember some scripts are loaded conditionally (on certain pages, or for certain visitors).</p>
-
-			</div>
-
-
-		</form>
+		</div>
 
 	</div>
 
@@ -186,6 +187,11 @@ function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 
 		?>
 		<li class="<?php echo implode( ' ', $classes ); ?>" title="<?php echo implode( ', ', $class->registered[$handle]->deps ); ?>">
+
+			<span class="mph-min-icon"><?php if ( $checked ) echo '&#10004;'; else echo '&bull;'; ?></span>
+
+			<?php echo $handle; ?>
+			<?php /*
 			<label for="mph_minify_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>">
 				<input
 					type="checkbox"
@@ -197,6 +203,7 @@ function mph_minify_debugger_list( $asset_list, $scripts = true ) {
 				/>
 				<?php echo $handle; ?>
 			</label>
+			*/ ?>
 		</li>
 		<?php
 
