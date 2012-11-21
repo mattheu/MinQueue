@@ -49,9 +49,9 @@ class MPH_Minify_Admin {
 
 		register_setting( 'mph_minify_options', 'mph_minify_options', array( $this, 'validate_options' ) );
 
-		add_settings_section( 'plugin_main', 'General Options', null, 'general_minify_options' );
-		add_settings_section( 'plugin_main', 'Script Minification', null, 'script_minify_options' );
-		add_settings_section( 'plugin_main', 'Style Minification', null, 'style_minify_options' );
+		add_settings_section( 'plugin_main', 'General Options', '__return_true', 'general_minify_options' );
+		add_settings_section( 'plugin_main', 'Script Minification', '__return_true', 'script_minify_options' );
+		add_settings_section( 'plugin_main', 'Style Minification', '__return_true', 'style_minify_options' );
 
 		add_settings_field( 'mph_minify_debugger', 'Enable debugger', array( $this, 'field_debugger' ), 'general_minify_options', 'plugin_main' );
 		add_settings_field( 'mph_minify_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
