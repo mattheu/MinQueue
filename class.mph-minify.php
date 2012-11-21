@@ -277,7 +277,7 @@ class MPH_Minify {
 
 		}
 
-		return $this->prefix . '-' . hash( 'crc32b', serialize( $data ) );
+		return $this->prefix . '-' . hash( 'crc32b', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32b', serialize( $data ) );
 
 	}
 
@@ -348,13 +348,14 @@ class MPH_Minify {
 		if ( ! $min_src = $this->get_group_minify_src( $group ) )
 			return;
 
+		$this->delete_cache_by_group( $group );
+
 		// Create Directory.
 		if ( ! is_dir( $this->site_root . $this->cache_dir ) )
 			if ( false === wp_mkdir_p( $this->site_root . $this->cache_dir ) ) {
 				$this->add_admin_notice( 'MPH Minify was unable to create the cache directory: ' . $this->site_root . $this->cache_dir, false, 'error' );
 				return;
 			}
-
 
 		$data = @file_get_contents( $min_src );
 
@@ -408,6 +409,25 @@ class MPH_Minify {
 		rmdir( $cache_dir_path );
 
 		$this->add_admin_notice( 'Cache cleared.', true );
+
+	}
+
+	private function delete_cache_by_group( $group ) {
+
+		$group_handle = $this->get_group_handle( $group );
+
+		$group_handle_hash = reset( explode( '-', str_replace( $this->prefix . '-', '', $group_handle ) ) );
+
+		$cache_path = $this->site_root . $this->cache_dir;
+
+		if ( is_dir( $cache_path ) ) {
+	 		foreach( scandir( $cache_path ) as $cached_file ) {
+
+	 			if ( strlen( $this->prefix . '-' ) === strpos( $cached_file, $group_handle_hash ) )
+	 				unlink( $cache_path . DIRECTORY_SEPARATOR . $cached_file );
+
+	 		}
+	 	}
 
 	}
 
