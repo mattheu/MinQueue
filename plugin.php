@@ -53,6 +53,7 @@ function mph_minify_init () {
 		update_option( 'mph_minify_version', MPH_MINIFY_VERSION );
 	}
 
+	// Run the minifier
 	add_action( 'wp_print_scripts', 'mph_minify_scripts', 9999 );
 	add_action( 'wp_print_styles', 'mph_minify_styles', 9999 );
 
@@ -107,7 +108,7 @@ function mph_minify_scripts() {
 		foreach ( $options['scripts_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$scripts[$key] = new MPH_Minify( 'WP_Scripts' );
+				$scripts[$key] = new MPH_Minify_Scripts();
 				$scripts[$key]->queue = (array) $queue;
 				$scripts[$key]->minify();
 			}
@@ -136,7 +137,7 @@ function mph_minify_styles() {
 		foreach ( $options['styles_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$styles[$key] = new MPH_Minify( 'WP_Styles' );
+				$styles[$key] = new MPH_Minify_Styles();
 				$styles[$key]->queue = (array) $queue;
 				$styles[$key]->minify();
 			}
@@ -170,7 +171,7 @@ function mph_minify_activation_hook() {
  */
 function mph_minify_deactivation_hook() {
 
-	$minify = new MPH_Minify();
+	$minify = new MPH_Minify_Scripts();
 	$minify->delete_cache();
 
 	delete_option( 'mph_minify_options' );
