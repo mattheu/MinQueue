@@ -309,8 +309,15 @@ class MPH_Minify_Admin {
 	 */
 	function display_admin_notices() {
 
+		$current_screen = get_current_screen();
+
 		if ( isset( $this->options['debugger'] ) && $this->options['debugger'] === true )
 			$this->admin_notices->add_notice( 'MPH Minify debugger is currently active', true );
+
+
+		if ( 'settings_page_mph_minify' == $current_screen->id ) {
+			$this->admin_notices->delete_notice( 'mph_min_activation_notice' );
+		}
 
 	}
 
