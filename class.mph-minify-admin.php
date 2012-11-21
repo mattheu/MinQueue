@@ -330,7 +330,7 @@ class MPH_Minify_Admin {
 	function clear_cache( $redirect = true ) {
 
 		// Delete the cache if requested.
-		$minify = new MPH_Minify();
+		$minify = new MPH_Minify_Scripts();
 		$minify->delete_cache();
 
 		// Redirect.
@@ -348,7 +348,7 @@ class MPH_Minify_Admin {
 	 */
 	function get_cached_files_count() {
 
-		$minify = new MPH_Minify();
+		$minify = new MPH_Minify_Scripts();
 		return $minify->get_cached_files_count();
 
 	}

@@ -1,6 +1,6 @@
 <?php
 
-class MPH_Minify {
+abstract class MPH_Minify {
 
 	// Prefix
 	private $prefix = 'mph-min';
@@ -24,7 +24,10 @@ class MPH_Minify {
 	private $minified_deps;
 
 	// Internal Reference to WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies.
-	private $class;
+	protected $class;
+
+	// File extension used for minified files.
+	protected $file_extension;
 
 	// Internal queue of assets to be minified. By group.
 	private $process_queue = array();
@@ -40,9 +43,9 @@ class MPH_Minify {
 	 *
 	 * @param string $class Minify assets for this class.
 	 */
-	function __construct( $class_name = 'WP_Scripts' ) {
+	function __construct() {
 
-		global $wp_scripts, $wp_styles, $minified_deps;
+		global $minified_deps;
 
 		$this->prefix        = apply_filters( 'mph_minify_prefix', $this->prefix );
 
@@ -59,13 +62,7 @@ class MPH_Minify {
 		// Global record of everything minified.
 		$this->minified_deps = &$minified_deps;
 
-		// Set up which WP_Dependencies sub-class to use.
-		if ( 'WP_Scripts' ==  $class_name )
-			$this->class = &$wp_scripts;
-		elseif ( 'WP_Styles' == $class_name )
-			$this->class = &$wp_styles;
-
-		if ( ! empty( $this->class ) && ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
+		if ( empty( $this->class ) || ! empty( $this->class ) && ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
 			die( get_class( $this->class ) . ' does not extend WP_Dependencies' );
 
 	}
@@ -151,7 +148,7 @@ class MPH_Minify {
 
 		// Unique handle used as filename. (hash of the current group & version info)
 		$group_handle = $this->get_group_handle( $group );
-		$group_filename = $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+		$group_filename = $group_handle . $this->file_extension;
 
 		$min_path     = trailingslashit( $this->site_root . $this->cache_dir ) . $group_filename;
 		$min_src      = trailingslashit( home_url( '/' ) . $this->cache_dir ) . $group_filename;
@@ -461,5 +458,35 @@ class MPH_Minify {
 
 	}
 
+
+}
+
+class MPH_Minify_Scripts extends MPH_Minify {
+
+	function __construct() {
+
+		global $wp_scripts;
+
+		$this->class = &$wp_scripts;
+		$this->file_extension = '.js';
+
+		parent::__construct();
+
+	}
+
+}
+
+class MPH_Minify_Styles extends MPH_Minify {
+
+	function __construct() {
+
+		global $wp_styles;
+
+		$this->class = &$wp_styles;
+		$this->file_extension = '.css';
+
+		parent::__construct();
+
+	}
 
 }
