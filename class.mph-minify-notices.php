@@ -19,10 +19,7 @@ class MPH_Admin_Notices {
 
 		$this->ID = 'mphan_' . $ID;
 
-		if ( ! get_option( $this->ID ) )
-			add_option( $this->ID, array(), null, 'no' );
-		else
-			$this->admin_notices = get_option( $this->ID, array() );
+		$this->admin_notices = get_option( $this->ID, array() );
 
 		if ( isset( $_GET[ $this->ID . '_notice_dismiss' ] ) || isset( $_GET['_wpnonce'] ) )
 			add_action( 'admin_init', array( $this, 'delete_notice_action' ) );
