@@ -128,6 +128,22 @@ abstract class MPH_Minify {
 	}
 
 	/**
+	 * Get Group
+	 *
+	 * Return the group for a given item handle
+	 *
+	 * @param string handle
+	 * @return string group
+	 */
+	function get_handle_group( $handle ) {
+
+		return (string) isset( $this->class->registered[$handle]->extra['group'] ) ? $this->class->registered[$handle]->extra['group'] : '0';
+
+	}
+
+
+
+	/**
 	 * Process Group.
 	 *
 	 * Enqueue cached minified file or create one and enqueue that.
@@ -173,12 +189,28 @@ abstract class MPH_Minify {
 		$deps = $this->get_group_deps( $group );
 
 		// Enqueue the minified file
-		$this->class->add( $group_handle, $min_src, $deps, null );
-		$this->class->add_data( $group_handle, 'group', $group );
-		$this->class->enqueue( $group_handle );
+		$this->enqueue( $group_handle, $min_src, $deps, null, $group );
 
 		// Set up dependencies for this group.
 		$this->setup_all_deps( $group );
+
+	}
+
+	/**
+	 * Enqueue file.
+	 *
+	 * @param  string  $group_handle
+	 * @param  string  $min_src
+	 * @param  array   $deps
+	 * @param  string  $ver
+	 * @param  string  $group
+	 * @return null
+	 */
+	function enqueue( $group_handle, $min_src, $deps = array(), $ver = null, $group = null ) {
+
+		$this->class->add( $group_handle, $min_src, $deps, $ver );
+		$this->class->add_data( $group_handle, 'group', $group );
+		$this->class->enqueue( $group_handle );
 
 	}
 
@@ -228,19 +260,6 @@ abstract class MPH_Minify {
 					if ( ! in_array( $this->minified_deps[ get_class( $this->class ) ][$dep], $dependency->deps ) )
 						$dependency->deps[] = $this->minified_deps[ get_class( $this->class ) ][$dep];
 				}
-
-	}
-
-	/**
-	 * Localize the minified scripts. Echo script tags in the head.
-	 *
-	 * @return null
-	 * @todo - Unfortunately we cannot just localize the minified file using this data but could maybe add this using the wp_scripts class sett print_inline_style().
-	 */
-	public function script_localization() {
-
-		foreach ( $this->script_localization as $handle => $data )
-			echo '<script>' . $data . '</script>';
 
 	}
 
@@ -452,6 +471,8 @@ abstract class MPH_Minify {
 
 }
 
+/**
+ * Minify Scripts
  *
  * Handle script localization.
  */
@@ -503,6 +524,11 @@ class MPH_Minify_Scripts extends MPH_Minify {
 
 }
 
+/**
+ * Minify Styles
+ *
+ * Groups are slightly different from scripts as we use media attributes as a group identifier.
+ */
 class MPH_Minify_Styles extends MPH_Minify {
 
 	function __construct() {
@@ -513,6 +539,38 @@ class MPH_Minify_Styles extends MPH_Minify {
 		$this->file_extension = '.css';
 
 		parent::__construct();
+
+	}
+
+	/**
+	 * Get Group
+	 *
+	 * For styles, return the media arg.
+	 *
+	 * @param string handle
+	 * @return string group
+	 */
+	function get_handle_group( $handle ) {
+
+		return (string) ! empty( $this->class->registered[$handle]->args ) ? $this->class->registered[$handle]->args : '0';
+
+	}
+
+	/**
+	 * Enqueue style.
+	 *
+	 * Use wp_enqueue_style as groups is used to handle media attribute.
+	 *
+	 * @param  string $group_handle
+	 * @param  string $min_src      [description]
+	 * @param  array  $deps         [description]
+	 * @param  string $ver          [description]
+	 * @param  string $group        [description]
+	 * @return null
+	 */
+	function enqueue( $group_handle, $min_src, $deps = array(), $ver = null, $group = null ) {
+
+		wp_enqueue_style( $group_handle, $min_src, $deps, null, $group );
 
 	}
 
