@@ -97,6 +97,9 @@ function mph_minify_scripts() {
 	if ( is_admin() )
 		return;
 
+	// Debug (Timestack)
+	do_action( 'start_operation', 'Scripts Minify' );
+
 	$options = mph_minify_get_options();
 
 	// Scripts
@@ -114,6 +117,9 @@ function mph_minify_scripts() {
 
 	}
 
+	// Debug (Timestack)
+	do_action( 'end_operation', 'Scripts Minify' );
+
 }
 
 /**
@@ -125,6 +131,9 @@ function mph_minify_styles() {
 
 	if ( is_admin() )
 		return;
+
+	// Debug (Timestack)
+	do_action( 'start_operation', 'Styles Minify' );
 
 	$options = mph_minify_get_options();
 
@@ -142,6 +151,9 @@ function mph_minify_styles() {
 		}
 
 	}
+
+	// Debug (Timestack)
+	do_action( 'end_operation', 'Scripts Minify' );
 
 }
 

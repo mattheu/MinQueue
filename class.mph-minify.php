@@ -88,6 +88,9 @@ abstract class MPH_Minify {
 	 */
 	protected function get_process_queue() {
 
+		// Debug (Timestack)
+		do_action( 'start_operation', 'Get Process Queue' );
+
 		if ( empty( $this->process_queue ) ) {
 
 			// Use a clone of the current class to avoid conflicts
@@ -123,25 +126,12 @@ abstract class MPH_Minify {
 
 		}
 
+		// Debug (Timestack)
+		do_action( 'end_operation', 'Get Process Queue' );
+
 		return $this->process_queue;
 
 	}
-
-	/**
-	 * Get Group
-	 *
-	 * Return the group for a given item handle
-	 *
-	 * @param string handle
-	 * @return string group
-	 */
-	function get_handle_group( $handle ) {
-
-		return (string) isset( $this->class->registered[$handle]->extra['group'] ) ? $this->class->registered[$handle]->extra['group'] : '0';
-
-	}
-
-
 
 	/**
 	 * Process Group.
@@ -152,6 +142,9 @@ abstract class MPH_Minify {
 	 * @return null
 	 */
 	private function enqueue_minified_group( $group ) {
+
+		// Debug (Timestack)
+		do_action( 'start_operation', 'Enqueue Minified Group' );
 
 		// Unique handle used as filename. (hash of the current group & version info)
 		$group_handle = $this->get_group_handle( $group );
@@ -194,6 +187,9 @@ abstract class MPH_Minify {
 		// Set up dependencies for this group.
 		$this->setup_all_deps( $group );
 
+		// Debug (Timestack)
+		do_action( 'end_operation', 'Enqueue Minified Group' );
+
 	}
 
 	/**
@@ -215,6 +211,20 @@ abstract class MPH_Minify {
 	}
 
 	/**
+	 * Get Group
+	 *
+	 * Return the group for a given item handle
+	 *
+	 * @param string handle
+	 * @return string group
+	 */
+	function get_handle_group( $handle ) {
+
+		return (string) isset( $this->class->registered[$handle]->extra['group'] ) ? $this->class->registered[$handle]->extra['group'] : '0';
+
+	}
+
+	/**
 	 * Get Dependencies of this group.
 	 *
 	 * All dependencies of files contained within this file.
@@ -224,12 +234,18 @@ abstract class MPH_Minify {
 	 */
 	private function get_group_deps( $group ) {
 
+		// Debug (Timestack)
+		do_action( 'start_operation', 'Get Group Dependencies' );
+
 		// Add any deps of assets in queue that are not themselves part of this queue as a dependency of the minified/concatenated file.
 		$deps = array();
 		foreach ( $this->process_queue[$group] as $handle )
 			foreach ( $this->class->registered[$handle]->deps as $dep )
 				if ( ! in_array( $dep, $this->process_queue[$group] ) && ! in_array( $dep, $deps ) )
 					$deps[] = $dep;
+
+		// Debug (Timestack)
+		do_action( 'end_operation', 'Get Group Dependencies' );
 
 		return $deps;
 
@@ -246,6 +262,9 @@ abstract class MPH_Minify {
 	 */
 	private function setup_all_deps( $group ) {
 
+		// Debug (Timestack)
+		do_action( 'start_operation', 'setup_all_deps' );
+
 		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
 		foreach ( $this->class->registered as &$asset )
 			if ( ! empty( $asset->deps ) )
@@ -261,6 +280,9 @@ abstract class MPH_Minify {
 						$dependency->deps[] = $this->minified_deps[ get_class( $this->class ) ][$dep];
 				}
 
+		// Debug (Timestack)
+		do_action( 'end_operation', 'setup_all_deps' );
+
 	}
 
 	/**
@@ -274,6 +296,9 @@ abstract class MPH_Minify {
 	 */
 	private function get_group_handle( $group ) {
 
+		// Debug (Timestack)
+		do_action( 'start_operation', 'get_group_handle' );
+
 		$data = array();
 		foreach( $this->process_queue[$group] as $handle ) {
 
@@ -284,7 +309,12 @@ abstract class MPH_Minify {
 
 		}
 
-		return $this->prefix . '-' . hash( 'crc32b', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32b', serialize( $data ) );
+		$r = $this->prefix . '-' . hash( 'crc32b', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32b', serialize( $data ) );
+
+		// Debug (Timestack)
+		do_action( 'end_operation', 'get_group_handle' );
+
+		return $r;
 
 	}
 
@@ -298,6 +328,9 @@ abstract class MPH_Minify {
 	 */
 	private function get_group_minify_src( $group ) {
 
+		// Debug (Timestack)
+		do_action( 'start_operation', 'get_group_minify_src' );
+
 		// Get array of srcs.
 		$_srcs = array();
 		foreach ( $this->process_queue[$group] as $handle )
@@ -308,7 +341,12 @@ abstract class MPH_Minify {
 		if ( empty( $_srcs ) )
 			return;
 
-		return trailingslashit( $this->plugin_url ) . 'php-minify/min/' . '?f=' . implode( ',', array_filter( $_srcs ) );
+		$r = trailingslashit( $this->plugin_url ) . 'php-minify/min/' . '?f=' . implode( ',', array_filter( $_srcs ) );
+
+		// Debug (Timestack)
+		do_action( 'end_operation', 'get_group_minify_src' );
+
+		return $r;
 
 	}
 
@@ -319,6 +357,9 @@ abstract class MPH_Minify {
 	 * @return string - root relative path of the item src.
 	 */
 	private function get_asset_path( $handle ) {
+
+		// Debug (Timestack)
+		do_action( 'start_operation', 'get_asset_path' );
 
 		// Don't try and process unregistered files, or other minify.
 		if ( empty( $this->class->registered[$handle] ) || ! $src = $this->class->registered[$handle]->src )
@@ -339,6 +380,9 @@ abstract class MPH_Minify {
 		if ( 0 !== strpos( $src, home_url() ) )
 			return;
 
+		// Debug (Timestack)
+		do_action( 'end_operation', 'get_asset_path' );
+
 		return str_replace( home_url(), '', esc_url( $src ) );
 
 	}
@@ -351,6 +395,9 @@ abstract class MPH_Minify {
 	 * @return string           src of cache file.
 	 */
 	private function get_cache_file( $group, $group_handle ) {
+
+		// Debug (Timestack)
+		do_action( 'start_operation', 'get_cache_file' );
 
 		if ( ! $min_src = $this->get_group_minify_src( $group ) )
 			return;
@@ -384,7 +431,12 @@ abstract class MPH_Minify {
 
 		}
 
-		return home_url( '/' ) . trailingslashit( $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+		$r = home_url( '/' ) . trailingslashit( $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+
+		// Debug (Timestack)
+		do_action( 'end_operation', 'get_cache_file' );
+
+		return $r;
 
 	}
 
