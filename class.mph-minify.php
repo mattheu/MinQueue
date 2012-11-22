@@ -79,7 +79,7 @@ abstract class MPH_Minify {
 		do_action( 'end_operation', 'get_process_queue' );
 
 		// Get the queue of assets & Enqueue each group.
-		foreach ( (array)  as $group => $assets  ) {
+		foreach ( (array) $process_queue as $group => $assets  ) {
 			// Debug (Timestack)
 			do_action( 'start_operation', 'Enqueue Minified Group' );
 			$this->enqueue_minified_group( $group );
