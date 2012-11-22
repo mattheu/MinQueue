@@ -328,12 +328,16 @@ abstract class MPH_Minify {
 
 				$data[$handle] = array( 'version' => $this->class->registered[$handle]->ver );
 
+				do_action( 'start_operation', 'check file modified time' );
 				if ( $this->checks_last_modified )
 					$data[$handle]['modified'] = filemtime( $this->site_root .  $this->get_asset_path( $handle ) );
+				do_action( 'end_operation', 'check file modified time' );
 
 			}
 
-			$this->group_handle_cache[$group] = $this->prefix . '-' . hash( 'crc32b', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32b', serialize( $data ) );
+			do_action( 'start_operation', 'do hashes' );
+			$this->group_handle_cache[$group] = $this->prefix . '-' . hash( 'crc32', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32', serialize( $data ) );
+			do_action( 'end_operation', 'do hashes' );
 
 		}
 
