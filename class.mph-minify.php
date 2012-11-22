@@ -103,23 +103,35 @@ abstract class MPH_Minify {
 		if ( empty( $this->process_queue ) ) {
 
 			// Use a clone of the current class to avoid conflicts
+			do_action( 'start_operation', 'wp_clone' );
 			$_class = wp_clone( $this->class );
+			do_action( 'end_operation', 'wp_clone' );
+
+			do_action( 'start_operation', 'all_deps' );
 			$_class->all_deps( $_class->queue );
+			do_action( 'end_operation', 'all_deps' );
 
 			// Remove from queue if not a registered asset.
+			do_action( 'start_operation', 'Remove from queue if not a registered asset.' );
 			foreach ( $this->queue as $key => $handle )
 				if ( ! array_key_exists( $handle, $_class->registered ) )
 					unset( $this->queue[$key] );
+			do_action( 'end_operation', 'Remove from queue if not a registered asset.' );
 
+			do_action( 'start_operation', 'If no scripts in the queue have been enqueued, don\'t proccess queue at all.' );
 			// If no scripts in the queue have been enqueued, don't proccess queue at all.
 			$intersect = array_intersect( $_class->to_do, $this->queue );
 			if ( empty( $intersect ) )
 				return array();
+			do_action( 'end_operation', 'If no scripts in the queue have been enqueued, don\'t proccess queue at all.' );
 
 			// Set up the todos according to our queue - do this to handle dependencies.
+			do_action( 'start_operation', 'all_deps' );
 			$_class->to_do = array();
 			$_class->all_deps( $this->queue );
+			do_action( 'end_operation', 'all_deps' );
 
+			do_action( 'start_operation', 'build queue' );
 	  		foreach ( $_class->to_do as $key => $handle ) {
 
 				// If not in queue - skip (eg if is in queue because it is a dependency of another file)
@@ -132,6 +144,7 @@ abstract class MPH_Minify {
 				$this->process_queue[$group][] = $handle;
 
 			}
+			do_action( 'end_operation', 'build queue' );
 
 		}
 
