@@ -54,8 +54,8 @@ function mph_minify_init () {
 	}
 
 	// Run the minifier
-	add_action( 'wp_print_scripts', 'mph_minify_scripts', 9999 );
-	add_action( 'wp_print_styles', 'mph_minify_styles', 9999 );
+	add_action( 'wp_print_scripts', 'mph_minify_scripts', 999 );
+	add_action( 'wp_print_styles', 'mph_minify_styles', 999 );
 
 	// Load the admin - unless settings are not defined.
 	if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )

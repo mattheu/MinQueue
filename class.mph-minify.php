@@ -32,9 +32,6 @@ abstract class MPH_Minify {
 	// Internal queue of assets to be minified. By group.
 	private $process_queue = array();
 
-	// Array of script Localization data.
-	private $script_localization = array();
-
 	// Reference to MPH_Admin_Notices class
 	private $admin_notices;
 
@@ -81,10 +78,6 @@ abstract class MPH_Minify {
 		foreach ( (array) $this->get_process_queue() as $group => $assets  )
 			$this->enqueue_minified_group( $group );
 
-		// Add the localization data to the head. Do it as early as possible.
-		if ( ! empty( $this->script_localization ) )
-			add_action( 'wp_head', array( $this, 'script_localization' ), 2 );
-
 	}
 
 	/**
@@ -93,7 +86,7 @@ abstract class MPH_Minify {
 	 *
 	 * @return array process_queue. An array of file handles.
 	 */
-	private function get_process_queue() {
+	protected function get_process_queue() {
 
 		if ( empty( $this->process_queue ) ) {
 
@@ -122,11 +115,9 @@ abstract class MPH_Minify {
 				if ( ! in_array( $handle, $this->queue ) || ! $this->get_asset_path( $handle ) )
 					continue;
 
-				$this->process_queue[$_class->groups[$handle]][] = $handle;
+				$group = $this->get_handle_group( $handle );
 
-				// If this asset is localized, store that data.
-				if ( ! empty( $_class->registered[$handle]->extra['data'] ) )
-					$this->script_localization[ $handle ] = $_class->registered[$handle]->extra['data'];
+				$this->process_queue[$group][] = $handle;
 
 			}
 
@@ -461,7 +452,13 @@ abstract class MPH_Minify {
 
 }
 
+ *
+ * Handle script localization.
+ */
 class MPH_Minify_Scripts extends MPH_Minify {
+
+	// Array of script Localization data.
+	public $script_localization = array();
 
 	function __construct() {
 
@@ -471,6 +468,36 @@ class MPH_Minify_Scripts extends MPH_Minify {
 		$this->file_extension = '.js';
 
 		parent::__construct();
+
+		// Add the localization data to the head. Do it as early as possible.
+		add_action( 'wp_print_scripts', array( $this, 'script_localization' ), 1000 );
+
+	}
+
+	function get_process_queue () {
+
+		$this->process_queue = parent::get_process_queue();
+
+		// Get localized script data.
+		foreach( $this->process_queue as $group => $script_handles )
+			foreach( $script_handles as $handle )
+				if ( ! empty( $this->class->registered[$handle]->extra['data'] ) )
+					$this->script_localization[ $handle ] = $this->class->registered[$handle]->extra['data'];
+
+		return $this->process_queue;
+
+	}
+
+	/**
+	 * Localize the minified scripts. Echo script tags in the head.
+	 *
+	 * @return null
+	 * @todo - Unfortunately we cannot just localize the minified file using this data but could maybe add this using the wp_scripts class sett print_inline_style().
+	 */
+	public function script_localization() {
+
+		foreach ( $this->script_localization as $handle => $data )
+			echo '<script>' . $data . '</script>';
 
 	}
 
