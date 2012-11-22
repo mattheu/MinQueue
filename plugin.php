@@ -33,9 +33,6 @@ $plugin_file = trailingslashit( WP_PLUGIN_DIR ) . trailingslashit( basename( __D
 register_activation_hook( $plugin_file, 'mph_minify_activation_hook' );
 register_deactivation_hook( $plugin_file, 'mph_minify_deactivation_hook' );
 
-// register_activation_hook( __FILE__, 'mph_minify_activation_hook' );
-// register_deactivation_hook( __FILE__, 'mph_minify_deactivation_hook' );
-
 /**
  * Init
  *
