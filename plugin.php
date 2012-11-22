@@ -153,7 +153,7 @@ function mph_minify_styles() {
 	}
 
 	// Debug (Timestack)
-	do_action( 'end_operation', 'Scripts Minify' );
+	do_action( 'end_operation', 'Styles Minify' );
 
 }
 
@@ -189,4 +189,3 @@ function mph_minify_deactivation_hook() {
 	$admin_notices->clean_up();
 
 }
-

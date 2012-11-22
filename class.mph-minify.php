@@ -38,12 +38,17 @@ abstract class MPH_Minify {
 	// Internal cache of group handles as they are slow to generate (hashes)
 	private $group_handle_cache = array();
 
+	// Internal cache of handle src paths.
+	private $asset_paths = array();
+
 	/**
 	 * Set things up.
 	 *
 	 * @param string $class Minify assets for this class.
 	 */
 	function __construct() {
+
+		do_action( 'start_operation', '__construct' );
 
 		global $minified_deps;
 
@@ -65,6 +70,8 @@ abstract class MPH_Minify {
 		if ( empty( $this->class ) || ! empty( $this->class ) && ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
 			die( get_class( $this->class ) . ' does not extend WP_Dependencies' );
 
+
+		do_action( 'end_operation', '__construct' );
 	}
 
 	/**
@@ -77,9 +84,7 @@ abstract class MPH_Minify {
 		if ( empty( $this->class ) )
 			return;
 
-		do_action( 'start_operation', 'get_process_queue' );
 		$process_queue = $this->get_process_queue();
-		do_action( 'end_operation', 'get_process_queue' );
 
 		// Get the queue of assets & Enqueue each group.
 		foreach ( (array) $process_queue as $group => $assets  ) {
@@ -100,36 +105,27 @@ abstract class MPH_Minify {
 	 */
 	protected function get_process_queue() {
 
+		do_action( 'start_operation', 'get_process_queue' );
+
 		if ( empty( $this->process_queue ) ) {
 
 			// Use a clone of the current class to avoid conflicts
-			do_action( 'start_operation', 'wp_clone' );
 			$_class = wp_clone( $this->class );
-			do_action( 'end_operation', 'wp_clone' );
-
-			do_action( 'start_operation', 'all_deps' );
-			$_class->all_deps( $_class->queue );
-			do_action( 'end_operation', 'all_deps' );
 
 			// Remove from queue if not a registered asset.
-			do_action( 'start_operation', 'Remove from queue if not a registered asset.' );
 			foreach ( $this->queue as $key => $handle )
 				if ( ! array_key_exists( $handle, $_class->registered ) )
 					unset( $this->queue[$key] );
-			do_action( 'end_operation', 'Remove from queue if not a registered asset.' );
 
-			do_action( 'start_operation', 'If no scripts in the queue have been enqueued, don\'t proccess queue at all.' );
 			// If no scripts in the queue have been enqueued, don't proccess queue at all.
+			$_class->all_deps( $_class->queue );
 			$intersect = array_intersect( $_class->to_do, $this->queue );
 			if ( empty( $intersect ) )
 				return array();
-			do_action( 'end_operation', 'If no scripts in the queue have been enqueued, don\'t proccess queue at all.' );
 
 			// Set up the todos according to our queue - do this to handle dependencies.
-			do_action( 'start_operation', 'all_deps' );
 			$_class->to_do = array();
 			$_class->all_deps( $this->queue );
-			do_action( 'end_operation', 'all_deps' );
 
 			do_action( 'start_operation', 'build queue' );
 	  		foreach ( $_class->to_do as $key => $handle ) {
@@ -147,6 +143,8 @@ abstract class MPH_Minify {
 			do_action( 'end_operation', 'build queue' );
 
 		}
+
+		do_action( 'end_operation', 'get_process_queue' );
 
 		return $this->process_queue;
 
@@ -250,7 +248,6 @@ abstract class MPH_Minify {
 	 */
 	private function get_group_deps( $group ) {
 
-		// Debug (Timestack)
 		do_action( 'start_operation', 'get_group_deps' );
 
 		// Add any deps of assets in queue that are not themselves part of this queue as a dependency of the minified/concatenated file.
@@ -260,7 +257,6 @@ abstract class MPH_Minify {
 				if ( ! in_array( $dep, $this->process_queue[$group] ) && ! in_array( $dep, $deps ) )
 					$deps[] = $dep;
 
-		// Debug (Timestack)
 		do_action( 'end_operation', 'get_group_deps' );
 
 		return $deps;
@@ -382,15 +378,24 @@ abstract class MPH_Minify {
 	/**
 	 * Return the path to an asset relative to the site root
 	 *
+	 * @todo this can be a little slow.
+	 *
 	 * @param  string $handle handle of the item
 	 * @return string - root relative path of the item src.
 	 */
 	private function get_asset_path( $handle ) {
 
-		// Don't try and process unregistered files, or other minify.
-		if ( empty( $this->class->registered[$handle] ) || ! $src = $this->class->registered[$handle]->src )
+		// If the path has already been calculated, return that.
+		if ( array_key_exists( $handle, $this->asset_paths ) )
+			return $this->asset_paths[ $handle ];
+
+		// Don't try and process unregistered files.
+		if ( empty( $this->class->registered[$handle] ) )
 			return;
 
+		$src = $this->class->registered[$handle]->src;
+
+		// Maybe prepend base url.
 		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
 			$src = $this->class->base_url . $src;
 
@@ -406,7 +411,9 @@ abstract class MPH_Minify {
 		if ( 0 !== strpos( $src, home_url() ) )
 			return;
 
-		return str_replace( home_url(), '', esc_url( $src ) );
+		$this->asset_paths[ $handle ] = str_replace( home_url(), '', esc_url( $src ) );
+
+		return $this->asset_paths[ $handle ];
 
 	}
 
