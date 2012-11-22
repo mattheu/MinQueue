@@ -46,7 +46,7 @@ abstract class MPH_Minify {
 
 		$this->prefix        = apply_filters( 'mph_minify_prefix', $this->prefix );
 
-		$wp_dir 		     = str_replace( home_url(), '', site_url() );
+		$wp_dir              = str_replace( home_url(), '', site_url() );
 		$this->site_root     = str_replace( $wp_dir . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, ABSPATH );
 		$this->site_root     = apply_filters( 'mph_minify_site_root', $this->site_root );
 
