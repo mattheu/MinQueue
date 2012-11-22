@@ -35,6 +35,9 @@ abstract class MPH_Minify {
 	// Reference to MPH_Admin_Notices class
 	private $admin_notices;
 
+	// Internal cache of group handles as they are slow to generate (hashes)
+	private $group_handle_cache = array();
+
 	/**
 	 * Set things up.
 	 *
@@ -96,9 +99,6 @@ abstract class MPH_Minify {
 	 * @return array process_queue. An array of file handles.
 	 */
 	protected function get_process_queue() {
-
-		// Debug (Timestack)
-		do_action( 'start_operation', 'Get Process Queue' );
 
 		if ( empty( $this->process_queue ) ) {
 
@@ -270,13 +270,15 @@ abstract class MPH_Minify {
 		// Debug (Timestack)
 		do_action( 'start_operation', 'setup_all_deps' );
 
+		$group_handle = $this->get_group_handle( $group );
+
 		// If any deps of this file are themselves part of another minified file, remove it and add that min file as a dep of this one.
 		foreach ( $this->class->registered as &$dependency ) {
 
 			// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
 			if ( ! empty( $dependency->deps ) )
 				if ( array_intersect( $dependency->deps, $this->process_queue[$group] ) )
-					$dependency->deps[] = $this->get_group_handle( $group );
+					$dependency->deps[] = $group_handle;
 
 			foreach ( $dependency->deps as $key => $dep )
 				if ( array_key_exists( $dep, (array) $this->minified_deps[ get_class( $this->class ) ] ) ) {
@@ -306,22 +308,26 @@ abstract class MPH_Minify {
 		// Debug (Timestack)
 		do_action( 'start_operation', 'get_group_handle' );
 
-		$data = array();
-		foreach( $this->process_queue[$group] as $handle ) {
+		if ( empty( $this->group_handle_cache[$group] ) ) {
 
-			$data[$handle] = array( 'version' => $this->class->registered[$handle]->ver );
+			$data = array();
+			foreach( $this->process_queue[$group] as $handle ) {
 
-			if ( $this->checks_last_modified )
-				$data[$handle]['modified'] = filemtime( $this->site_root .  $this->get_asset_path( $handle ) );
+				$data[$handle] = array( 'version' => $this->class->registered[$handle]->ver );
+
+				if ( $this->checks_last_modified )
+					$data[$handle]['modified'] = filemtime( $this->site_root .  $this->get_asset_path( $handle ) );
+
+			}
+
+			$this->group_handle_cache[$group] = $this->prefix . '-' . hash( 'crc32b', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32b', serialize( $data ) );
 
 		}
-
-		$r = $this->prefix . '-' . hash( 'crc32b', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32b', serialize( $data ) );
 
 		// Debug (Timestack)
 		do_action( 'end_operation', 'get_group_handle' );
 
-		return $r;
+		return $this->group_handle_cache[$group];
 
 	}
 
