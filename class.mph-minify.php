@@ -198,9 +198,7 @@ abstract class MPH_Minify {
 		}
 
 		// Get dependencies of this group.
-		do_action( 'start_operation', 'get_group_deps' );
 		$deps = $this->get_group_deps( $group );
-		do_action( 'end_operation', 'get_group_deps' );
 
 		// Enqueue the minified file
 		$this->enqueue( $group_handle, $min_src, $deps, null, $group );
