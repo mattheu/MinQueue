@@ -192,9 +192,7 @@ abstract class MPH_Minify {
 		$this->enqueue( $group_handle, $min_src, $deps, null, $group );
 
 		// Set up dependencies for this group.
-		do_action( 'start_operation', 'setup_all_deps' );
 		$this->setup_all_deps( $group );
-		do_action( 'end_operation', 'setup_all_deps' );
 
 	}
 
@@ -271,20 +269,22 @@ abstract class MPH_Minify {
 		// Debug (Timestack)
 		do_action( 'start_operation', 'setup_all_deps' );
 
-		// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
-		foreach ( $this->class->registered as &$asset )
-			if ( ! empty( $asset->deps ) )
-				if ( array_intersect( $asset->deps, $this->process_queue[$group] ) )
-					$asset->deps[] = $this->get_group_handle( $group );
-
 		// If any deps of this file are themselves part of another minified file, remove it and add that min file as a dep of this one.
-		foreach ( $this->class->registered as &$dependency )
+		foreach ( $this->class->registered as &$dependency ) {
+
+			// If any of the assets in this file are dependencies of any other registered files, we need to add the minified file as a dependancy.
+			if ( ! empty( $dependency->deps ) )
+				if ( array_intersect( $dependency->deps, $this->process_queue[$group] ) )
+					$dependency->deps[] = $this->get_group_handle( $group );
+
 			foreach ( $dependency->deps as $key => $dep )
 				if ( array_key_exists( $dep, (array) $this->minified_deps[ get_class( $this->class ) ] ) ) {
 					unset( $dependency->deps[$key] );
 					if ( ! in_array( $this->minified_deps[ get_class( $this->class ) ][$dep], $dependency->deps ) )
 						$dependency->deps[] = $this->minified_deps[ get_class( $this->class ) ][$dep];
 				}
+
+		}
 
 		// Debug (Timestack)
 		do_action( 'end_operation', 'setup_all_deps' );
