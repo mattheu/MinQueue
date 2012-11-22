@@ -50,7 +50,7 @@ abstract class MPH_Minify {
 		$this->site_root     = str_replace( $wp_dir . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, ABSPATH );
 		$this->site_root     = apply_filters( 'mph_minify_site_root', $this->site_root );
 
-		$this->plugin_url    = apply_filters( 'mph_minify_plugin_url', trailingslashit( plugins_url( basename( __DIR__ ) ) ) );
+		$this->plugin_url    = apply_filters( 'mph_minify_plugin_url', plugins_url( '', __FILE__ ) );
 
 		$uploads             = wp_upload_dir();
 		$this->cache_dir     = trailingslashit( str_replace( $this->site_root, '', $uploads['basedir'] ) ) . $this->prefix . '-cache';
