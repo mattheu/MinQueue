@@ -121,7 +121,7 @@ class MPH_Minify_Admin {
 	function field_debugger() {	?>
 
 		<input type="checkbox" id="mph_minify_options_debugger" name="mph_minify_options[debugger]" <?php checked( true, ( ! ( ! isset( $this->options['debugger'] ) || isset( $this->options['debugger'] ) && $this->options['debugger']  === false ) ) ); ?>/>
-		<label for="mph_minify_options_debugger">Enable the debugger in the front end of the site. Note: visible for logged out users.</label>
+		<label for="mph_minify_options_debugger">Enable the debugger in the front end of the site. Note: only visible for site admin users.</label>
 
 	<?php }
 
