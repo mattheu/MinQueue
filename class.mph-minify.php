@@ -20,10 +20,13 @@ abstract class MPH_Minify {
 	// Root relative path of the cache directory
 	private $cache_dir;
 
-	// Internal reference to global record of everything minified
+	// Reference to global record of everything minified
 	private $minified_deps;
 
-	// Internal Reference to WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies.
+	// Reference to MPH_Admin_Notices class
+	private $admin_notices;
+
+	// Reference to WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies.
 	protected $class;
 
 	// File extension used for minified files.
@@ -32,11 +35,9 @@ abstract class MPH_Minify {
 	// Internal queue of assets to be minified. By group.
 	private $process_queue = array();
 
-	// Reference to MPH_Admin_Notices class
-	private $admin_notices;
 
 	// Internal cache of group handles as they are slow to generate (hashes)
-	private $group_handle_cache = array();
+	private $group_handles = array();
 
 	// Internal cache of handle src paths.
 	private $asset_paths = array();
@@ -46,7 +47,7 @@ abstract class MPH_Minify {
 	 *
 	 * @param string $class Minify assets for this class.
 	 */
-	function __construct() {
+	function __construct( $queue = array() ) {
 
 		do_action( 'start_operation', '__construct' );
 
@@ -67,11 +68,13 @@ abstract class MPH_Minify {
 		// Global record of everything minified.
 		$this->minified_deps = &$minified_deps;
 
+		$this->queue         = $queue;
+
 		if ( empty( $this->class ) || ! empty( $this->class ) && ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
 			die( get_class( $this->class ) . ' does not extend WP_Dependencies' );
 
-
 		do_action( 'end_operation', '__construct' );
+
 	}
 
 	/**
@@ -84,13 +87,13 @@ abstract class MPH_Minify {
 		if ( empty( $this->class ) )
 			return;
 
-		$process_queue = $this->get_process_queue();
-
 		// Get the queue of assets & Enqueue each group.
-		foreach ( (array) $process_queue as $group => $assets  ) {
+		foreach ( (array) $this->get_process_queue() as $group => $assets  ) {
 
 			do_action( 'start_operation', 'enqueue_minified_group ' . $group );
+
 			$this->enqueue_minified_group( $group );
+
 			do_action( 'end_operation', 'enqueue_minified_group ' . $group );
 
 		}
@@ -315,7 +318,7 @@ abstract class MPH_Minify {
 		// Debug (Timestack)
 		do_action( 'start_operation', 'get_group_handle' );
 
-		if ( empty( $this->group_handle_cache[$group] ) ) {
+		if ( empty( $this->group_handles[$group] ) ) {
 
 			$data = array();
 			foreach( $this->process_queue[$group] as $handle ) {
@@ -330,7 +333,7 @@ abstract class MPH_Minify {
 			}
 
 			do_action( 'start_operation', 'do hashes' );
-			$this->group_handle_cache[$group] = $this->prefix . '-' . hash( 'crc32', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32', serialize( $data ) );
+			$this->group_handles[$group] = $this->prefix . '-' . hash( 'crc32', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32', serialize( $data ) );
 			do_action( 'end_operation', 'do hashes' );
 
 		}
@@ -338,7 +341,7 @@ abstract class MPH_Minify {
 		// Debug (Timestack)
 		do_action( 'end_operation', 'get_group_handle' );
 
-		return $this->group_handle_cache[$group];
+		return $this->group_handles[$group];
 
 	}
 
@@ -555,14 +558,14 @@ class MPH_Minify_Scripts extends MPH_Minify {
 	// Array of script Localization data.
 	public $script_localization = array();
 
-	function __construct() {
+	function __construct( $queue = array() ) {
 
 		global $wp_scripts;
 
 		$this->class = &$wp_scripts;
 		$this->file_extension = '.js';
 
-		parent::__construct();
+		parent::__construct( $queue );
 
 		// Add the localization data to the head. Do it as early as possible.
 		add_action( 'wp_print_scripts', array( $this, 'script_localization' ), 1000 );
@@ -605,14 +608,14 @@ class MPH_Minify_Scripts extends MPH_Minify {
  */
 class MPH_Minify_Styles extends MPH_Minify {
 
-	function __construct() {
+	function __construct( $queue = array() ) {
 
 		global $wp_styles;
 
 		$this->class = &$wp_styles;
 		$this->file_extension = '.css';
 
-		parent::__construct();
+		parent::__construct( $queue );
 
 	}
 

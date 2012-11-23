@@ -108,8 +108,7 @@ function mph_minify_scripts() {
 		foreach ( $options['scripts_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$scripts[$key] = new MPH_Minify_Scripts();
-				$scripts[$key]->queue = (array) $queue;
+				$scripts[$key] = new MPH_Minify_Scripts( (array) $queue );
 				$scripts[$key]->minify();
 			}
 
@@ -143,8 +142,7 @@ function mph_minify_styles() {
 		foreach ( $options['styles_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$styles[$key] = new MPH_Minify_Styles();
-				$styles[$key]->queue = (array) $queue;
+				$styles[$key] = new MPH_Minify_Styles( (array) $queue );
 				$styles[$key]->minify();
 			}
 
