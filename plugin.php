@@ -97,6 +97,9 @@ function mph_minify_scripts() {
 	if ( is_admin() )
 		return;
 
+	// Debug (Timestack)
+	do_action( 'start_operation', 'Scripts Minify' );
+
 	$options = mph_minify_get_options();
 
 	// Scripts
@@ -105,14 +108,16 @@ function mph_minify_scripts() {
 		foreach ( $options['scripts_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$scripts[$key] = new MPH_Minify_Scripts();
-				$scripts[$key]->queue = (array) $queue;
+				$scripts[$key] = new MPH_Minify_Scripts( (array) $queue );
 				$scripts[$key]->minify();
 			}
 
 		}
 
 	}
+
+	// Debug (Timestack)
+	do_action( 'end_operation', 'Scripts Minify' );
 
 }
 
@@ -126,6 +131,9 @@ function mph_minify_styles() {
 	if ( is_admin() )
 		return;
 
+	// Debug (Timestack)
+	do_action( 'start_operation', 'Styles Minify' );
+
 	$options = mph_minify_get_options();
 
 	// Styles
@@ -134,14 +142,16 @@ function mph_minify_styles() {
 		foreach ( $options['styles_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$styles[$key] = new MPH_Minify_Styles();
-				$styles[$key]->queue = (array) $queue;
+				$styles[$key] = new MPH_Minify_Styles( (array) $queue );
 				$styles[$key]->minify();
 			}
 
 		}
 
 	}
+
+	// Debug (Timestack)
+	do_action( 'end_operation', 'Styles Minify' );
 
 }
 
@@ -177,4 +187,3 @@ function mph_minify_deactivation_hook() {
 	$admin_notices->clean_up();
 
 }
-
