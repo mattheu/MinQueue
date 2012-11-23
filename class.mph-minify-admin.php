@@ -1,9 +1,9 @@
 <?php
 
-class MPH_Minify_Admin {
+class MinQueue_Admin {
 
 	// Plugin unique prefix. Used for options, filenames etc.
-	private $prefix = 'mph-min';
+	private $prefix = 'minqueue-min';
 
 	// Plugin options
 	private $options;
@@ -13,10 +13,10 @@ class MPH_Minify_Admin {
 
 	function __construct() {
 
-		$this->prefix = apply_filters( 'mph_minify_prefix', $this->prefix );
-		$this->options = mph_minify_get_options();
+		$this->prefix = apply_filters( 'minqueue_prefix', $this->prefix );
+		$this->options = minqueue_get_options();
 
-		$this->admin_notices = new MPH_Admin_Notices( $this->prefix );
+		$this->admin_notices = new MinQueue_Admin_Notices( $this->prefix );
 
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
@@ -32,7 +32,7 @@ class MPH_Minify_Admin {
 	 */
 	function admin_menu() {
 
-		add_options_page( 'MPH Minify Plugin Page', 'MPH Minify', 'manage_options', 'mph_minify', array( $this, 'options_page' ) );
+		add_options_page( 'MinQueue Plugin Page', 'MinQueue', 'manage_options', 'minqueue', array( $this, 'options_page' ) );
 
 	}
 
@@ -44,23 +44,23 @@ class MPH_Minify_Admin {
 	function admin_init(){
 
 		// Maybe clear cache
-		if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'mph_minify_clear_cache' ) )
+		if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'minqueue_clear_cache' ) )
 			$this->clear_cache();
 
-		register_setting( 'mph_minify_options', 'mph_minify_options', array( $this, 'validate_options' ) );
+		register_setting( 'minqueue_options', 'minqueue_options', array( $this, 'validate_options' ) );
 
 		add_settings_section( 'plugin_main', 'General Options', '__return_true', 'general_minify_options' );
 		add_settings_section( 'plugin_main', 'Script Minification', '__return_true', 'script_minify_options' );
 		add_settings_section( 'plugin_main', 'Style Minification', '__return_true', 'style_minify_options' );
 
-		add_settings_field( 'mph_minify_debugger', 'Enable debugger', array( $this, 'field_debugger' ), 'general_minify_options', 'plugin_main' );
-		add_settings_field( 'mph_minify_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
+		add_settings_field( 'minqueue_debugger', 'Enable debugger', array( $this, 'field_debugger' ), 'general_minify_options', 'plugin_main' );
+		add_settings_field( 'minqueue_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
 
-		add_settings_field( 'mph_minify_styles_method', 'Script minification method', array( $this, 'field_method_scripts' ), 'script_minify_options', 'plugin_main' );
-		add_settings_field( 'mph_minify_scripts', 'Script minification queue', array( $this, 'field_scripts' ), 'script_minify_options', 'plugin_main' );
+		add_settings_field( 'minqueue_styles_method', 'Script minification method', array( $this, 'field_method_scripts' ), 'script_minify_options', 'plugin_main' );
+		add_settings_field( 'minqueue_scripts', 'Script minification queue', array( $this, 'field_scripts' ), 'script_minify_options', 'plugin_main' );
 
-		add_settings_field( 'mph_minify_styles_method', 'Style minification method', array( $this, 'field_method_styles' ), 'style_minify_options', 'plugin_main' );
-		add_settings_field( 'mph_minify_styles', 'Style minification queue', array( $this, 'field_styles' ), 'style_minify_options', 'plugin_main' );
+		add_settings_field( 'minqueue_styles_method', 'Style minification method', array( $this, 'field_method_styles' ), 'style_minify_options', 'plugin_main' );
+		add_settings_field( 'minqueue_styles', 'Style minification queue', array( $this, 'field_styles' ), 'style_minify_options', 'plugin_main' );
 
 	}
 
@@ -73,13 +73,13 @@ class MPH_Minify_Admin {
 
 		<div class="wrap">
 
-			<h2>MPH Minify Plugin Settings</h2>
+			<h2>MinQueue Plugin Settings</h2>
 
 			<form action="options.php" method="post">
 
 				<?php
 
-				settings_fields('mph_minify_options');
+				settings_fields('minqueue_options');
 				do_settings_sections('general_minify_options');
 				do_settings_sections('script_minify_options');
 				do_settings_sections('style_minify_options');
@@ -105,7 +105,7 @@ class MPH_Minify_Admin {
 	 */
 	function field_clear_cache() { ?>
 
-		<a href="<?php echo wp_nonce_url( 'options-general.php?page=mph_minify', 'mph_minify_clear_cache' ); ?>" class="button" style="margin-right: 10px;">Clear Cache</a>
+		<a href="<?php echo wp_nonce_url( 'options-general.php?page=minqueue', 'minqueue_clear_cache' ); ?>" class="button" style="margin-right: 10px;">Clear Cache</a>
 
 		<?php if ( $cached_files_count = $this->get_cached_files_count() ) : ?>
 			<?php echo $cached_files_count; ?> files cached.
@@ -120,8 +120,8 @@ class MPH_Minify_Admin {
 	 */
 	function field_debugger() {	?>
 
-		<input type="checkbox" id="mph_minify_options_debugger" name="mph_minify_options[debugger]" <?php checked( true, ( ! ( ! isset( $this->options['debugger'] ) || isset( $this->options['debugger'] ) && $this->options['debugger']  === false ) ) ); ?>/>
-		<label for="mph_minify_options_debugger">Enable the debugger in the front end of the site. Note: only visible for site admin users.</label>
+		<input type="checkbox" id="minqueue_options_debugger" name="minqueue_options[debugger]" <?php checked( true, ( ! ( ! isset( $this->options['debugger'] ) || isset( $this->options['debugger'] ) && $this->options['debugger']  === false ) ) ); ?>/>
+		<label for="minqueue_options_debugger">Enable the debugger in the front end of the site. Note: only visible for site admin users.</label>
 
 	<?php }
 
@@ -137,8 +137,8 @@ class MPH_Minify_Admin {
 
 		?>
 
-		<input type="radio" id="mph_minify_options_scripts_method_manual" name="mph_minify_options[scripts_method]" value="manual" <?php checked( 'manual', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_manual">Manual minification</label><br/>
-		<input type="radio" id="mph_minify_options_scripts_method_disabled" name="mph_minify_options[scripts_method]" value="disabled" <?php checked( 'disabled', $this->options['scripts_method'] ); ?>/> <label for="mph_minify_options_scripts_method_disabled">Disable minification</label>
+		<input type="radio" id="minqueue_options_scripts_method_manual" name="minqueue_options[scripts_method]" value="manual" <?php checked( 'manual', $this->options['scripts_method'] ); ?>/> <label for="minqueue_options_scripts_method_manual">Manual minification</label><br/>
+		<input type="radio" id="minqueue_options_scripts_method_disabled" name="minqueue_options[scripts_method]" value="disabled" <?php checked( 'disabled', $this->options['scripts_method'] ); ?>/> <label for="minqueue_options_scripts_method_disabled">Disable minification</label>
 
 	<?php }
 
@@ -155,16 +155,16 @@ class MPH_Minify_Admin {
 
 		<div id="field_manual_scripts">
 
-			<label for="mph_minify_field_manual_scripts">
+			<label for="minqueue_field_manual_scripts">
 				<p><span class="description">List of script handles to minify and concatenate into one file. Comma separated or on a new line</span></p>
 				<p><span class="description">Multiple queues will be processed separately, creating multiple processed files.</span></p>
 			</label>
 
-			<textarea id="mph_minify_field_manual_scripts_hidden" name="mph_minify_options[scripts_manual][]" class="large-text code input-template" style="display:none;"></textarea>
+			<textarea id="minqueue_field_manual_scripts_hidden" name="minqueue_options[scripts_manual][]" class="large-text code input-template" style="display:none;"></textarea>
 
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
-				<textarea id="mph_minify_field_manual_scripts_<?php echo $i; ?>" name="mph_minify_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ', ', $values[$i] ) ) : null; ?></textarea>
+				<textarea id="minqueue_field_manual_scripts_<?php echo $i; ?>" name="minqueue_options[scripts_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ', ', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
 
 		</div>
@@ -189,8 +189,8 @@ class MPH_Minify_Admin {
 
 		?>
 
-		<input type="radio" id="mph_minify_options_styles_method_manual" name="mph_minify_options[styles_method]" value="manual" <?php checked( 'manual', $this->options['styles_method'] ); ?>/><label for="mph_minify_options_styles_method_manual"> Manual minification</label><br/>
-		<input type="radio" id="mph_minify_options_styles_method_disabled" name="mph_minify_options[styles_method]" value="disabled" <?php checked( 'disabled', $this->options['styles_method'] ); ?>/> <label for="mph_minify_options_styles_method_disabled">Disable minification</label>
+		<input type="radio" id="minqueue_options_styles_method_manual" name="minqueue_options[styles_method]" value="manual" <?php checked( 'manual', $this->options['styles_method'] ); ?>/><label for="minqueue_options_styles_method_manual"> Manual minification</label><br/>
+		<input type="radio" id="minqueue_options_styles_method_disabled" name="minqueue_options[styles_method]" value="disabled" <?php checked( 'disabled', $this->options['styles_method'] ); ?>/> <label for="minqueue_options_styles_method_disabled">Disable minification</label>
 
 	<?php }
 
@@ -207,16 +207,16 @@ class MPH_Minify_Admin {
 
 		<div id="field_manual_styles">
 
-			<label for="mph_minify_field_manual_styles">
+			<label for="minqueue_field_manual_styles">
 				<p><span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span></p>
 				<p><span class="description">Multiple queues will be processed separately, creating multiple processed files.</span></p>
 			</label>
 
-			<textarea id="mph_minify_field_manual_styles_template" name="mph_minify_options[styles_manual][]" class="large-text code input-template" style="display:none;"></textarea>
+			<textarea id="minqueue_field_manual_styles_template" name="minqueue_options[styles_manual][]" class="large-text code input-template" style="display:none;"></textarea>
 
 			<?php for ( $i = 0; $i < ( ( count( $values ) > 0 ) ? count( $values ) : 1 ); $i++ ) : ?>
 				<?php if ( $i > 0 && empty( $values[$i]) ) continue; ?>
-					<textarea id="mph_minify_field_manual_styles_<?php echo $i; ?>" name="mph_minify_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ', ', $values[$i] ) ) : null; ?></textarea>
+					<textarea id="minqueue_field_manual_styles_<?php echo $i; ?>" name="minqueue_options[styles_manual][]" class="large-text code"><?php echo ( ! empty( $values[$i] ) ) ? esc_attr( implode( ', ', $values[$i] ) ) : null; ?></textarea>
 			<?php endfor; ?>
 
 		</div>
@@ -293,10 +293,10 @@ class MPH_Minify_Admin {
 	 */
 	function enqueue_scripts( $hook ) {
 
-		if ( 'settings_page_mph_minify' !== $hook )
+		if ( 'settings_page_minqueue' !== $hook )
 			return;
 
-		wp_enqueue_script( 'mph-admin', trailingslashit( plugins_url( basename( __DIR__ ) ) ) . 'admin.js' );
+		wp_enqueue_script( 'minqueue-admin', trailingslashit( plugins_url( basename( __DIR__ ) ) ) . 'admin.js' );
 
 	}
 
@@ -312,11 +312,11 @@ class MPH_Minify_Admin {
 		$current_screen = get_current_screen();
 
 		if ( isset( $this->options['debugger'] ) && $this->options['debugger'] === true )
-			$this->admin_notices->add_notice( 'MPH Minify debugger is currently active', true );
+			$this->admin_notices->add_notice( 'MinQueue debugger is currently active', true );
 
 
-		if ( 'settings_page_mph_minify' == $current_screen->id ) {
-			$this->admin_notices->delete_notice( 'mph_min_activation_notice' );
+		if ( 'settings_page_minqueue' == $current_screen->id ) {
+			$this->admin_notices->delete_notice( 'minqueue_min_activation_notice' );
 		}
 
 	}
@@ -330,7 +330,7 @@ class MPH_Minify_Admin {
 	function clear_cache( $redirect = true ) {
 
 		// Delete the cache if requested.
-		$minify = new MPH_Minify_Scripts();
+		$minify = new MinQueue_Scripts();
 		$minify->delete_cache();
 
 		// Redirect.
@@ -348,7 +348,7 @@ class MPH_Minify_Admin {
 	 */
 	function get_cached_files_count() {
 
-		$minify = new MPH_Minify_Scripts();
+		$minify = new MinQueue_Scripts();
 		return $minify->get_cached_files_count();
 
 	}

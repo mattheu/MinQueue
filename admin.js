@@ -29,8 +29,8 @@ jQuery( document ).ready( function() {
 
 	}
 
-	mphToggle( jQuery('#field_manual_scripts'), jQuery('#field_disabled_scripts'), jQuery( '#mph_minify_options_scripts_method_manual' ) );
-	mphToggle( jQuery('#field_manual_styles'),  jQuery('#field_disabled_styles'),  jQuery( '#mph_minify_options_styles_method_manual' )  );
+	mphToggle( jQuery('#field_manual_scripts'), jQuery('#field_disabled_scripts'), jQuery( '#minqueue_options_scripts_method_manual' ) );
+	mphToggle( jQuery('#field_manual_styles'),  jQuery('#field_disabled_styles'),  jQuery( '#minqueue_options_styles_method_manual' )  );
 
 	/**
 	 * Clone input.

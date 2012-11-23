@@ -1,4 +1,4 @@
-# MPH Simple Minify _(Beta)_ #
+# MinQueue Script & Style Minify _(Beta)_ #
 
 Minification & concatenation of JS and CSS can reduce the file size of your assets, and reduce the number of HTTP requests, helping improve page load times.
 
@@ -31,7 +31,7 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 
 * Multiple, independantly proccessed files. You can specify several lists of file handles to be minified and concatenated into separate files. Useful if you have scripts that are loaded conditionally on certain pages and should be handled separately rather than minified and concatenated into one large file.
 * Options can be defined in your config file. This then disables access to the settings page in the admin.
-* Install MPH Minfiy outside of plugins directory? eg as an mu-plugin or in a theme? You will need to filter the plugins_url using 'mph_minify_plugin_dir' filter to give the root relative path to the location of the plugin.
+* Install MPH Minfiy outside of plugins directory? eg as an mu-plugin or in a theme? You will need to filter the plugins_url using 'minqueue_plugin_dir' filter to give the root relative path to the location of the plugin.
 
 ## Problems? Features? ##
 
@@ -40,7 +40,6 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 * Minify removes spaces and line breaks. Javascript that relies on these may break. Early Twitter Bootstrap javascript is not compatable.
 * Be careful of errors in your CSS and JS that may not be apparent when they are loaded separately. eg code comments that are not closed correctly, when concatenated, can comment out all subsequent files.
 * Be careful of dependencies & the order things will be processed. See Troubleshooting, Fatal error: Allowed memory size...
-* I'm trying to minify 5MB of js and it breaks. _doing_it_wrong()
 
 ## Troubleshooting ##
 

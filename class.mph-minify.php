@@ -1,9 +1,9 @@
 <?php
 
-abstract class MPH_Minify {
+abstract class MinQueue {
 
 	// Prefix
-	private $prefix = 'mph-min';
+	private $prefix = 'minqueue-min';
 
 	// Cache minified files or do it on the fly.
 	public $cache = true;
@@ -23,7 +23,7 @@ abstract class MPH_Minify {
 	// Reference to global record of everything minified
 	private $minified_deps;
 
-	// Reference to MPH_Admin_Notices class
+	// Reference to MinQueue_Admin_Notices class
 	private $admin_notices;
 
 	// Reference to WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies.
@@ -34,7 +34,6 @@ abstract class MPH_Minify {
 
 	// Internal queue of assets to be minified. By group.
 	private $process_queue = array();
-
 
 	// Internal cache of group handles as they are slow to generate (hashes)
 	private $group_handles = array();
@@ -51,17 +50,17 @@ abstract class MPH_Minify {
 
 		global $minified_deps;
 
-		$this->prefix        = apply_filters( 'mph_minify_prefix', $this->prefix );
+		$this->prefix        = apply_filters( 'minqueue_prefix', $this->prefix );
 
 		$wp_dir              = str_replace( home_url(), '', site_url() );
 		$this->site_root     = str_replace( $wp_dir . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, ABSPATH );
-		$this->site_root     = apply_filters( 'mph_minify_site_root', $this->site_root );
+		$this->site_root     = apply_filters( 'minqueue_site_root', $this->site_root );
 
-		$this->plugin_url    = apply_filters( 'mph_minify_plugin_url', plugins_url( '', __FILE__ ) );
+		$this->plugin_url    = apply_filters( 'minqueue_plugin_url', plugins_url( '', __FILE__ ) );
 
 		$uploads             = wp_upload_dir();
 		$this->cache_dir     = trailingslashit( str_replace( $this->site_root, '', $uploads['basedir'] ) ) . $this->prefix . '-cache';
-		$this->cache_dir     = apply_filters( 'mph_minify_cache_dir', $this->cache_dir );
+		$this->cache_dir     = apply_filters( 'minqueue_cache_dir', $this->cache_dir );
 
 		// Global record of everything minified.
 		$this->minified_deps = &$minified_deps;
@@ -388,7 +387,7 @@ abstract class MPH_Minify {
 		// Create Directory.
 		if ( ! is_dir( $this->site_root . $this->cache_dir ) )
 			if ( false === wp_mkdir_p( $this->site_root . $this->cache_dir ) ) {
-				$this->add_admin_notice( 'MPH Minify was unable to create the cache directory: ' . $this->site_root . $this->cache_dir, false, 'error' );
+				$this->add_admin_notice( 'MinQueue was unable to create the cache directory: ' . $this->site_root . $this->cache_dir, false, 'error' );
 				return;
 			}
 
@@ -407,7 +406,7 @@ abstract class MPH_Minify {
 
 		if ( false === @file_put_contents( $file , $data ) ) {
 
-			$this->add_admin_notice( 'MPH Minify was unable to create the file: ' . $file . ' for handles ' . implode( ', ', $this->process_queue[$group] ), false, 'error' );
+			$this->add_admin_notice( 'MinQueue was unable to create the file: ' . $file . ' for handles ' . implode( ', ', $this->process_queue[$group] ), false, 'error' );
 			return;
 
 		}
@@ -490,7 +489,7 @@ abstract class MPH_Minify {
 	private function add_admin_notice( $new_notice, $display_once = false, $type = 'updated' ) {
 
 		if ( ! $this->admin_notices )
-			$this->admin_notices = new MPH_Admin_Notices( $this->prefix );
+			$this->admin_notices = new MinQueue_Admin_Notices( $this->prefix );
 
 		$this->admin_notices->add_notice( $new_notice, $display_once, $type );
 
@@ -504,7 +503,7 @@ abstract class MPH_Minify {
  *
  * Handle script localization.
  */
-class MPH_Minify_Scripts extends MPH_Minify {
+class MinQueue_Scripts extends MinQueue {
 
 	// Array of script Localization data.
 	public $script_localization = array();
@@ -557,7 +556,7 @@ class MPH_Minify_Scripts extends MPH_Minify {
  *
  * Groups are slightly different from scripts as we use media attributes as a group identifier.
  */
-class MPH_Minify_Styles extends MPH_Minify {
+class MinQueue_Styles extends MinQueue {
 
 	function __construct( $queue = array() ) {
 

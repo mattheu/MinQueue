@@ -1,7 +1,7 @@
 <?php
 
 /*
-Plugin Name: MPH Minify
+Plugin Name: MinQueue
 Plugin URI: http://matth.eu
 Description: Mega Simple Minify. Minifies enqueued scripts & styles.
 Author: Matthew Haines-Young
@@ -10,53 +10,53 @@ Author URI: http://www.matth.eu
 */
 
 // The core minify class.
-require_once( 'class.mph-minify.php' );
+require_once( 'class.minqueue-minify.php' );
 
 // Minify Admin Page.
-require_once( 'class.mph-minify-admin.php' );
+require_once( 'class.minqueue-minify-admin.php' );
 
 // Admin Notices Abstraction to handle displaying of admin notices.
-require_once( 'class.mph-minify-notices.php' );
+require_once( 'class.minqueue-minify-notices.php' );
 
 // Front end debugger tool for showing what is enqueued on each page.
 require_once( 'debugger.php' );
 
-define( 'MPH_MINIFY_VERSION', '1.0-beta1' );
+define( 'MINQUEUE_VERSION', '1.0-beta1' );
 
 $minified_deps = array( 'WP_Scripts' => array(), 'WP_Styles' => array() );
 global $minified_deps;
 
-add_action( 'init', 'mph_minify_init', 1 );
+add_action( 'init', 'minqueue_init', 1 );
 
 $plugin_file = trailingslashit( WP_PLUGIN_DIR ) . trailingslashit( basename( __DIR__ ) ) . basename( __FILE__ );
 
-register_activation_hook( $plugin_file, 'mph_minify_activation_hook' );
-register_deactivation_hook( $plugin_file, 'mph_minify_deactivation_hook' );
+register_activation_hook( $plugin_file, 'minqueue_activation_hook' );
+register_deactivation_hook( $plugin_file, 'minqueue_deactivation_hook' );
 
 /**
  * Init
  *
  * @return null
  */
-function mph_minify_init () {
+function minqueue_init () {
 
 	// Save current version no.
-	if ( ! $version = get_option( 'mph_minify_version' ) )
-		update_option( 'mph_minify_version', MPH_MINIFY_VERSION );
+	if ( ! $version = get_option( 'minqueue_version' ) )
+		update_option( 'minqueue_version', MINQUEUE_VERSION );
 
 	// Update hook.
-	if ( 0 !== version_compare( $version, MPH_MINIFY_VERSION ) ) {
-		do_action( 'mph_minify_update', $version, MPH_MINIFY_VERSION );
-		update_option( 'mph_minify_version', MPH_MINIFY_VERSION );
+	if ( 0 !== version_compare( $version, MINQUEUE_VERSION ) ) {
+		do_action( 'minqueue_update', $version, MINQUEUE_VERSION );
+		update_option( 'minqueue_version', MINQUEUE_VERSION );
 	}
 
 	// Run the minifier
-	add_action( 'wp_print_scripts', 'mph_minify_scripts', 999 );
-	add_action( 'wp_print_styles', 'mph_minify_styles', 999 );
+	add_action( 'wp_print_scripts', 'minqueue_scripts', 999 );
+	add_action( 'wp_print_styles', 'minqueue_styles', 999 );
 
 	// Load the admin - unless settings are not defined.
-	if ( ! defined( 'MPH_MINIFY_OPTIONS' ) )
-		new MPH_Minify_Admin;
+	if ( ! defined( 'MINQUEUE_OPTIONS' ) )
+		new MinQueue_Admin;
 
 }
 
@@ -65,21 +65,21 @@ function mph_minify_init () {
  *
  * Sets defaults & handles disabling the admin by defining settings instead.
  */
-function mph_minify_get_options() {
+function minqueue_get_options() {
 
 	$defaults = array(
 		'debugger' => false,
-		'cache_dir' => 'mph_minify_cache',
+		'cache_dir' => 'minqueue_cache',
 		'scripts_method' => 'disabled',
 		'styles_method' => 'disabled',
 		'scripts_manual' => array(),
 		'styles_manual' => array()
 	);
 
-	if ( defined( 'MPH_MINIFY_OPTIONS' ) )
-		$options = unserialize( MPH_MINIFY_OPTIONS );
+	if ( defined( 'MINQUEUE_OPTIONS' ) )
+		$options = unserialize( MINQUEUE_OPTIONS );
 	else
-		$options = get_option( 'mph_minify_options', $defaults );
+		$options = get_option( 'minqueue_options', $defaults );
 
 	$options = wp_parse_args( $options, $defaults );
 
@@ -92,12 +92,12 @@ function mph_minify_get_options() {
  *
  * @return null
  */
-function mph_minify_scripts() {
+function minqueue_scripts() {
 
 	if ( is_admin() )
 		return;
 
-	$options = mph_minify_get_options();
+	$options = minqueue_get_options();
 
 	// Scripts
 	if ( isset( $options['scripts_method'] ) && 'disabled' !== $options['scripts_method'] ) {
@@ -105,7 +105,7 @@ function mph_minify_scripts() {
 		foreach ( $options['scripts_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$scripts[$key] = new MPH_Minify_Scripts( (array) $queue );
+				$scripts[$key] = new MinQueue_Scripts( (array) $queue );
 				$scripts[$key]->minify();
 			}
 
@@ -120,12 +120,12 @@ function mph_minify_scripts() {
  *
  * @return null
  */
-function mph_minify_styles() {
+function minqueue_styles() {
 
 	if ( is_admin() )
 		return;
 
-	$options = mph_minify_get_options();
+	$options = minqueue_get_options();
 
 	// Styles
 	if ( isset( $options['styles_method'] ) && 'disabled' !== $options['styles_method'] ) {
@@ -133,7 +133,7 @@ function mph_minify_styles() {
 		foreach ( $options['styles_manual'] as $key => $queue ) {
 
 			if ( ! empty( $queue ) ) {
-				$styles[$key] = new MPH_Minify_Styles( (array) $queue );
+				$styles[$key] = new MinQueue_Styles( (array) $queue );
 				$styles[$key]->minify();
 			}
 
@@ -150,10 +150,10 @@ function mph_minify_styles() {
  *
  * @return null
  */
-function mph_minify_activation_hook() {
+function minqueue_activation_hook() {
 
-	$admin_notices = new MPH_Admin_Notices( apply_filters( 'mph_minify_prefix', 'mph-min' ) );
-	$admin_notices->add_notice( 'MPH Minify activated. Go to the <a href="options-general.php?page=mph_minify">settings page</a> to configure the plugin.', false, 'updated', 'mph_min_activation_notice' );
+	$admin_notices = new MinQueue_Admin_Notices( apply_filters( 'minqueue_prefix', 'minqueue-min' ) );
+	$admin_notices->add_notice( 'MinQueue activated. Go to the <a href="options-general.php?page=minqueue">settings page</a> to configure the plugin.', false, 'updated', 'minqueue_min_activation_notice' );
 
 }
 
@@ -164,14 +164,14 @@ function mph_minify_activation_hook() {
  *
  * @return null
  */
-function mph_minify_deactivation_hook() {
+function minqueue_deactivation_hook() {
 
-	$minify = new MPH_Minify_Scripts();
+	$minify = new MinQueue_Scripts();
 	$minify->delete_cache();
 
-	delete_option( 'mph_minify_options' );
+	delete_option( 'minqueue_options' );
 
-	$admin_notices = new MPH_Admin_Notices( apply_filters( 'mph_minify_prefix', 'mph-min' ) );
+	$admin_notices = new MinQueue_Admin_Notices( apply_filters( 'minqueue_prefix', 'minqueue-min' ) );
 	$admin_notices->clean_up();
 
 }

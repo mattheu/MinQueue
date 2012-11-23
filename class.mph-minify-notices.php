@@ -9,7 +9,7 @@
  *	@param  $ID Unique id. Multiple instances of the class wishing to access the same data should use the same ID.
  *
  */
-class MPH_Admin_Notices {
+class MinQueue_Admin_Notices {
 
 	private $admin_notices = array();
 
