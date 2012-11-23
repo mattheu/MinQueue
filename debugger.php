@@ -120,6 +120,8 @@ function mph_minify_debugger() {
 				<?php mph_minify_debugger_list( $styles_enqueued, false ); ?>
 			</ul>
 
+			<p><a href="<?php echo add_query_arg( 'page', 'mph_minify', get_admin_url( null, 'options-general.php' ) ); ?>">Admin Page</a></p>
+
 			<?php /*
 			<?php wp_nonce_field( 'mph_minify_tool', 'mph_minify_tool_nonce', false ); ?>
 
@@ -137,7 +139,7 @@ function mph_minify_debugger() {
 			</ul>
 			<p>Files displayed in the order in which they are loaded.</p>
 			<p>Only visible to admin users.<p>
-			<p>Remember some scripts are loaded conditionally (on certain pages, or for certain visitors).</p>
+			<p>Remember some scripts are loaded conditionally (on certain pages, or for logged in users etc).</p>
 
 		</div>
 
