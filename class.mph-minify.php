@@ -49,8 +49,6 @@ abstract class MPH_Minify {
 	 */
 	function __construct( $queue = array() ) {
 
-		do_action( 'start_operation', '__construct' );
-
 		global $minified_deps;
 
 		$this->prefix        = apply_filters( 'mph_minify_prefix', $this->prefix );
@@ -70,8 +68,6 @@ abstract class MPH_Minify {
 
 		$this->queue         = $queue;
 
-		do_action( 'end_operation', '__construct' );
-
 	}
 
 	/**
@@ -85,15 +81,8 @@ abstract class MPH_Minify {
 			return;
 
 		// Get the queue of assets & Enqueue each group.
-		foreach ( (array) $this->get_process_queue() as $group => $assets  ) {
-
-			do_action( 'start_operation', 'enqueue_minified_group ' . $group );
-
+		foreach ( (array) $this->get_process_queue() as $group => $assets  )
 			$this->enqueue_minified_group( $group );
-
-			do_action( 'end_operation', 'enqueue_minified_group ' . $group );
-
-		}
 
 	}
 
@@ -104,8 +93,6 @@ abstract class MPH_Minify {
 	 * @return array process_queue. An array of file handles.
 	 */
 	protected function get_process_queue() {
-
-		do_action( 'start_operation', 'get_process_queue' );
 
 		if ( empty( $this->process_queue ) ) {
 
@@ -127,7 +114,6 @@ abstract class MPH_Minify {
 			$_class->to_do = array();
 			$_class->all_deps( $this->queue );
 
-			do_action( 'start_operation', 'build queue' );
 	  		foreach ( $_class->to_do as $key => $handle ) {
 
 				// If not in queue - skip (eg if is in queue because it is a dependency of another file)
@@ -140,11 +126,8 @@ abstract class MPH_Minify {
 				$this->process_queue[$group][] = $handle;
 
 			}
-			do_action( 'end_operation', 'build queue' );
 
 		}
-
-		do_action( 'end_operation', 'get_process_queue' );
 
 		return $this->process_queue;
 
@@ -170,13 +153,10 @@ abstract class MPH_Minify {
 		// If no cached file - generate minified asset src.
 		if ( ! file_exists( $min_path ) ) {
 
-			if ( $this->cache ) {
-				do_action( 'start_operation', 'get_cache_file' );
+			if ( $this->cache )
 				$min_src = $this->get_cache_file( $group, $group_handle );
-				do_action( 'end_operation', 'get_cache_file' );
-			} else {
+			else
 				$min_src = $this->get_group_minify_src( $group );
-			}
 
 		}
 
@@ -248,16 +228,12 @@ abstract class MPH_Minify {
 	 */
 	private function get_group_deps( $group ) {
 
-		do_action( 'start_operation', 'get_group_deps' );
-
 		// Add any deps of assets in queue that are not themselves part of this queue as a dependency of the minified/concatenated file.
 		$deps = array();
 		foreach ( $this->process_queue[$group] as $handle )
 			foreach ( $this->class->registered[$handle]->deps as $dep )
 				if ( ! in_array( $dep, $this->process_queue[$group] ) && ! in_array( $dep, $deps ) )
 					$deps[] = $dep;
-
-		do_action( 'end_operation', 'get_group_deps' );
 
 		return $deps;
 
@@ -273,9 +249,6 @@ abstract class MPH_Minify {
 	 * @return arary of handles that are dependencies of the current minify group.
 	 */
 	private function setup_all_deps( $group ) {
-
-		// Debug (Timestack)
-		do_action( 'start_operation', 'setup_all_deps' );
 
 		$group_handle = $this->get_group_handle( $group );
 
@@ -296,9 +269,6 @@ abstract class MPH_Minify {
 
 		}
 
-		// Debug (Timestack)
-		do_action( 'end_operation', 'setup_all_deps' );
-
 	}
 
 	/**
@@ -312,9 +282,6 @@ abstract class MPH_Minify {
 	 */
 	private function get_group_handle( $group ) {
 
-		// Debug (Timestack)
-		do_action( 'start_operation', 'get_group_handle' );
-
 		if ( empty( $this->group_handles[$group] ) ) {
 
 			$data = array();
@@ -322,21 +289,14 @@ abstract class MPH_Minify {
 
 				$data[$handle] = array( 'version' => $this->class->registered[$handle]->ver );
 
-				do_action( 'start_operation', 'check file modified time' );
 				if ( $this->checks_last_modified )
 					$data[$handle]['modified'] = filemtime( $this->site_root .  $this->get_asset_path( $handle ) );
-				do_action( 'end_operation', 'check file modified time' );
 
 			}
 
-			do_action( 'start_operation', 'do hashes' );
 			$this->group_handles[$group] = $this->prefix . '-' . hash( 'crc32', serialize( $this->process_queue[$group] ) ) . '-' . hash( 'crc32', serialize( $data ) );
-			do_action( 'end_operation', 'do hashes' );
 
 		}
-
-		// Debug (Timestack)
-		do_action( 'end_operation', 'get_group_handle' );
 
 		return $this->group_handles[$group];
 
@@ -352,9 +312,6 @@ abstract class MPH_Minify {
 	 */
 	private function get_group_minify_src( $group ) {
 
-		// Debug (Timestack)
-		do_action( 'start_operation', 'get_group_minify_src' );
-
 		// Get array of srcs.
 		$_srcs = array();
 		foreach ( $this->process_queue[$group] as $handle )
@@ -367,9 +324,6 @@ abstract class MPH_Minify {
 
 		else
 			$r = trailingslashit( $this->plugin_url ) . 'php-minify/min/' . '?f=' . implode( ',', array_filter( $_srcs ) );
-
-		// Debug (Timestack)
-		do_action( 'end_operation', 'get_group_minify_src' );
 
 		return $r;
 
