@@ -216,7 +216,7 @@ abstract class MPH_Minify {
 	 * @param  string  $group
 	 * @return null
 	 */
-	function enqueue( $group_handle, $min_src, $deps = array(), $ver = null, $group = null ) {
+	protected  function enqueue( $group_handle, $min_src, $deps = array(), $ver = null, $group = null ) {
 
 		$this->class->add( $group_handle, $min_src, $deps, $ver );
 		$this->class->add_data( $group_handle, 'group', $group );
@@ -232,7 +232,7 @@ abstract class MPH_Minify {
 	 * @param string handle
 	 * @return string group
 	 */
-	function get_handle_group( $handle ) {
+	protected function get_handle_group( $handle ) {
 
 		return (string) isset( $this->class->registered[$handle]->extra['group'] ) ? $this->class->registered[$handle]->extra['group'] : '0';
 
