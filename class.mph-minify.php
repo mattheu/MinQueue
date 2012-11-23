@@ -70,9 +70,6 @@ abstract class MPH_Minify {
 
 		$this->queue         = $queue;
 
-		if ( empty( $this->class ) || ! empty( $this->class ) && ! is_subclass_of( $this->class, 'WP_Dependencies' ) )
-			die( get_class( $this->class ) . ' does not extend WP_Dependencies' );
-
 		do_action( 'end_operation', '__construct' );
 
 	}
