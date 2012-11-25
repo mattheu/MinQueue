@@ -28,7 +28,7 @@ global $minified_deps;
 
 add_action( 'init', 'minqueue_init', 1 );
 
-$plugin_file = trailingslashit( WP_PLUGIN_DIR ) . trailingslashit( basename( __DIR__ ) ) . basename( __FILE__ );
+$plugin_file = trailingslashit( apply_filters( 'mph_minify_plugin_url', plugins_url( '', __FILE__ ) ) ) . basename( __FILE__ );
 
 register_activation_hook( $plugin_file, 'minqueue_activation_hook' );
 register_deactivation_hook( $plugin_file, 'minqueue_deactivation_hook' );
