@@ -3,7 +3,7 @@
 class MinQueue_Admin {
 
 	// Plugin unique prefix. Used for options, filenames etc.
-	private $prefix = 'minqueue-min';
+	private $prefix = 'minqueue';
 
 	// Plugin options
 	private $options;

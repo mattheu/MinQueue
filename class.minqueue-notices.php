@@ -1,7 +1,7 @@
 <?php
 
 /**
- *	MPH Notices
+ *	MinQueue Notices
  *
  * 	Abstraction for displaying admin notices across a site.
  * 	Errors on the front end can easily be stored and displayed in the admin.
@@ -15,9 +15,9 @@ class MinQueue_Admin_Notices {
 
 	private $ID;
 
-	function __construct( $ID = 'mph' ) {
+	function __construct( $ID = 'minqueue' ) {
 
-		$this->ID = 'mphan_' . $ID;
+		$this->ID = 'minqueue_an_' . $ID;
 
 		$this->admin_notices = get_option( $this->ID, array() );
 

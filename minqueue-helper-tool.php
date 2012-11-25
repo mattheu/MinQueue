@@ -50,12 +50,12 @@ function minqueue_helper_style() {
 		#minqueue-helper ul,
 		#minqueue-helper p,
 		#minqueue-helper li { padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
-		#minqueue-helper li.minqueue-min-group-0 { color: orange;}
-		#minqueue-helper li.minqueue-min-group-1 { color: yellow;}
+		#minqueue-helper li.minqueue-group-0 { color: orange;}
+		#minqueue-helper li.minqueue-group-1 { color: yellow;}
 		#minqueue-helper li input { margin-right: 7px; }
-		#minqueue-helper li span.minqueue-min-icon { display: inline-block; width: 10px; display: none;  }
+		#minqueue-helper li span.minqueue-icon { display: inline-block; width: 10px; display: none;  }
 		#minqueue-helper li:before { content: '•'; display: inline-block; width: 10px; }
-		#minqueue-helper li.minqueue-min-minified:before { content: '✔'; }
+		#minqueue-helper li.minqueue-minified:before { content: '✔'; }
 		#minqueue-helper-submit,
 		#minqueue-helper-submit:hover
 		#minqueue-helper-submit:active { border: 1px solid black !important; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.2); padding-bottom: 3px !important; padding-left: 6px !important; padding-right: 6px !important; padding-top: 2px !important; vertical-align: middle; }
@@ -134,8 +134,8 @@ function minqueue_helper() {
 
 			<h2>Key</h2>
 			<ul>
-				<li class="minqueue-min-group-0">Orange: in header</li>
-				<li class="minqueue-min-group-1">Yellow: in footer</li>
+				<li class="minqueue-group-0">Orange: in header</li>
+				<li class="minqueue-group-1">Yellow: in footer</li>
 			</ul>
 			<p>Files displayed in the order in which they are loaded.</p>
 			<p>Only visible to admin users.<p>
@@ -171,14 +171,14 @@ function minqueue_helper_list( $asset_list, $scripts = true ) {
 	foreach ( $asset_list as $handle ) {
 
 		// Don't show minified scripts.
-		if ( 0 === strpos( $handle, 'minqueue-min' ) )
+		if ( 0 === strpos( $handle, 'minqueue' ) )
 			continue;
 
 		$classes = array();
-		$classes['group'] = 'minqueue-min-group-' . ( isset( $class->registered[$handle]->extra['group'] ) ? $class->registered[$handle]->extra['group'] : 0 );
+		$classes['group'] = 'minqueue-group-' . ( isset( $class->registered[$handle]->extra['group'] ) ? $class->registered[$handle]->extra['group'] : 0 );
 
 		if ( array_key_exists( $handle, $minified_deps[get_class($class)] ) )
-			$classes['minified'] = 'minqueue-min-minified';
+			$classes['minified'] = 'minqueue-minified';
 
 		$checked = false;
 		foreach( $options[( 'WP_Scripts' == get_class($class) ) ? 'scripts_manual' : 'styles_manual'] as $queue )
@@ -190,7 +190,7 @@ function minqueue_helper_list( $asset_list, $scripts = true ) {
 		?>
 		<li class="<?php echo implode( ' ', $classes ); ?>" title="<?php echo implode( ', ', $class->registered[$handle]->deps ); ?>">
 
-			<span class="minqueue-min-icon"><?php if ( $checked ) echo '&#10004;'; else echo '&bull;'; ?></span>
+			<span class="minqueue-icon"><?php if ( $checked ) echo '&#10004;'; else echo '&bull;'; ?></span>
 
 			<?php echo $handle; ?>
 			<?php /*

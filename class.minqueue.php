@@ -3,7 +3,7 @@
 abstract class MinQueue {
 
 	// Prefix
-	private $prefix = 'minqueue-min';
+	private $prefix = 'minqueue';
 
 	// Cache minified files or do it on the fly.
 	public $cache = true;

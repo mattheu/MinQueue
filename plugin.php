@@ -150,7 +150,7 @@ function minqueue_styles() {
  */
 function minqueue_activation_hook() {
 
-	$admin_notices = new MinQueue_Admin_Notices( apply_filters( 'minqueue_prefix', 'minqueue-min' ) );
+	$admin_notices = new MinQueue_Admin_Notices( apply_filters( 'minqueue_prefix', 'minqueue' ) );
 	$admin_notices->add_notice( 'MinQueue activated. Go to the <a href="options-general.php?page=minqueue">settings page</a> to configure the plugin.', false, 'updated', 'minqueue_min_activation_notice' );
 
 }
@@ -169,7 +169,7 @@ function minqueue_deactivation_hook() {
 
 	delete_option( 'minqueue_options' );
 
-	$admin_notices = new MinQueue_Admin_Notices( apply_filters( 'minqueue_prefix', 'minqueue-min' ) );
+	$admin_notices = new MinQueue_Admin_Notices( apply_filters( 'minqueue_prefix', 'minqueue' ) );
 	$admin_notices->clean_up();
 
 }

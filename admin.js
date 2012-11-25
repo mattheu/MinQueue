@@ -8,7 +8,7 @@ jQuery( document ).ready( function() {
 	 * @param  fieldOne jQuery object for the input relating to the first element. Note the input for the second must be a sibling. Note that this function only supports 2 fields.
 	 * @return null
 	 */
-	var mphToggle = function( fieldOne, fieldTwo, fieldOneInput ) {
+	var minqueueToggle = function( fieldOne, fieldTwo, fieldOneInput ) {
 
 		fieldOneInput.remove;
 
@@ -29,8 +29,8 @@ jQuery( document ).ready( function() {
 
 	}
 
-	mphToggle( jQuery('#field_manual_scripts'), jQuery('#field_disabled_scripts'), jQuery( '#minqueue_options_scripts_method_manual' ) );
-	mphToggle( jQuery('#field_manual_styles'),  jQuery('#field_disabled_styles'),  jQuery( '#minqueue_options_styles_method_manual' )  );
+	minqueueToggle( jQuery('#field_manual_scripts'), jQuery('#field_disabled_scripts'), jQuery( '#minqueue_options_scripts_method_manual' ) );
+	minqueueToggle( jQuery('#field_manual_styles'),  jQuery('#field_disabled_styles'),  jQuery( '#minqueue_options_styles_method_manual' )  );
 
 	/**
 	 * Clone input.
@@ -41,7 +41,7 @@ jQuery( document ).ready( function() {
 	 * @param  container element
 	 * @return null
 	 */
-	var mphFieldCloner = function( container ) {
+	var minqueueFieldCloner = function( container ) {
 
 		var template = container.find( '.input-template' );
 
@@ -65,7 +65,7 @@ jQuery( document ).ready( function() {
 
 	}
 
-	mphFieldCloner( jQuery( '#field_manual_scripts' ) );
-	mphFieldCloner( jQuery( '#field_manual_styles' ) );
+	minqueueFieldCloner( jQuery( '#field_manual_scripts' ) );
+	minqueueFieldCloner( jQuery( '#field_manual_styles' ) );
 
 } );
