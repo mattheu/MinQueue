@@ -53,7 +53,7 @@ class MinQueue_Admin {
 		add_settings_section( 'plugin_main', 'Script Minification', '__return_true', 'script_minify_options' );
 		add_settings_section( 'plugin_main', 'Style Minification', '__return_true', 'style_minify_options' );
 
-		add_settings_field( 'minqueue_debugger', 'Enable debugger', array( $this, 'field_debugger' ), 'general_minify_options', 'plugin_main' );
+		add_settings_field( 'minqueue_helper', 'Enable helper', array( $this, 'field_helper' ), 'general_minify_options', 'plugin_main' );
 		add_settings_field( 'minqueue_clear_cache', 'Delete all cached files', array( $this, 'field_clear_cache' ), 'general_minify_options', 'plugin_main' );
 
 		add_settings_field( 'minqueue_styles_method', 'Script minification method', array( $this, 'field_method_scripts' ), 'script_minify_options', 'plugin_main' );
@@ -114,14 +114,14 @@ class MinQueue_Admin {
 	<?php }
 
 	/**
-	 * Output debugger setting field.
+	 * Output helper setting field.
 	 *
 	 * @return null
 	 */
-	function field_debugger() {	?>
+	function field_helper() {	?>
 
-		<input type="checkbox" id="minqueue_options_debugger" name="minqueue_options[debugger]" <?php checked( true, ( ! ( ! isset( $this->options['debugger'] ) || isset( $this->options['debugger'] ) && $this->options['debugger']  === false ) ) ); ?>/>
-		<label for="minqueue_options_debugger">Enable the debugger in the front end of the site. Note: only visible for site admin users.</label>
+		<input type="checkbox" id="minqueue_options_helper" name="minqueue_options[helper]" <?php checked( true, ( ! ( ! isset( $this->options['helper'] ) || isset( $this->options['helper'] ) && $this->options['helper']  === false ) ) ); ?>/>
+		<label for="minqueue_options_helper">Enable the helper in the front end of the site (only visible for site admin users).</label>
 
 	<?php }
 
@@ -246,7 +246,7 @@ class MinQueue_Admin {
 		$input['scripts_manual'] = array_merge( array_filter( $input['scripts_manual'] ) );
 		$input['styles_manual'] = array_merge( array_filter( $input['styles_manual'] ) );
 
-		$input['debugger'] = ( empty( $input['debugger'] ) ) ? false : true;
+		$input['helper'] = ( empty( $input['helper'] ) ) ? false : true;
 
 		// If method is manual, and no manual handles are set, disable minification.
 		if ( 'manual' == $input['styles_method'] && empty( $input['styles_manual'] ) )
@@ -311,8 +311,8 @@ class MinQueue_Admin {
 
 		$current_screen = get_current_screen();
 
-		if ( isset( $this->options['debugger'] ) && $this->options['debugger'] === true )
-			$this->admin_notices->add_notice( 'MinQueue debugger is currently active', true );
+		if ( isset( $this->options['helper'] ) && $this->options['helper'] === true )
+			$this->admin_notices->add_notice( 'MinQueue helper is currently active', true );
 
 
 		if ( 'settings_page_minqueue' == $current_screen->id ) {

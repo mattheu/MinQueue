@@ -1,10 +1,10 @@
 <?php
 
 /**
- *	Debugger/Helper Tool
+ *	Helper/Helper Tool
  *
  *	When enabled, shown on the front end of the site.
- * 	Debugger window shows all enqueued scripts, and highlights those that are minified.
+ * 	Helper window shows all enqueued scripts, and highlights those that are minified.
  */
 
 add_action( 'init', 'minqueue_tool' );
@@ -15,10 +15,10 @@ function minqueue_tool () {
 
 	$options = minqueue_get_options();
 
-	if ( isset( $options['debugger'] ) && true === $options['debugger'] ) {
+	if ( isset( $options['helper'] ) && true === $options['helper'] ) {
 
-		add_action( 'wp_head', 'minqueue_debugger_style' );
-		add_action( 'wp_footer', 'minqueue_debugger', 9999 );
+		add_action( 'wp_head', 'minqueue_helper_style' );
+		add_action( 'wp_footer', 'minqueue_helper', 9999 );
 
 		// Temporarily disabled as its a little buggy.
 		//minqueue_tool_process();
@@ -28,40 +28,40 @@ function minqueue_tool () {
 }
 
 /**
- * Debugger Style. Inserted into head.
+ * Helper Style. Inserted into head.
  *
  * @todo Seriously i'm not even correclty enqueuing my own styles!
  * @return null
  */
-function minqueue_debugger_style() {
+function minqueue_helper_style() {
 
 	?>
 
 	<style>
-		#minqueue-minify-debugger { position: fixed; top: 10px; right: 10px; overflow: hidden; width: 220px; height: 60%; border-radius: 10px; background: rgba(0,0,0,0.8); border: none; color: #FFF; padding: 10px;  margin-bottom: 30px; z-index: 9999; }
-		.admin-bar #minqueue-minify-debugger { top: 38px; }
-		#minqueue-minify-debugger form { height: 100%; }
-		#minqueue-minify-debugger-inner { height: 100%; overflow: auto; }
+		#minqueue-helper { position: fixed; top: 10px; right: 10px; overflow: hidden; width: 220px; height: 60%; border-radius: 10px; background: rgba(0,0,0,0.8); border: none; color: #FFF; padding: 10px;  margin-bottom: 30px; z-index: 9999; }
+		.admin-bar #minqueue-helper { top: 38px; }
+		#minqueue-helper form { height: 100%; }
+		#minqueue-helper-inner { height: 100%; overflow: auto; }
 
 
-		#minqueue-minify-debugger * { background: none !important; text-shadow: none !important; padding: 0 !important; }
-		#minqueue-minify-debugger h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; background: none; text-shadow: none; padding: 0;  }
-		#minqueue-minify-debugger ul { margin-bottom: 15px; }
-		#minqueue-minify-debugger ul,
-		#minqueue-minify-debugger p,
-		#minqueue-minify-debugger li { padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
-		#minqueue-minify-debugger li.minqueue-min-group-0 { color: orange;}
-		#minqueue-minify-debugger li.minqueue-min-group-1 { color: yellow;}
-		#minqueue-minify-debugger li input { margin-right: 7px; }
-		#minqueue-minify-debugger li span.minqueue-min-icon { display: inline-block; width: 10px; display: none;  }
-		#minqueue-minify-debugger li:before { content: '•'; display: inline-block; width: 10px; }
-		#minqueue-minify-debugger li.minqueue-min-minified:before { content: '✔'; }
-		#minqueue-minify-debugger-submit,
-		#minqueue-minify-debugger-submit:hover
-		#minqueue-minify-debugger-submit:active { border: 1px solid black !important; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.2); padding-bottom: 3px !important; padding-left: 6px !important; padding-right: 6px !important; padding-top: 2px !important; vertical-align: middle; }
-		#minqueue-minify-debugger-submit { background-image: -moz-linear-gradient(top,#CCC,#999) !important; background-image: -ms-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#CCC),to(#999)) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: -o-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: linear-gradient(top,#CCC,#999) !important;  }
-		#minqueue-minify-debugger-submit:hover { background-image: -moz-linear-gradient(top,#FFF,#AAA) !important; background-image: -ms-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#FFF),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: -o-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: linear-gradient(top,#FFF,#AAA) !important;  }
-		#minqueue-minify-debugger-submit:active {  background-image: -moz-linear-gradient(top,#999,#AAA) !important; background-image: -ms-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#999),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: -o-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: linear-gradient(top,#999,#AAA) !important; box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3), inset 0 1px 3px rgba(0,0,0,0.2); }
+		#minqueue-helper * { background: none !important; text-shadow: none !important; padding: 0 !important; }
+		#minqueue-helper h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; background: none; text-shadow: none; padding: 0;  }
+		#minqueue-helper ul { margin-bottom: 15px; }
+		#minqueue-helper ul,
+		#minqueue-helper p,
+		#minqueue-helper li { padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
+		#minqueue-helper li.minqueue-min-group-0 { color: orange;}
+		#minqueue-helper li.minqueue-min-group-1 { color: yellow;}
+		#minqueue-helper li input { margin-right: 7px; }
+		#minqueue-helper li span.minqueue-min-icon { display: inline-block; width: 10px; display: none;  }
+		#minqueue-helper li:before { content: '•'; display: inline-block; width: 10px; }
+		#minqueue-helper li.minqueue-min-minified:before { content: '✔'; }
+		#minqueue-helper-submit,
+		#minqueue-helper-submit:hover
+		#minqueue-helper-submit:active { border: 1px solid black !important; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.2); padding-bottom: 3px !important; padding-left: 6px !important; padding-right: 6px !important; padding-top: 2px !important; vertical-align: middle; }
+		#minqueue-helper-submit { background-image: -moz-linear-gradient(top,#CCC,#999) !important; background-image: -ms-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#CCC),to(#999)) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: -o-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: linear-gradient(top,#CCC,#999) !important;  }
+		#minqueue-helper-submit:hover { background-image: -moz-linear-gradient(top,#FFF,#AAA) !important; background-image: -ms-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#FFF),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: -o-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: linear-gradient(top,#FFF,#AAA) !important;  }
+		#minqueue-helper-submit:active {  background-image: -moz-linear-gradient(top,#999,#AAA) !important; background-image: -ms-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#999),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: -o-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: linear-gradient(top,#999,#AAA) !important; box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3), inset 0 1px 3px rgba(0,0,0,0.2); }
 	</style>
 
 	<?php
@@ -73,7 +73,7 @@ function minqueue_debugger_style() {
  *
  * Uses global var $minified_deps (as well as $wp_scritps & $wp_styles)
  */
-function minqueue_debugger() {
+function minqueue_helper() {
 
 	global $wp_scripts, $wp_styles, $minified_deps;
 
@@ -104,20 +104,20 @@ function minqueue_debugger() {
 
 	?>
 
-	<div id="minqueue-minify-debugger">
+	<div id="minqueue-helper">
 
-		<div id="minqueue-minify-debugger-inner">
+		<div id="minqueue-helper-inner">
 
 			<h2>Enqueued Scripts</h2>
 
 			<ul>
-				<?php minqueue_debugger_list( $scripts_enqueued ); ?>
+				<?php minqueue_helper_list( $scripts_enqueued ); ?>
 			</ul>
 
 			<h2>Enqueued Styles</h2>
 
 			<ul>
-				<?php minqueue_debugger_list( $styles_enqueued, false ); ?>
+				<?php minqueue_helper_list( $styles_enqueued, false ); ?>
 			</ul>
 
 			<p><a href="<?php echo add_query_arg( 'page', 'minqueue', get_admin_url( null, 'options-general.php' ) ); ?>">Admin Page</a></p>
@@ -126,7 +126,7 @@ function minqueue_debugger() {
 			<?php wp_nonce_field( 'minqueue_tool', 'minqueue_tool_nonce', false ); ?>
 
 			<?php if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) : ?>
-				<button type="submit"  id="minqueue-minify-debugger-submit" >
+				<button type="submit"  id="minqueue-helper-submit" >
 					Update
 				</button>
 			<?php endif; ?>
@@ -151,13 +151,13 @@ function minqueue_debugger() {
 
 
 /**
- * Output a list of assets for use in the debugger
+ * Output a list of assets for use in the helper
  *
  * @param  array  $asset_list list of handles to display
  * @param  boolean $scripts   whether minifying scripts. If false, minifyling styles.
  * @return null outputs <li> for each handle.
  */
-function minqueue_debugger_list( $asset_list, $scripts = true ) {
+function minqueue_helper_list( $asset_list, $scripts = true ) {
 
 	global $minified_deps, $wp_scripts, $wp_styles;
 

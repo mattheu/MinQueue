@@ -2,24 +2,24 @@
 
 /*
 Plugin Name: MinQueue
-Plugin URI: http://matth.eu
-Description: Mega Simple Minify. Minifies enqueued scripts & styles.
+Plugin URI: https://github.com/mattheu/MPH-Minify
+Description: Minify & concatenate enqueued scripts & styles. For developers who want complete control.
 Author: Matthew Haines-Young
-Version: 1.0-beta1
+Version: 1.0-beta2
 Author URI: http://www.matth.eu
 */
 
 // The core minify class.
-require_once( 'class.minqueue-minify.php' );
+require_once( 'class.minqueue.php' );
 
 // Minify Admin Page.
-require_once( 'class.minqueue-minify-admin.php' );
+require_once( 'class.minqueue-admin.php' );
 
 // Admin Notices Abstraction to handle displaying of admin notices.
-require_once( 'class.minqueue-minify-notices.php' );
+require_once( 'class.minqueue-notices.php' );
 
-// Front end debugger tool for showing what is enqueued on each page.
-require_once( 'debugger.php' );
+// Front end helper tool for showing what is enqueued on each page.
+require_once( 'minqueue-helper-tool.php' );
 
 define( 'MINQUEUE_VERSION', '1.0-beta1' );
 
@@ -28,10 +28,8 @@ global $minified_deps;
 
 add_action( 'init', 'minqueue_init', 1 );
 
-$plugin_file = trailingslashit( apply_filters( 'mph_minify_plugin_url', plugins_url( '', __FILE__ ) ) ) . basename( __FILE__ );
-
-register_activation_hook( $plugin_file, 'minqueue_activation_hook' );
-register_deactivation_hook( $plugin_file, 'minqueue_deactivation_hook' );
+register_activation_hook( __FILE__, 'minqueue_activation_hook' );
+register_deactivation_hook( __FILE__, 'minqueue_deactivation_hook' );
 
 /**
  * Init
@@ -68,7 +66,7 @@ function minqueue_init () {
 function minqueue_get_options() {
 
 	$defaults = array(
-		'debugger' => false,
+		'helper' => false,
 		'cache_dir' => 'minqueue_cache',
 		'scripts_method' => 'disabled',
 		'styles_method' => 'disabled',

@@ -1,8 +1,8 @@
-# MinQueue Script & Style Minify _(Beta)_ #
+# MinQueue - Minify & Concatenate Enqueued Scripts & Styles. #
 
-Minification & concatenation of JS and CSS can reduce the file size of your assets, and reduce the number of HTTP requests, helping improve page load times.
+Minification & concatenation of JS and CSS files can reduce the file size of your assets, and reduce the number of HTTP requests, helping improve page load times.
 
-Unlike other similar plugins, this is not a completely automatic soloution. Instead it takes a manually defined list of script/style handles, and minifies and concatenates them into a single file which is then cached for future use.
+The plugin takes a manually defined list of script/style handles, and minifies and concatenates them into a single file which is then cached for future use.
 
 ## Features. ##
 
@@ -14,7 +14,7 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 * Minified files are only loaded if at least one component file should be loaded.
 * Compatable with localized scripts.
 * Compatable with LESS: use wp-less plugin: https://github.com/sanchothefat/wp-less.git
-* Debugger tool - displays a list of scripts and styles enqueued on each page on the front end of the site.
+* Helper tool - displays a list of scripts and styles enqueued on each page on the front end of the site.
 
 ## Instructions ##
 
@@ -25,7 +25,7 @@ Unlike other similar plugins, this is not a completely automatic soloution. Inst
 * Enable the plugin front end tool to check what scripts and styles are minified on each page.
 * Copy the file handles you want to minify, and paste them into the minify queue textarea on the settings page.
 * Save the settings and view the front end of your site. The processed files are generated on page load. Check that everything is working correctly.
-* Uncheck the show debugger option and save the settings again.
+* Uncheck the show helper option and save the settings again.
 
 ### Advanced Use ###
 
