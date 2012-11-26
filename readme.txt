@@ -3,7 +3,7 @@ Contributors: mattheu
 Tags: minify, script, style, concatenate
 Requires at least: 3.4
 Tested up to: 3.5
-Stable tag: 1.0.4.3
+Stable tag: 1.0.5
 
 Minify & Concatenate Enqueued Scripts & Styles.
 
