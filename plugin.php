@@ -5,7 +5,7 @@ Plugin Name: MinQueue
 Plugin URI: https://github.com/mattheu/MPH-Minify
 Description: Minify & concatenate enqueued scripts & styles. For developers who want complete control.
 Author: Matthew Haines-Young
-Version: 1.0.3.2
+Version: 1.0.3.3
 Author URI: http://www.matth.eu
 */
 
