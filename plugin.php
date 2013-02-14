@@ -38,6 +38,9 @@ register_deactivation_hook( __FILE__, 'minqueue_deactivation_hook' );
  */
 function minqueue_init () {
 
+	if ( defined( 'WP_INSTALLING' ) )
+		return;
+
 	// Save current version no.
 	if ( ! $version = get_option( 'minqueue_version' ) )
 		update_option( 'minqueue_version', MINQUEUE_VERSION );
