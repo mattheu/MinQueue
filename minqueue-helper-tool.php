@@ -19,6 +19,7 @@ function minqueue_tool () {
 
 		add_action( 'wp_head', 'minqueue_helper_style' );
 		add_action( 'wp_footer', 'minqueue_helper', 9999 );
+		add_action( 'wp_footer', 'minqueue_helper_script', 9999 );
 
 		// Temporarily disabled as its a little buggy.
 		//minqueue_tool_process();
@@ -38,15 +39,14 @@ function minqueue_helper_style() {
 	?>
 
 	<style>
-		#minqueue-helper { position: fixed; top: 10px; right: 10px; overflow: hidden; width: 220px; height: 60%; border-radius: 10px; background: rgba(0,0,0,0.8); border: none; color: #FFF; padding: 10px;  margin-bottom: 30px; z-index: 9999; }
+		#minqueue-helper { position: fixed; top: 10px; bottom: 10px; right: 10px; overflow: hidden; width: 180px; border-radius: 10px; background: rgba(0,0,0,0.8); border: none; color: #FFF; padding: 10px; z-index: 9999; }
 		.admin-bar #minqueue-helper { top: 38px; }
 		#minqueue-helper form { height: 100%; }
 		#minqueue-helper-inner { height: 100%; overflow: auto; }
-
-
 		#minqueue-helper * { background: none !important; text-shadow: none !important; padding: 0 !important; }
 		#minqueue-helper h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; background: none; text-shadow: none; padding: 0;  }
-		#minqueue-helper ul { margin-bottom: 15px; }
+		#minqueue-helper ul,
+		#minqueue-helper p { margin-bottom: 15px; }
 		#minqueue-helper ul,
 		#minqueue-helper p,
 		#minqueue-helper li { padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
@@ -56,6 +56,10 @@ function minqueue_helper_style() {
 		#minqueue-helper li span.minqueue-icon { display: inline-block; width: 10px; display: none;  }
 		#minqueue-helper li:before { content: '•'; display: inline-block; width: 10px; }
 		#minqueue-helper li.minqueue-minified:before { content: '✔'; }
+		#minqueue-helper a,
+		#minqueue-helper a:link,
+		#minqueue-helper a:visited { color: inherit; text-decoration: none; }
+		#minqueue-helper a:hover { color: inherit; text-decoration: underline; }
 		#minqueue-helper-submit,
 		#minqueue-helper-submit:hover
 		#minqueue-helper-submit:active { border: 1px solid black !important; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.2); padding-bottom: 3px !important; padding-left: 6px !important; padding-right: 6px !important; padding-top: 2px !important; vertical-align: middle; }
@@ -149,6 +153,52 @@ function minqueue_helper() {
 
 }
 
+
+function minqueue_helper_script() {
+
+	?>
+
+	<script>
+
+		var MinQueue = {
+
+			display : document.getElementById('minqueue-helper'),
+			button  : document.createElement('a'),
+
+			insertButton : function() {
+				var button = this.button,
+				    adminBarContainer = document.getElementById( 'wp-admin-bar-top-secondary' ),
+				    li = document.createElement( 'li' );
+				button.setAttribute( 'href', '#');
+				button.setAttribute('class', 'ab-item' );
+				button.appendChild( document.createTextNode( 'MinQueue' ) );
+				li.appendChild( button );
+				adminBarContainer.appendChild( li );
+			},
+
+			toggleDisplay : function(e,el) {
+				if ( this.display.style.display === 'block' )
+					this.display.style.display = 'none';
+				else
+					this.display.style.display = 'block';
+			},
+
+			init : function() {
+				var self = this;
+				self.display.style.display = 'none';
+				self.insertButton();
+				self.button.addEventListener( 'click', function(e) { self.toggleDisplay.call( self, e, this ) } );
+			}
+
+		}
+
+		MinQueue.init();
+
+	</script>
+
+	<?php
+
+}
 
 /**
  * Output a list of assets for use in the helper
