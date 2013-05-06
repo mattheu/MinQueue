@@ -117,7 +117,7 @@ abstract class MinQueue {
 
 				// If not in queue - skip (eg if is in queue because it is a dependency of another file)
 				// Skip if no asset path (eg is remote.)
-				if ( ! in_array( $handle, $this->queue ) || ! $this->get_asset_path( $handle ) )
+				if ( ! in_array( $handle, $this->queue ) || false === $this->get_asset_path( $handle ) )
 					continue;
 
 				$group = $this->get_handle_group( $handle );
@@ -344,9 +344,14 @@ abstract class MinQueue {
 
 		// Don't try and process unregistered files.
 		if ( empty( $this->class->registered[$handle] ) )
-			return;
+			return false;
 
 		$src = $this->class->registered[$handle]->src;
+		
+		// Handles, can be used to load other scripts, without having their own src.
+		// In this case, return empty, rather than false.
+		if ( empty( $src ) )
+			return '';
 
 		// Maybe prepend base url.
 		if ( ! preg_match('|^(https?:)?//|', $src) && ! ( $this->class->content_url && 0 === strpos( $src, $this->class->content_url ) ) )
@@ -362,7 +367,7 @@ abstract class MinQueue {
 
 		// Don't handle remote urls.
 		if ( 0 !== strpos( $src, home_url() ) )
-			return;
+			return false;
 
 		$this->asset_paths[ $handle ] = str_replace( home_url(), '', esc_url( $src ) );
 
