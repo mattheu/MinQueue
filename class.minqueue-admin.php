@@ -236,16 +236,26 @@ class MinQueue_Admin {
 	 */
 	function validate_options( $input ) {
 
-		foreach ( $input['scripts_manual'] as $key => $queue )
-			$input['scripts_manual'][$key] = $this->validate_handle_list( $queue );
+		if ( ! empty( $input['scripts_manual'] ) ) {
+		
+			foreach ( $input['scripts_manual'] as $key => $queue )
+				$input['scripts_manual'][$key] = $this->validate_handle_list( $queue );
 
-		foreach ( $input['styles_manual'] as $key => $queue )
-			$input['styles_manual'][$key] = $this->validate_handle_list( $queue );
+			// Remove empty & reset array keys.
+			$input['scripts_manual'] = array_merge( array_filter( $input['scripts_manual'] ) );
 
-		// Remove empty & reset array keys.
-		$input['scripts_manual'] = array_merge( array_filter( $input['scripts_manual'] ) );
-		$input['styles_manual'] = array_merge( array_filter( $input['styles_manual'] ) );
+		}
+		
+		if ( ! empty( $input['styles_manual'] ) ) {
+		
+			foreach ( $input['styles_manual'] as $key => $queue )
+				$input['styles_manual'][$key] = $this->validate_handle_list( $queue );
+	
+			// Remove empty & reset array keys.
+			$input['styles_manual'] = array_merge( array_filter( $input['styles_manual'] ) );
 
+		}
+		
 		$input['helper'] = ( empty( $input['helper'] ) ) ? false : true;
 
 		// If method is manual, and no manual handles are set, disable minification.
