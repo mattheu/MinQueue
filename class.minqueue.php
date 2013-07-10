@@ -423,9 +423,9 @@ abstract class MinQueue {
 
 		require_once 'php-minify/min/lib/Minify.php';
 
-		$r = Minify::combine( $srcs );
+		$data = Minify::combine( $srcs );
 
-		return $r;
+		return $data;
 
 	}
 
