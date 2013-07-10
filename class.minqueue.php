@@ -417,7 +417,7 @@ abstract class MinQueue {
 		foreach ( $srcs as &$src )
 			$src = $this->site_root . $src;
 
-		require_once 'php-minify/min/lib//Minify/Loader.php';
+		require_once 'php-minify/min/lib/Minify/Loader.php';
 
 		Minify_Loader::register();
 
