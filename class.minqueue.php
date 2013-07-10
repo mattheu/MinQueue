@@ -5,9 +5,6 @@ abstract class MinQueue {
 	// Prefix
 	private $prefix = 'minqueue';
 
-	// Cache minified files or do it on the fly.
-	public $cache = true;
-
 	// Check file modified date also when generating new filename.
 	public $checks_last_modified = true;
 
@@ -146,21 +143,18 @@ abstract class MinQueue {
 		$group_handle = $this->get_group_handle( $group );
 		$group_filename = $group_handle . $this->file_extension;
 
-		$min_path     = trailingslashit( $this->site_root . $this->cache_dir ) . $group_filename;
-		$min_src      = trailingslashit( home_url( '/' ) . $this->cache_dir ) . $group_filename;
+		$cache_path     = trailingslashit( $this->site_root . $this->cache_dir ) . $group_filename;
+		$cache_src      = trailingslashit( home_url( '/' ) . $this->cache_dir ) . $group_filename;
 
 		// If no cached file - generate minified asset src.
-		if ( ! file_exists( $min_path ) ) {
+		if ( ! file_exists( $cache_path ) ) {
 
-			if ( $this->cache )
-				$min_src = $this->get_cache_file( $group, $group_handle );
-			else
-				$min_src = $this->get_group_minify_src( $group );
+			$cache_src = $this->get_cache_file( $group, $group_handle );
 
 		}
 
 		// If no $min_src - eg generating minified file, fall back to default.
-		if ( empty ( $min_src ) )
+		if ( empty ( $cache_src ) )
 			return;
 
 		// Mark the minified assets as done so they are not done again.
@@ -178,7 +172,7 @@ abstract class MinQueue {
 		$deps = $this->get_group_deps( $group );
 
 		// Enqueue the minified file
-		$this->enqueue( $group_handle, $min_src, $deps, null, $group );
+		$this->enqueue( $group_handle, $cache_src, $deps, null, $group );
 
 		// Set up dependencies for this group.
 		$this->setup_all_deps( $group );
@@ -309,7 +303,7 @@ abstract class MinQueue {
 	 * @param  int $group Group
 	 * @return string SRC of on the fly minfy file
 	 */
-	private function get_group_minify_src( $group ) {
+	private function get_group_minify_srcs( $group ) {
 
 		// Get array of srcs.
 		$_srcs = array();
@@ -317,15 +311,8 @@ abstract class MinQueue {
 			if ( $_src = $this->get_asset_path( $handle ) )
 				$_srcs[] = $_src;
 
-		// If no srcs to be minified, just stop all this right now.
-		if ( empty( $_srcs ) )
-			$r = null;
-
-		else
-			$r = trailingslashit( $this->plugin_url ) . 'php-minify/min/' . '?f=' . implode( ',', array_filter( $_srcs ) );
-
-		return $r;
-
+		return $_srcs;
+		
 	}
 
 	/**
@@ -384,7 +371,7 @@ abstract class MinQueue {
 	 */
 	private function get_cache_file( $group, $group_handle ) {
 
-		if ( ! $min_src = $this->get_group_minify_src( $group ) )
+		if ( ! $srcs = $this->get_group_minify_srcs( $group ) )
 			return;
 
 		$this->delete_cache_by_group( $group );
@@ -396,7 +383,7 @@ abstract class MinQueue {
 				return;
 			}
 
-		$data = @file_get_contents( $min_src );
+		$data = $this->do_minify( $srcs );
 
 		if ( false === $data ) {
 
@@ -417,6 +404,29 @@ abstract class MinQueue {
 		}
 
 		return home_url( '/' ) . trailingslashit( $this->cache_dir ) . $group_handle . ( ( 'WP_Styles' === get_class( $this->class ) ) ? '.css' : '.js' );
+
+	}
+
+	/**
+	 * Use PHP Minify to do the minification of passed SRCs.
+	 * @param  [type] $srcs [description]
+	 * @return [type]       [description]
+	 */
+	public function do_minify( $srcs ) {
+
+		foreach ( $srcs as &$src )
+			$src = $this->site_root . $src;
+
+		require_once 'php-minify/min/lib//Minify/Loader.php';
+
+		Minify_Loader::register();
+
+		require_once 'php-minify/min/lib/Minify.php';
+
+		$minify = new Minify();
+		$r = $minify->combine( $srcs );
+
+		return $r;
 
 	}
 
@@ -455,7 +465,8 @@ abstract class MinQueue {
 
 		$group_handle = $this->get_group_handle( $group );
 
-		$group_handle_hash = reset( explode( '-', str_replace( $this->prefix . '-', '', $group_handle ) ) );
+		$group_handle_hash = explode( '-', str_replace( $this->prefix . '-', '', $group_handle ) );
+		$group_handle_hash = reset( $group_handle_hash );
 
 		$cache_path = $this->site_root . $this->cache_dir;
 
