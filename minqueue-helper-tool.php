@@ -241,8 +241,8 @@ function minqueue_helper_list( $asset_list, $scripts = true ) {
 		<li class="<?php echo implode( ' ', $classes ); ?>" title="<?php echo implode( ', ', $class->registered[$handle]->deps ); ?>">
 
 			<span class="minqueue-icon"><?php if ( $checked ) echo '&#10004;'; else echo '&bull;'; ?></span>
-
-			<?php echo $handle; ?>
+			
+			<?php echo esc_html( $handle ); ?>
 			<?php /*
 			<label for="minqueue_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>">
 				<input
