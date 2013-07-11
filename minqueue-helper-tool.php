@@ -54,8 +54,8 @@ function minqueue_helper_style() {
 		#minqueue-helper li.minqueue-group-1 { color: yellow;}
 		#minqueue-helper li input { margin-right: 7px; }
 		#minqueue-helper li span.minqueue-icon { display: inline-block; width: 10px; display: none;  }
-		#minqueue-helper li:before { content: '•'; display: inline-block; width: 10px; }
-		#minqueue-helper li.minqueue-minified:before { content: '✔'; }
+		#minqueue-helper li:before { content: '\2022'; display: inline-block; width: 10px; }
+		#minqueue-helper li.minqueue-minified:before { content: '\2714'; }
 		#minqueue-helper a,
 		#minqueue-helper a:link,
 		#minqueue-helper a:visited { color: inherit; text-decoration: none; }
