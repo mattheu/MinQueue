@@ -108,7 +108,7 @@ class MinQueue_Admin {
 		<a href="<?php echo wp_nonce_url( 'options-general.php?page=minqueue', 'minqueue_clear_cache' ); ?>" class="button" style="margin-right: 10px;">Clear Cache</a>
 
 		<?php if ( $cached_files_count = $this->get_cached_files_count() ) : ?>
-			<?php echo $cached_files_count; ?> files cached.
+			<?php echo intval( $cached_files_count ); ?> files cached.
 		<?php endif; ?>
 
 	<?php }
