@@ -26,13 +26,13 @@ abstract class MinQueue {
 	// Reference to MinQueue_Admin_Notices class
 	private $admin_notices;
 
-	// Reference to WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies.
+	// Reference to WP_Scripts or WP_Styles. (Or other sub-class of WP_Dependencies).
 	protected $class;
 
+	// Internal queue of assets to be minified. By group.
 	// File extension used for minified files.
 	protected $file_extension;
 
-	// Internal queue of assets to be minified. By group.
 	private $process_queue = array();
 
 	// Internal cache of group handles as they are slow to generate (hashes)
@@ -59,8 +59,12 @@ abstract class MinQueue {
 		$this->plugin_url    = apply_filters( 'minqueue_plugin_url', plugins_url( '', __FILE__ ) );
 
 		$uploads             = wp_upload_dir();
-		$this->cache_dir     = trailingslashit( str_replace( $this->site_root, '', $uploads['basedir'] ) ) . $this->prefix . '-cache';
-		$this->cache_dir     = apply_filters( 'minqueue_cache_dir', $this->cache_dir );
+		
+		$this->cache_dir     = apply_filters( 'minqueue_cache_dir', sprintf( 
+			'%s%s-cache',
+			str_replace( $this->site_root, '', $uploads['basedir'] ),
+			$this->prefix 
+		) );
 
 		// Global record of everything minified.
 		$this->minified_deps = &$minified_deps;
@@ -103,7 +107,7 @@ abstract class MinQueue {
 				if ( ! array_key_exists( $handle, $_class->registered ) )
 					unset( $this->queue[$key] );
 
-			// If no scripts in the queue have been enqueued, don't proccess queue at all.
+			// If no scripts in the queue have been enqueued, don't process queue at all.
 			$_class->all_deps( $_class->queue );
 			$intersect = array_intersect( $_class->to_do, $this->queue );
 			if ( empty( $intersect ) )
@@ -288,8 +292,9 @@ abstract class MinQueue {
 
 				$data[$handle] = array( 'version' => $this->class->registered[$handle]->ver );
 
-				if ( $this->checks_last_modified )
-					$data[$handle]['modified'] = filemtime( $this->site_root .  $this->get_asset_path( $handle ) );
+				$file_path = $this->site_root .  $this->get_asset_path( $handle );
+				if ( $this->checks_last_modified && file_exists( $file_path ) )
+					$data[$handle]['modified'] = filemtime( $file_path );
 
 			}
 
