@@ -531,6 +531,13 @@ class MinQueue_Scripts extends MinQueue {
 
 		$this->process_queue = parent::get_process_queue();
 
+		// Wait to minify footer scripts until wp_footer (& vice versa)
+		if ( did_action( 'wp_footer' ) ) {
+			unset( $this->process_queue[0] );
+		} else {
+			unset( $this->process_queue[1] );
+		}
+
 		// Get localized script data.
 		foreach( $this->process_queue as $group => $script_handles )
 			foreach( $script_handles as $handle )
