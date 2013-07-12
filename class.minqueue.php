@@ -570,6 +570,12 @@ class MinQueue_Styles extends MinQueue {
 		$this->class = &$wp_styles;
 		$this->file_extension = '.css';
 
+		// Stylesheets with empty media arg should be considered 'all'
+		// @todo, not sure I like doing it this way.
+		foreach ( $queue as $handle )
+			if ( isset( $this->class->registered[$handle] ) && empty( $this->class->registered[$handle]->args ) )
+				$this->class->registered[$handle]->args = 'all';
+
 		parent::__construct( $queue );
 
 	}
