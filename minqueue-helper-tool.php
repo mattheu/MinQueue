@@ -126,21 +126,13 @@ function minqueue_helper() {
 
 			<p><a href="<?php echo add_query_arg( 'page', 'minqueue', get_admin_url( null, 'options-general.php' ) ); ?>">Admin Page</a></p>
 
-			<?php /*
-			<?php wp_nonce_field( 'minqueue_tool', 'minqueue_tool_nonce', false ); ?>
-
-			<?php if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) : ?>
-				<button type="submit"  id="minqueue-helper-submit" >
-					Update
-				</button>
-			<?php endif; ?>
-			*/ ?>
-
 			<h2>Key</h2>
+
 			<ul>
 				<li class="minqueue-group-0">Orange: in header</li>
 				<li class="minqueue-group-1">Yellow: in footer</li>
 			</ul>
+
 			<p>Files displayed in the order in which they are loaded.</p>
 			<p>Only visible to admin users.<p>
 			<p>Remember some scripts are loaded conditionally (on certain pages, or for logged in users etc).</p>
@@ -187,7 +179,9 @@ function minqueue_helper_script() {
 				var self = this;
 				self.display.style.display = 'none';
 				self.insertButton();
-				self.button.addEventListener( 'click', function(e) { self.toggleDisplay.call( self, e, this ) } );
+				self.button.addEventListener( 'click', function(e) { 
+					self.toggleDisplay.call( self, e, this ) 
+				} );
 			}
 
 		}
@@ -243,19 +237,7 @@ function minqueue_helper_list( $asset_list, $scripts = true ) {
 			<span class="minqueue-icon"><?php if ( $checked ) echo '&#10004;'; else echo '&bull;'; ?></span>
 			
 			<?php echo esc_html( $handle ); ?>
-			<?php /*
-			<label for="minqueue_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>">
-				<input
-					type="checkbox"
-					name="minqueue_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>[]"
-					id="minqueue_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>"
-					value="<?php echo $handle; ?>"
-					<?php checked( $checked ); ?>
-					<?php disabled( $disabled ); ?>
-				/>
-				<?php echo $handle; ?>
-			</label>
-			*/ ?>
+			
 		</li>
 		<?php
 
@@ -276,6 +258,7 @@ function minqueue_tool_process() {
 
 	$submitted = ( isset( $_POST['minqueue_scripts'] ) ) ? $_POST['minqueue_scripts'] : array();
 	$minified_scripts = array();
+	
 	foreach ( (array) $options['scripts_manual'] as $queue_key => $queue ) {
 		if ( is_array( $queue ) ) {
 			foreach ( $queue as $handle_key => $handle  ) {
@@ -302,6 +285,7 @@ function minqueue_tool_process() {
 
 	$submitted = ( isset( $_POST['minqueue_styles'] ) ) ? $_POST['minqueue_styles'] : array();
 	$minified_styles = array();
+	
 	foreach ( (array) $options['styles_manual'] as $queue_key => $queue ) {
 		if ( is_array( $queue ) ) {
 			foreach ( $queue as $handle_key => $handle  ) {
@@ -317,6 +301,7 @@ function minqueue_tool_process() {
 	}
 
 	foreach( $submitted as $handle ) {
+	
 		if ( ! in_array( $handle, $minified_styles ) ) {
 
 			if ( empty( $options['styles_manual'][0] ) )
@@ -325,6 +310,7 @@ function minqueue_tool_process() {
 			array_push( $options['styles_manual'][0], $handle );
 
 		}
+
 	}
 
 	if ( ! empty( $options['scripts_manual'] ) )
