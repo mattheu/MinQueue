@@ -14,6 +14,12 @@ abstract class MinQueue {
 	// Array of handles to process.
 	public $queue = array();
 
+	// Reference to WP_Scripts or WP_Styles. (Or other sub-class of WP_Dependencies).
+	protected $class;
+
+	// File extension used for minified files.
+	protected $file_extension;
+
 	// URL of the plugin directory.
 	private $plugin_url;
 
@@ -26,13 +32,7 @@ abstract class MinQueue {
 	// Reference to MinQueue_Admin_Notices class
 	private $admin_notices;
 
-	// Reference to WP_Scripts or WP_Styles. (Or other sub-class of WP_Dependencies).
-	protected $class;
-
 	// Internal queue of assets to be minified. By group.
-	// File extension used for minified files.
-	protected $file_extension;
-
 	private $process_queue = array();
 
 	// Internal cache of group handles as they are slow to generate (hashes)
