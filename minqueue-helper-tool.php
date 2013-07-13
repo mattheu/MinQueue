@@ -3,7 +3,7 @@
 /**
  *	Helper/Helper Tool
  *
- *	When enabled, shown on the front end of the site.
+ *	When enabled, adds button to menu bar on the front end of the site to display the helper tool.
  * 	Helper window shows all enqueued scripts, and highlights those that are minified.
  */
 
@@ -21,54 +21,7 @@ function minqueue_tool () {
 		add_action( 'wp_footer', 'minqueue_helper', 9999 );
 		add_action( 'wp_footer', 'minqueue_helper_script', 9999 );
 
-		// Temporarily disabled as its a little buggy.
-		//minqueue_tool_process();
-
 	}
-
-}
-
-/**
- * Helper Style. Inserted into head.
- *
- * @todo Seriously i'm not even correclty enqueuing my own styles!
- * @return null
- */
-function minqueue_helper_style() {
-
-	?>
-
-	<style>
-		#minqueue-helper { position: fixed; top: 10px; bottom: 10px; right: 10px; overflow: hidden; width: 180px; border-radius: 10px; background: rgba(0,0,0,0.8); border: none; color: #FFF; padding: 10px; z-index: 9999; }
-		.admin-bar #minqueue-helper { top: 38px; }
-		#minqueue-helper form { height: 100%; }
-		#minqueue-helper-inner { height: 100%; overflow: auto; }
-		#minqueue-helper * { background: none !important; text-shadow: none !important; padding: 0 !important; }
-		#minqueue-helper h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; background: none; text-shadow: none; padding: 0;  }
-		#minqueue-helper ul,
-		#minqueue-helper p { margin-bottom: 15px; }
-		#minqueue-helper ul,
-		#minqueue-helper p,
-		#minqueue-helper li { padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
-		#minqueue-helper li.minqueue-group-0 { color: orange;}
-		#minqueue-helper li.minqueue-group-1 { color: yellow;}
-		#minqueue-helper li input { margin-right: 7px; }
-		#minqueue-helper li span.minqueue-icon { display: inline-block; width: 10px; display: none;  }
-		#minqueue-helper li:before { content: '\2022'; display: inline-block; width: 10px; }
-		#minqueue-helper li.minqueue-minified:before { content: '\2714'; }
-		#minqueue-helper a,
-		#minqueue-helper a:link,
-		#minqueue-helper a:visited { color: inherit; text-decoration: none; }
-		#minqueue-helper a:hover { color: inherit; text-decoration: underline; }
-		#minqueue-helper-submit,
-		#minqueue-helper-submit:hover
-		#minqueue-helper-submit:active { border: 1px solid black !important; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.2); padding-bottom: 3px !important; padding-left: 6px !important; padding-right: 6px !important; padding-top: 2px !important; vertical-align: middle; }
-		#minqueue-helper-submit { background-image: -moz-linear-gradient(top,#CCC,#999) !important; background-image: -ms-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#CCC),to(#999)) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: -o-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: linear-gradient(top,#CCC,#999) !important;  }
-		#minqueue-helper-submit:hover { background-image: -moz-linear-gradient(top,#FFF,#AAA) !important; background-image: -ms-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#FFF),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: -o-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: linear-gradient(top,#FFF,#AAA) !important;  }
-		#minqueue-helper-submit:active {  background-image: -moz-linear-gradient(top,#999,#AAA) !important; background-image: -ms-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#999),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: -o-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: linear-gradient(top,#999,#AAA) !important; box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3), inset 0 1px 3px rgba(0,0,0,0.2); }
-	</style>
-
-	<?php
 
 }
 
@@ -126,21 +79,13 @@ function minqueue_helper() {
 
 			<p><a href="<?php echo add_query_arg( 'page', 'minqueue', get_admin_url( null, 'options-general.php' ) ); ?>">Admin Page</a></p>
 
-			<?php /*
-			<?php wp_nonce_field( 'minqueue_tool', 'minqueue_tool_nonce', false ); ?>
-
-			<?php if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) : ?>
-				<button type="submit"  id="minqueue-helper-submit" >
-					Update
-				</button>
-			<?php endif; ?>
-			*/ ?>
-
 			<h2>Key</h2>
+
 			<ul>
 				<li class="minqueue-group-0">Orange: in header</li>
 				<li class="minqueue-group-1">Yellow: in footer</li>
 			</ul>
+
 			<p>Files displayed in the order in which they are loaded.</p>
 			<p>Only visible to admin users.<p>
 			<p>Remember some scripts are loaded conditionally (on certain pages, or for logged in users etc).</p>
@@ -153,55 +98,8 @@ function minqueue_helper() {
 
 }
 
-
-function minqueue_helper_script() {
-
-	?>
-
-	<script>
-
-		var MinQueue = {
-
-			display : document.getElementById('minqueue-helper'),
-			button  : document.createElement('a'),
-
-			insertButton : function() {
-				var button = this.button,
-				    adminBarContainer = document.getElementById( 'wp-admin-bar-top-secondary' ),
-				    li = document.createElement( 'li' );
-				button.setAttribute( 'href', '#');
-				button.setAttribute('class', 'ab-item' );
-				button.appendChild( document.createTextNode( 'MinQueue' ) );
-				li.appendChild( button );
-				adminBarContainer.appendChild( li );
-			},
-
-			toggleDisplay : function(e,el) {
-				if ( this.display.style.display === 'block' )
-					this.display.style.display = 'none';
-				else
-					this.display.style.display = 'block';
-			},
-
-			init : function() {
-				var self = this;
-				self.display.style.display = 'none';
-				self.insertButton();
-				self.button.addEventListener( 'click', function(e) { self.toggleDisplay.call( self, e, this ) } );
-			}
-
-		}
-
-		MinQueue.init();
-
-	</script>
-
-	<?php
-
-}
-
 /**
- * Output a list of assets for use in the helper
+ * Output a <li>s of a list of assets for use in the helper
  *
  * @param  array  $asset_list list of handles to display
  * @param  boolean $scripts   whether minifying scripts. If false, minifyling styles.
@@ -237,107 +135,115 @@ function minqueue_helper_list( $asset_list, $scripts = true ) {
 
 		$disabled = ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) ? true : false;
 
-		?>
-		<li class="<?php echo implode( ' ', $classes ); ?>" title="<?php echo implode( ', ', $class->registered[$handle]->deps ); ?>">
-
-			<span class="minqueue-icon"><?php if ( $checked ) echo '&#10004;'; else echo '&bull;'; ?></span>
-			
-			<?php echo esc_html( $handle ); ?>
-			<?php /*
-			<label for="minqueue_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>">
-				<input
-					type="checkbox"
-					name="minqueue_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>[]"
-					id="minqueue_<?php echo ( $scripts ) ? 'scripts' : 'styles'; ?>_<?php echo $handle; ?>"
-					value="<?php echo $handle; ?>"
-					<?php checked( $checked ); ?>
-					<?php disabled( $disabled ); ?>
-				/>
-				<?php echo $handle; ?>
-			</label>
-			*/ ?>
-		</li>
-		<?php
+		printf( 
+			'<li class="%s" title="%s"><span class="minqueue-icon">%s</span>%s</li>',
+			implode( ' ', array_map( 'sanitize_html_class', $classes ) ),
+			esc_attr( implode( ', ', $class->registered[$handle]->deps ) ),
+			( $checked ) ? '&#10004;' : '&bull;',
+			esc_html( $handle )
+		);
 
 	}
 
 }
 
+/**
+ * Helper Styles. Inserted into head.
+ * OK OK, I know I'm not even correclty enqueuing my own styles
+ * but I just didn't want to complicate things...
+ * 
+ * @return null
+ */
+function minqueue_helper_style() {
 
-function minqueue_tool_process() {
+	?>
 
-	if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) )
-		return;
+	<style>
+		#minqueue-helper { position: fixed; top: 10px; bottom: 10px; right: 10px; overflow: hidden; width: 180px; border-radius: 10px; background: rgba(0,0,0,0.8); border: none; color: #FFF; padding: 10px; z-index: 9999; }
+		.admin-bar #minqueue-helper { top: 38px; }
+		#minqueue-helper form { height: 100%; }
+		#minqueue-helper-inner { height: 100%; overflow: auto; }
+		#minqueue-helper * { background: none !important; text-shadow: none !important; padding: 0 !important; }
+		#minqueue-helper h2 { font-family: sans-serif; font-size: 18px; line-height: 1.5; margin-bottom: 5px; letter-spacing: normal; color: #FFF; font-size: 12px; font-family: verdana, sans-serif; background: none; text-shadow: none; padding: 0;  }
+		#minqueue-helper ul,
+		#minqueue-helper p { margin-bottom: 15px; }
+		#minqueue-helper ul,
+		#minqueue-helper p,
+		#minqueue-helper li { padding: 0; margin-left: 0; margin-right: 0; font-size: 10px; font-family: verdana, sans-serif; line-height: 1.5; }
+		#minqueue-helper li.minqueue-group-0 { color: orange;}
+		#minqueue-helper li.minqueue-group-1 { color: yellow;}
+		#minqueue-helper li input { margin-right: 7px; }
+		#minqueue-helper li span.minqueue-icon { display: inline-block; width: 10px; display: none;  }
+		#minqueue-helper li:before { content: '\2022'; display: inline-block; width: 10px; }
+		#minqueue-helper li.minqueue-minified:before { content: '\2714'; }
+		#minqueue-helper a,
+		#minqueue-helper a:link,
+		#minqueue-helper a:visited { color: inherit; text-decoration: none; }
+		#minqueue-helper a:hover { color: inherit; text-decoration: underline; }
+		#minqueue-helper-submit,
+		#minqueue-helper-submit:hover
+		#minqueue-helper-submit:active { border: 1px solid black !important; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.2); padding-bottom: 3px !important; padding-left: 6px !important; padding-right: 6px !important; padding-top: 2px !important; vertical-align: middle; }
+		#minqueue-helper-submit { background-image: -moz-linear-gradient(top,#CCC,#999) !important; background-image: -ms-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#CCC),to(#999)) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: -o-linear-gradient(top,#CCC,#999) !important; background-image: -webkit-linear-gradient(top,#CCC,#999) !important; background-image: linear-gradient(top,#CCC,#999) !important;  }
+		#minqueue-helper-submit:hover { background-image: -moz-linear-gradient(top,#FFF,#AAA) !important; background-image: -ms-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#FFF),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: -o-linear-gradient(top,#FFF,#AAA) !important; background-image: -webkit-linear-gradient(top,#FFF,#AAA) !important; background-image: linear-gradient(top,#FFF,#AAA) !important;  }
+		#minqueue-helper-submit:active {  background-image: -moz-linear-gradient(top,#999,#AAA) !important; background-image: -ms-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-gradient(linear,0 0,0 100%,from(#999),to(#AAA)) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: -o-linear-gradient(top,#999,#AAA) !important; background-image: -webkit-linear-gradient(top,#999,#AAA) !important; background-image: linear-gradient(top,#999,#AAA) !important; box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3), inset 0 1px 3px rgba(0,0,0,0.2); }
+	</style>
 
-	if ( ! isset( $_POST['minqueue_tool_nonce'] ) || ! wp_verify_nonce( $_POST['minqueue_tool_nonce'], 'minqueue_tool' ) )
-		return;
-
-	$options = minqueue_get_options();
-
-	$submitted = ( isset( $_POST['minqueue_scripts'] ) ) ? $_POST['minqueue_scripts'] : array();
-	$minified_scripts = array();
-	foreach ( (array) $options['scripts_manual'] as $queue_key => $queue ) {
-		if ( is_array( $queue ) ) {
-			foreach ( $queue as $handle_key => $handle  ) {
-
-				array_push( $minified_scripts, $handle );
-
-				if ( ! in_array( $handle, $submitted ) )
-					unset( $options['scripts_manual'][$queue_key][$handle_key] );
-
-			}
-		}
-	}
-
-	foreach ( $submitted as $handle ) {
-		if ( ! in_array( $handle, $minified_scripts ) ) {
-
-			if ( empty( $options['scripts_manual'][0] ) )
-				$options['scripts_manual'][0] = array();
-
-			array_push( $options['scripts_manual'][0], $handle );
-
-		}
-	}
-
-	$submitted = ( isset( $_POST['minqueue_styles'] ) ) ? $_POST['minqueue_styles'] : array();
-	$minified_styles = array();
-	foreach ( (array) $options['styles_manual'] as $queue_key => $queue ) {
-		if ( is_array( $queue ) ) {
-			foreach ( $queue as $handle_key => $handle  ) {
-
-				array_push( $minified_styles, $handle );
-
-				// Unset saved options not in post data.
-				if ( ! in_array( $handle, $submitted ) )
-					unset( $options['styles_manual'][$queue_key][$handle_key] );
-
-			}
-		}
-	}
-
-	foreach( $submitted as $handle ) {
-		if ( ! in_array( $handle, $minified_styles ) ) {
-
-			if ( empty( $options['styles_manual'][0] ) )
-				$options['styles_manual'][0] = array();
-
-			array_push( $options['styles_manual'][0], $handle );
-
-		}
-	}
-
-	if ( ! empty( $options['scripts_manual'] ) )
-		$options['scripts_method'] = 'manual';
-	else
-		$options['scripts_manual'] = array();
-
-	if ( ! empty( $options['styles_manual'] ) )
-		$options['styles_method'] = 'manual';
-	else
-		$options['styles_manual'] = array();
-
-	update_option( 'minqueue_options', $options );
+	<?php
 
 }
 
+
+/**
+ * Helper Script.
+ * OK OK. I really do realise that I'm not enqueuing my scripts
+ * but I really really didn't want to complicate things...
+ * 
+ * @return null
+ */
+function minqueue_helper_script() {
+
+	?>
+
+	<script>
+
+		var MinQueue = {
+
+			display : document.getElementById('minqueue-helper'),
+			button  : document.createElement('a'),
+
+			insertButton : function() {
+				var button = this.button,
+				    adminBarContainer = document.getElementById( 'wp-admin-bar-top-secondary' ),
+				    li = document.createElement( 'li' );
+				button.setAttribute( 'href', '#');
+				button.setAttribute('class', 'ab-item' );
+				button.appendChild( document.createTextNode( 'MinQueue' ) );
+				li.appendChild( button );
+				adminBarContainer.appendChild( li );
+			},
+
+			toggleDisplay : function(e,el) {
+				if ( this.display.style.display === 'block' )
+					this.display.style.display = 'none';
+				else
+					this.display.style.display = 'block';
+			},
+
+			init : function() {
+				var self = this;
+				self.display.style.display = 'none';
+				self.insertButton();
+				self.button.addEventListener( 'click', function(e) { 
+					self.toggleDisplay.call( self, e, this ) 
+				} );
+			}
+
+		}
+
+		MinQueue.init();
+
+	</script>
+
+	<?php
+
+}
