@@ -414,19 +414,21 @@ abstract class MinQueue {
 
 	/**
 	 * Use PHP Minify to do the minification of passed SRCs.
-	 * @param  [type] $srcs [description]
-	 * @return [type]       [description]
+	 * @param  array $srcs asset paths relative to site root
+	 * @return string minified & concatenated files.
 	 */
 	public function do_minify( $srcs ) {
 
+		if ( ! class_exists( 'Minify_Loader' ) )
+			require 'PHP-Minify-Lib/Minify/Loader.php';
+		
+		if ( ! class_exists( 'Minify' ) )
+			require 'PHP-Minify-Lib/Minify.php';	
+		
 		foreach ( $srcs as &$src )
 			$src = $this->site_root . $src;
 
-		require_once 'php-minify/min/lib/Minify/Loader.php';
-
 		Minify_Loader::register();
-
-		require_once 'php-minify/min/lib/Minify.php';
 
 		$data = Minify::combine( $srcs );
 
