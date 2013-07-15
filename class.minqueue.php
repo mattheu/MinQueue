@@ -61,7 +61,7 @@ abstract class MinQueue {
 		$uploads             = wp_upload_dir();
 		
 		$this->cache_dir     = apply_filters( 'minqueue_cache_dir', sprintf( 
-			'%s%s-cache',
+			'%s/%s-cache',
 			str_replace( $this->site_root, '', $uploads['basedir'] ),
 			$this->prefix 
 		) );
