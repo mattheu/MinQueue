@@ -11,6 +11,12 @@ abstract class MinQueue {
 	// Array of handles to process.
 	public $queue = array();
 
+	// Reference to WP_Scripts or WP_Styles. (Or other sub-class of WP_Dependencies).
+	protected $class;
+
+	// File extension used for minified files.
+	protected $file_extension;
+
 	// URL of the plugin directory.
 	private $plugin_url;
 
@@ -22,12 +28,6 @@ abstract class MinQueue {
 
 	// Reference to MinQueue_Admin_Notices class
 	private $admin_notices;
-
-	// Reference to WP_Scripts or WP_Styles. Must be a sub class of WP_Dependencies.
-	protected $class;
-
-	// File extension used for minified files.
-	protected $file_extension;
 
 	// Internal queue of assets to be minified. By group.
 	private $process_queue = array();
@@ -56,8 +56,12 @@ abstract class MinQueue {
 		$this->plugin_url    = apply_filters( 'minqueue_plugin_url', plugins_url( '', __FILE__ ) );
 
 		$uploads             = wp_upload_dir();
-		$this->cache_dir     = trailingslashit( str_replace( $this->site_root, '', $uploads['basedir'] ) ) . $this->prefix . '-cache';
-		$this->cache_dir     = apply_filters( 'minqueue_cache_dir', $this->cache_dir );
+		
+		$this->cache_dir     = apply_filters( 'minqueue_cache_dir', sprintf( 
+			'%s/%s-cache',
+			str_replace( $this->site_root, '', $uploads['basedir'] ),
+			$this->prefix 
+		) );
 
 		// Global record of everything minified.
 		$this->minified_deps = &$minified_deps;
@@ -100,7 +104,7 @@ abstract class MinQueue {
 				if ( ! array_key_exists( $handle, $_class->registered ) )
 					unset( $this->queue[$key] );
 
-			// If no scripts in the queue have been enqueued, don't proccess queue at all.
+			// If no scripts in the queue have been enqueued, don't process queue at all.
 			$_class->all_deps( $_class->queue );
 			$intersect = array_intersect( $_class->to_do, $this->queue );
 			if ( empty( $intersect ) )
@@ -282,8 +286,9 @@ abstract class MinQueue {
 
 				$data[$handle] = array( 'version' => $this->class->registered[$handle]->ver );
 
-				if ( $this->checks_last_modified )
-					$data[$handle]['modified'] = filemtime( $this->site_root .  $this->get_asset_path( $handle ) );
+				$file_path = $this->site_root .  $this->get_asset_path( $handle );
+				if ( $this->checks_last_modified && file_exists( $file_path ) )
+					$data[$handle]['modified'] = filemtime( $file_path );
 
 			}
 
@@ -541,6 +546,13 @@ class MinQueue_Scripts extends MinQueue {
 
 		$this->process_queue = parent::get_process_queue();
 
+		// Wait to minify footer scripts until wp_footer (& vice versa)
+		if ( did_action( 'wp_footer' ) ) {
+			unset( $this->process_queue[0] );
+		} else {
+			unset( $this->process_queue[1] );
+		}
+
 		// Get localized script data.
 		foreach( $this->process_queue as $group => $script_handles )
 			foreach( $script_handles as $handle )
@@ -579,6 +591,11 @@ class MinQueue_Styles extends MinQueue {
 
 		$this->class = &$wp_styles;
 		$this->file_extension = '.css';
+
+		// Stylesheets with empty media arg should be considered 'all'
+		foreach ( $queue as $handle )
+			if ( isset( $this->class->registered[$handle] ) && empty( $this->class->registered[$handle]->args ) )
+				$this->class->registered[$handle]->args = 'all';
 
 		parent::__construct( $queue );
 
