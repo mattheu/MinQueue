@@ -3,7 +3,7 @@ Contributors: mattheu
 Tags: minify, script, style, concatenate
 Requires at least: 3.4
 Tested up to: 3.5
-Stable tag: 1.0.5
+Stable tag: 1.1
 
 Minify & Concatenate Enqueued Scripts & Styles.
 
@@ -16,13 +16,11 @@ The plugin takes a manually defined list of script/style handles, and minifies a
 **Features.**
 
 *   Minifies & concatenates scripts and styles loaded using the WordPress dependency enqueueing system.
-*   Handles scripts loaded in the footer.
-*   Works if WordPress is installed in a subdirectory.
+*   Handles scripts loaded in the header & footer.
 *   Complete control - only a manually defined list of files is processed.
 *   Multiple, independently processed files.
 *   Minified files are only loaded if at least one component file should be loaded.
 *   Compatable with localized scripts.
-*   Compatable with LESS: use wp-less plugin: <a href=\"https://github.com/sanchothefat/wp-less.git\" target=\"_blank\" title=\"https://github.com/sanchothefat/wp-less.git\">https://github.com/sanchothefat/wp-less.git</a>
 *   Helper tool - displays a list of scripts and styles enqueued on each page on the front end of the site.
 
 == Installation ==
@@ -55,3 +53,12 @@ This is because the processed file is now a dependency of file 2, but file 2 is 
 
 Solution
 You must either process all files together, or process 1 and 3 in separately.
+
+
+== Changelog ==
+
+= 1.1 =
+* Don't make remote requests to the minifier.
+* Works behind htaccess.
+* Handle scripts enqueued after header scripts outputted.
+* CSS files enqueued with media argument set to false should be treated proccessed alongside 'all'
