@@ -15,13 +15,13 @@ The plugin takes a manually defined list of script/style handles, and minifies a
 
 **Features.**
 
-*   Minifies & concatenates scripts and styles loaded using the WordPress dependency enqueueing system.
-*   Handles scripts loaded in the header & footer.
-*   Complete control - only a manually defined list of files is processed.
-*   Multiple, independently processed files.
-*   Minified files are only loaded if at least one component file should be loaded.
-*   Compatable with localized scripts.
-*   Helper tool - displays a list of scripts and styles enqueued on each page on the front end of the site.
+* Minifies & concatenates scripts and styles loaded using the WordPress dependency enqueueing system.
+* Handles scripts loaded in the header & footer.
+* Complete control - only a manually defined list of files is processed.
+* Multiple, independently processed files.
+* Minified files are only loaded if at least one component file should be loaded.
+* Compatable with localized scripts.
+* Helper tool - displays a list of scripts and styles enqueued on each page on the front end of the site.
 
 == Installation ==
 
@@ -29,15 +29,15 @@ Install & Activate the plugin.
 
 **Basic Use**
 
-*   Enable the plugin front end tool to check what scripts and styles are minified on each page.
-*   Copy the file handles you want to minify, and paste them into the minify queue textarea on the settings page.
-*   Save the settings and view the front end of your site. The processed files are generated on page load. Check that everything is working correctly.
-*   Uncheck the show helper option and save the settings again.
+* Enable the plugin front end tool to check what scripts and styles are minified on each page.
+* Copy the file handles you want to minify, and paste them into the minify queue textarea on the settings page.
+* Save the settings and view the front end of your site. The processed files are generated on page load. Check that everything is working correctly.
+* Uncheck the show helper option and save the settings again.
 
 **Advanced use**
 
-*   Multiple, independantly proccessed files. You can specify several lists of file handles to be minified and concatenated into separate files. Useful if you have scripts that are loaded conditionally on certain pages and should be handled separately rather than minified and concatenated into one large file.
-*   Options can be defined in your config file. This then disables access to the settings page in the admin.
+* Multiple, independantly proccessed files. You can specify several lists of file handles to be minified and concatenated into separate files. Useful if you have scripts that are loaded conditionally on certain pages and should be handled separately rather than minified and concatenated into one large file.
+* Options can be defined in your config file. This then disables access to the settings page in the admin.
 
 
 **Troubleshooting**
