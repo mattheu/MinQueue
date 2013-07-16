@@ -157,7 +157,7 @@ class MinQueue_Admin {
 
 			<label for="minqueue_field_manual_scripts">
 				<p><span class="description">For each queue, provide a list of script handles that will be concatenated into one file and minified. (Comma separated or on a new line)</span></p>
-				<p><span class="description">Multiple queues will be processed separately, creating a minified file for each. Note that if header &amp; footer scripts are added to the same queue, they will be proccessed separately.</span></p>
+				<p><span class="description">Multiple queues will be processed separately, creating a minified file for each. Note that scripts can be placed in the header or footer. If header &amp; footer scripts are added to the same queue, they will still be proccessed separately.</span></p>
 			</label>
 
 			<textarea id="minqueue_field_manual_scripts_hidden" name="minqueue_options[scripts_manual][]" class="large-text code input-template" style="display:none;"></textarea>
@@ -209,7 +209,7 @@ class MinQueue_Admin {
 
 			<label for="minqueue_field_manual_styles">
 				<p><span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span></p>
-				<p><span class="description">Multiple queues will be processed separately, creating a minified file for each. Note that css files targeting different media will always be minified separately even if they are part of the same queue.</span></p>
+				<p><span class="description">Multiple queues will be processed separately, creating a minified file for each. Note that enqueued CSS files targeting different media will always be minified separately even if they are part of the same queue.</span></p>
 			</label>
 
 			<textarea id="minqueue_field_manual_styles_template" name="minqueue_options[styles_manual][]" class="large-text code input-template" style="display:none;"></textarea>
@@ -237,7 +237,7 @@ class MinQueue_Admin {
 	function validate_options( $input ) {
 
 		if ( ! empty( $input['scripts_manual'] ) ) {
-
+		
 			foreach ( $input['scripts_manual'] as $key => $queue )
 				$input['scripts_manual'][$key] = $this->validate_handle_list( $queue );
 
@@ -245,17 +245,17 @@ class MinQueue_Admin {
 			$input['scripts_manual'] = array_merge( array_filter( $input['scripts_manual'] ) );
 
 		}
-
+		
 		if ( ! empty( $input['styles_manual'] ) ) {
-
+		
 			foreach ( $input['styles_manual'] as $key => $queue )
 				$input['styles_manual'][$key] = $this->validate_handle_list( $queue );
-
+	
 			// Remove empty & reset array keys.
 			$input['styles_manual'] = array_merge( array_filter( $input['styles_manual'] ) );
 
 		}
-
+		
 		$input['helper'] = ( empty( $input['helper'] ) ) ? false : true;
 
 		// If method is manual, and no manual handles are set, disable minification.
