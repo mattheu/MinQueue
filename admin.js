@@ -45,7 +45,7 @@ jQuery( document ).ready( function() {
 
 		var template = container.find( '.input-template' );
 
-		var buttonAddNew = jQuery( '<button class="button">Add New</button>' );
+		var buttonAddNew = jQuery( '<button class="button">Add New Queue</button>' );
 		buttonAddNew.appendTo( container );
 
 		buttonAddNew.click( function(e){
