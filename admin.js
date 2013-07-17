@@ -10,8 +10,6 @@ jQuery( document ).ready( function() {
 	 */
 	var minqueueToggle = function( fieldOne, fieldTwo, fieldOneInput ) {
 
-		fieldOneInput.remove;
-
 		var toggler = function () {
 
 			if ( fieldOneInput.is( ':checked' ) ) {
@@ -22,12 +20,12 @@ jQuery( document ).ready( function() {
 				fieldTwo.slideDown( 100 );
 			}
 
-		}
+		};
 
 		toggler();
 		fieldOneInput.siblings( 'input[type=radio]' ).andSelf().change( toggler );
 
-	}
+	};
 
 	minqueueToggle( jQuery('#field_manual_scripts'), jQuery('#field_disabled_scripts'), jQuery( '#minqueue_options_scripts_method_manual' ) );
 	minqueueToggle( jQuery('#field_manual_styles'),  jQuery('#field_disabled_styles'),  jQuery( '#minqueue_options_styles_method_manual' )  );
@@ -61,9 +59,9 @@ jQuery( document ).ready( function() {
 			// Insert & Show
 			buttonAddNew.before( newInput.show() );
 
-		} )
+		} );
 
-	}
+	};
 
 	minqueueFieldCloner( jQuery( '#field_manual_scripts' ) );
 	minqueueFieldCloner( jQuery( '#field_manual_styles' ) );
