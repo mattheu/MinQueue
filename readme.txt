@@ -40,18 +40,17 @@ Install & Activate the plugin.
 * Options can be defined in your config file. This then disables access to the settings page in the admin.
 
 
-**Troubleshooting**
+== Frequently Asked Questions ==
 
-Fatal error: Allowed memory size...
+**Fatal error: Allowed memory size...**
 
 You have probably created an infinite loop when working out the order of depencies.
 
 Example:
 Files 1, 2 and 3 are enqueued. File 1 is a dependency of 2, which is a dependency of 3.
-If only scripts 1 and 3 are minified and concatenated into 1 file, it will fail.
-This is because the processed file is now a dependency of file 2, but file 2 is also a dependency of it.
+If only scripts 1 and 3 are minified and concatenated into 1 file, it will fail. This is because the processed file is now a dependency of file 2, but file 2 is also a dependency of it.
 
-Solution
+Solution:
 You must either process all files together, or process 1 and 3 in separately.
 
 
