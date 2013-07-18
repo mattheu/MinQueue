@@ -55,7 +55,7 @@ function minqueue_init () {
 	add_action( 'wp_print_scripts', 'minqueue_scripts', 999 );
 	add_action( 'wp_footer', 'minqueue_scripts' );
 	add_action( 'wp_print_styles', 'minqueue_styles', 999 );
-	
+
 
 	// Load the admin - unless settings are not defined.
 	if ( ! defined( 'MINQUEUE_OPTIONS' ) )
@@ -156,10 +156,10 @@ function minqueue_styles() {
 function minqueue_activation_hook() {
 
 	// Require PHP 5.3
-	if ( version_compare( PHP_VERSION, '5.3', '<' ) ) { 
-		deactivate_plugins(basename(__FILE__)); // Deactivate ourself 
-		wp_die( 'MinQueue requires PHP 5.3. Current PHP version is ' . esc_html( phpversion() ) ); 
-	} 
+	if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
+		deactivate_plugins(basename(__FILE__)); // Deactivate ourself
+		wp_die( 'MinQueue requires PHP 5.3. Current PHP version is ' . esc_html( phpversion() ) );
+	}
 
 	$admin_notices = new MinQueue_Admin_Notices( apply_filters( 'minqueue_prefix', 'minqueue' ) );
 	$admin_notices->add_notice( 'MinQueue activated. Go to the <a href="options-general.php?page=minqueue">settings page</a> to configure the plugin.', false, 'updated', 'minqueue_min_activation_notice' );
