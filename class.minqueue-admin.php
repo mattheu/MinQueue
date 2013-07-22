@@ -259,9 +259,9 @@ class MinQueue_Admin {
 		$input['helper'] = ( empty( $input['helper'] ) ) ? false : true;
 
 		// If method is manual, and no manual handles are set, disable minification.
-		if ( 'manual' == $input['styles_method'] && empty( $input['styles_manual'] ) )
+		if ( isset( $input['styles_method'] ) && 'manual' == $input['styles_method'] && empty( $input['styles_manual'] ) )
 			unset( $input['styles_method'] );
-		if ( 'manual' == $input['scripts_method'] && empty( $input['scripts_manual'] ) )
+		if ( isset( $input['scripts_method'] ) && 'manual' == $input['scripts_method'] && empty( $input['scripts_manual'] ) )
 			unset( $input['scripts_method'] );
 
 		// Delete empty fields
