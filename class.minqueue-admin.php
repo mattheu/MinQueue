@@ -155,7 +155,7 @@ class MinQueue_Admin {
 
 		<div id="field_manual_scripts">
 
-			<label for="minqueue_field_manual_scripts">
+			<label for="minqueue_field_manual_scripts_0">
 				<p><span class="description">For each queue, provide a list of script handles that will be concatenated into one file and minified. (Comma separated or on a new line)</span></p>
 				<p><span class="description">Multiple queues will be processed separately, creating a minified file for each. Note that scripts can be placed in the header or footer. If header &amp; footer scripts are added to the same queue, they will still be proccessed separately.</span></p>
 			</label>
@@ -207,7 +207,7 @@ class MinQueue_Admin {
 
 		<div id="field_manual_styles">
 
-			<label for="minqueue_field_manual_styles">
+			<label for="minqueue_field_manual_styles_0">
 				<p><span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span></p>
 				<p><span class="description">Multiple queues will be processed separately, creating a minified file for each. Note that enqueued CSS files targeting different media will always be minified separately even if they are part of the same queue.</span></p>
 			</label>
