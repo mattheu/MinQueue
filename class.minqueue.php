@@ -546,9 +546,9 @@ class MinQueue_Scripts extends MinQueue {
 
 		// Add the localization data to the head (or footer for footer scripts.
 		if ( ! $this->is_footer_scripts )
-			add_action( 'wp_print_scripts', array( $this, 'script_localization' ), 1000 );
+			add_action( 'wp_print_scripts', array( $this, 'script_localization' ), 1 );
 		else
-			add_action( 'wp_footer', array( $this, 'script_localization' ) );
+			add_action( 'wp_print_footer_scripts', array( $this, 'script_localization' ), 1 );
 
 	}
 

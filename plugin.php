@@ -52,10 +52,9 @@ function minqueue_init () {
 	}
 
 	// Run the minifier
-	add_action( 'wp_print_scripts', 'minqueue_scripts', 999 );
-	add_action( 'wp_footer', 'minqueue_scripts' );
-	add_action( 'wp_print_styles', 'minqueue_styles', 999 );
-
+	add_action( 'wp_print_scripts', 'minqueue_scripts', 100 );
+	add_action( 'wp_print_footer_scripts', 'minqueue_scripts', 5 );
+	add_action( 'wp_print_styles', 'minqueue_styles', 100 );
 
 	// Load the admin - unless settings are not defined.
 	if ( ! defined( 'MINQUEUE_OPTIONS' ) )
