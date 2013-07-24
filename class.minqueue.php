@@ -56,11 +56,11 @@ abstract class MinQueue {
 		$this->plugin_url    = apply_filters( 'minqueue_plugin_url', plugins_url( '', __FILE__ ) );
 
 		$uploads             = wp_upload_dir();
-		
-		$this->cache_dir     = apply_filters( 'minqueue_cache_dir', sprintf( 
+
+		$this->cache_dir     = apply_filters( 'minqueue_cache_dir', sprintf(
 			'%s/%s-cache',
 			str_replace( $this->site_root, '', $uploads['basedir'] ),
-			$this->prefix 
+			$this->prefix
 		) );
 
 		// Global record of everything minified.
@@ -317,7 +317,7 @@ abstract class MinQueue {
 				$_srcs[] = $_src;
 
 		return $_srcs;
-		
+
 	}
 
 	/**
@@ -339,7 +339,7 @@ abstract class MinQueue {
 			return false;
 
 		$src = $this->class->registered[$handle]->src;
-		
+
 		// Handles, can be used to load other scripts, without having their own src.
 		// In this case, return empty, rather than false.
 		if ( empty( $src ) )
@@ -421,10 +421,10 @@ abstract class MinQueue {
 
 		if ( ! class_exists( 'Minify_Loader' ) )
 			require 'PHP-Minify-Lib/Minify/Loader.php';
-		
+
 		if ( ! class_exists( 'Minify' ) )
-			require 'PHP-Minify-Lib/Minify.php';	
-		
+			require 'PHP-Minify-Lib/Minify.php';
+
 		foreach ( $srcs as &$src )
 			$src = $this->site_root . $src;
 
