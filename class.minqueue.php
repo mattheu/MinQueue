@@ -530,12 +530,17 @@ class MinQueue_Scripts extends MinQueue {
 	// Array of script Localization data.
 	public $script_localization = array();
 
+	public $is_footer_scripts = false;
+
 	function __construct( $queue = array() ) {
 
 		global $wp_scripts;
 
 		$this->class = &$wp_scripts;
 		$this->file_extension = '.js';
+
+		if ( did_action( 'wp_footer' ) )
+			$this->is_footer_scripts = true;
 
 		parent::__construct( $queue );
 
@@ -549,11 +554,10 @@ class MinQueue_Scripts extends MinQueue {
 		$this->process_queue = parent::get_process_queue();
 
 		// Wait to minify footer scripts until wp_footer (& vice versa)
-		if ( did_action( 'wp_footer' ) ) {
+		if ( $this->is_footer_scripts )
 			unset( $this->process_queue[0] );
-		} else {
-			unset( $this->process_queue[1] );
-		}
+		else
+			$this->is_footer_scripts = false;
 
 		// Get localized script data.
 		foreach( $this->process_queue as $group => $script_handles )
