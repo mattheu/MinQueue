@@ -560,7 +560,7 @@ class MinQueue_Scripts extends MinQueue {
 		if ( $this->is_footer_scripts )
 			unset( $this->process_queue[0] );
 		else
-			$this->is_footer_scripts = false;
+			unset( $this->process_queue[1] );
 
 		// Get localized script data.
 		foreach( $this->process_queue as $group => $script_handles )
