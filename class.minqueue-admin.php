@@ -155,7 +155,7 @@ class MinQueue_Admin {
 
 		<div id="field_manual_scripts">
 
-			<label for="minqueue_field_manual_scripts">
+			<label for="minqueue_field_manual_scripts_0">
 				<p><span class="description">For each queue, provide a list of script handles that will be concatenated into one file and minified. (Comma separated or on a new line)</span></p>
 				<p><span class="description">Multiple queues will be processed separately, creating a minified file for each. Note that scripts can be placed in the header or footer. If header &amp; footer scripts are added to the same queue, they will still be proccessed separately.</span></p>
 			</label>
@@ -207,7 +207,7 @@ class MinQueue_Admin {
 
 		<div id="field_manual_styles">
 
-			<label for="minqueue_field_manual_styles">
+			<label for="minqueue_field_manual_styles_0">
 				<p><span class="description">List of style handles to minify and concatenate into one file. Comma separated or on a new line</span></p>
 				<p><span class="description">Multiple queues will be processed separately, creating a minified file for each. Note that enqueued CSS files targeting different media will always be minified separately even if they are part of the same queue.</span></p>
 			</label>
@@ -259,9 +259,9 @@ class MinQueue_Admin {
 		$input['helper'] = ( empty( $input['helper'] ) ) ? false : true;
 
 		// If method is manual, and no manual handles are set, disable minification.
-		if ( 'manual' == $input['styles_method'] && empty( $input['styles_manual'] ) )
+		if ( isset( $input['styles_method'] ) && 'manual' == $input['styles_method'] && empty( $input['styles_manual'] ) )
 			unset( $input['styles_method'] );
-		if ( 'manual' == $input['scripts_method'] && empty( $input['scripts_manual'] ) )
+		if ( isset( $input['scripts_method'] ) && 'manual' == $input['scripts_method'] && empty( $input['scripts_manual'] ) )
 			unset( $input['scripts_method'] );
 
 		// Delete empty fields
