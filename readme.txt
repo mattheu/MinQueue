@@ -3,7 +3,7 @@ Contributors: mattheu
 Tags: minify, script, style, concatenate
 Requires at least: 3.4
 Tested up to: 3.5
-Stable tag: 1.1
+Stable tag: 1.2
 
 Minify & Concatenate Enqueued Scripts & Styles.
 
@@ -55,6 +55,9 @@ You must either process all files together, or process 1 and 3 in separately.
 
 
 == Changelog ==
+
+= 1.1.1 =
+* Fix scripts loaded in the footer that are localized.
 
 = 1.1 =
 * Don't make remote requests to the minifier.
