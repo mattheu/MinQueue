@@ -208,18 +208,22 @@ function minqueue_helper_script() {
 
 		var MinQueue = {
 
-			display : document.getElementById('minqueue-helper'),
-			button  : document.createElement('a'),
-
+			display  : document.getElementById('minqueue-helper'),
+			button   : document.createElement('a'),
+			
 			insertButton : function() {
-				var button = this.button,
-				    adminBarContainer = document.getElementById( 'wp-admin-bar-top-secondary' ),
-				    li = document.createElement( 'li' );
-				button.setAttribute( 'href', '#');
-				button.setAttribute('class', 'ab-item' );
-				button.appendChild( document.createTextNode( 'MinQueue' ) );
-				li.appendChild( button );
-				adminBarContainer.appendChild( li );
+
+				var adminBar = document.getElementById( 'wp-admin-bar-top-secondary' ),
+				    li       = document.createElement( 'li' );
+				
+				if ( ! adminBar )
+					return;
+				
+				this.button.setAttribute( 'href', '#');
+				this.button.setAttribute('class', 'ab-item' );
+				this.button.appendChild( document.createTextNode( 'MinQueue' ) );
+				li.appendChild( this.button );
+				adminBar.appendChild( li );
 			},
 
 			toggleDisplay : function(e,el) {
@@ -230,12 +234,18 @@ function minqueue_helper_script() {
 			},
 
 			init : function() {
+			
 				var self = this;
+			
+				if ( ! self.display )
+					return;
+				
 				self.display.style.display = 'none';
 				self.insertButton();
 				self.button.addEventListener( 'click', function(e) { 
 					self.toggleDisplay.call( self, e, this ) 
 				} );
+				
 			}
 
 		}
