@@ -390,7 +390,7 @@ abstract class MinQueue {
 
 		$data = $this->do_minify( $srcs );
 
-		if ( false === $data ) {
+		if ( false === $data || strlen( $data ) === 0 ) {
 
 			// If error, display admin error notice.
 			$this->add_admin_notice( 'There was an error generating the minified file. Failed processing handles: ' . implode( ', ', $this->process_queue[$group] ), false, 'error' );
