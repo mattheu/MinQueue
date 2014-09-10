@@ -85,6 +85,14 @@ function minqueue_get_options() {
 
 	$options = wp_parse_args( $options, $defaults );
 
+	/**
+	 * Filter options passed to MinQueue
+	 *
+	 * @param array $options MinQueue options, as set via admin or constant
+	 * @param array $defaults Default options
+	 */
+	$options = apply_filters( 'minqueue_options', $options, $defaults );
+
 	return $options;
 
 }
