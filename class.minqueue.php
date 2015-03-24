@@ -357,11 +357,14 @@ abstract class MinQueue {
 		// Strip query args.
 		$src = strtok( $src, '?' );
 
+		// Allow filtering of base URL
+		$base_url = apply_filters( 'minqueue_assets_base_url', home_url() );
+
 		// Don't handle remote urls.
-		if ( 0 !== strpos( $src, home_url() ) )
+		if ( 0 !== strpos( $src, $base_url ) )
 			return false;
 
-		$this->asset_paths[ $handle ] = str_replace( home_url(), '', esc_url( $src ) );
+		$this->asset_paths[ $handle ] = str_replace( $base_url, '', esc_url( $src ) );
 
 		return $this->asset_paths[ $handle ];
 
