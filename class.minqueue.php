@@ -148,7 +148,7 @@ abstract class MinQueue {
 		$group_filename = $group_handle . $this->file_extension;
 
 		$cache_path     = trailingslashit( $this->site_root . $this->cache_dir ) . $group_filename;
-		$cache_src      = trailingslashit( home_url( '/' ) . $this->cache_dir ) . $group_filename;
+		$cache_src      = apply_filters( 'minqueue_cache_url', trailingslashit( home_url( '/' ) . $this->cache_dir ) ) . $group_filename;
 
 		// If no cached file - generate minified asset src.
 		if ( ! file_exists( $cache_path ) ) {
